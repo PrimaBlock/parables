@@ -1,0 +1,50 @@
+#[macro_export]
+macro_rules! contracts {
+    () => {
+    };
+
+    ($module:ident {$name:expr, $abi:expr, $bin:expr}, $($tail:tt)*) => {
+        #[allow(dead_code)]
+        #[allow(missing_docs)]
+        #[allow(unused_imports)]
+        #[allow(unused_mut)]
+        #[allow(unused_variables)]
+        pub mod $module {
+            #[derive(EthabiContract)]
+            #[ethabi_contract_options(name = $name, path = $abi)]
+            struct _Dummy;
+
+            contracts!(@bin $bin);
+        }
+
+        contracts!($($tail)*);
+    };
+
+    (bin $module:ident {$bin:expr}, $($tail:tt)*) => {
+        pub mod $module {
+            contracts!(@bin $bin);
+        }
+
+        contracts!($($tail)*);
+    };
+
+    (@bin $bin:expr) => {
+        pub fn bin(linker: &$crate::linker::Linker) -> $crate::error::Result<Vec<u8>> {
+            use std::io::Read;
+            use std::path::Path;
+
+            let path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/", $bin));
+
+            let mut file = ::std::fs::File::open(path)
+                .map_err(|e| format_err!("failed to open file: {}: {}", path.display(), e))?;
+
+            let mut out = Vec::new();
+
+            file.read_to_end(&mut out)
+                .map_err(|e| format_err!("failed to read file: {}: {}", path.display(), e))?;
+
+            let out = linker.link(&out)?;
+            Ok(out)
+        }
+    };
+}
