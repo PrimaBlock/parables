@@ -3,7 +3,7 @@ macro_rules! contracts {
     () => {
     };
 
-    ($module:ident {$name:expr, $abi:expr, $bin:expr}, $($tail:tt)*) => {
+    ($module:ident {$abi:expr, $bin:expr}, $($tail:tt)*) => {
         #[allow(dead_code)]
         #[allow(missing_docs)]
         #[allow(unused_imports)]
@@ -11,7 +11,7 @@ macro_rules! contracts {
         #[allow(unused_variables)]
         pub mod $module {
             #[derive(EthabiContract)]
-            #[ethabi_contract_options(name = $name, path = $abi)]
+            #[ethabi_contract_options(path = $abi)]
             struct _Dummy;
 
             contracts!(@bin $bin);

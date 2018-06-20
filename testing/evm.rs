@@ -343,11 +343,11 @@ pub struct Filter<P> {
 }
 
 impl<P> Filter<P> {
-    pub fn new<F>(parse_log: P, to_filter: F) -> Result<Self>
+    pub fn new(parse_log: P) -> Result<Self>
     where
-        F: FnOnce(&P) -> ethabi::TopicFilter,
+        P: ethabi::LogFilter
     {
-        let filter = to_filter(&parse_log);
+        let filter = parse_log.match_any();
         let topic = extract_this_topic(&filter.topic0)?;
 
         Ok(Self {
@@ -355,6 +355,17 @@ impl<P> Filter<P> {
             topic,
             filter,
         })
+    }
+
+    /// Build a new filter, which has a custom filter enabled.
+    pub fn with_filter<M>(self, map: M) -> Self
+    where
+        M: FnOnce(&P) -> ethabi::TopicFilter,
+    {
+        Self {
+            filter: map(&self.parse_log),
+            ..self
+        }
     }
 
     pub fn matches(&self, log: &LogEntry) -> bool {
