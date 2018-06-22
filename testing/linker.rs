@@ -1,4 +1,4 @@
-use error::{Error, Result};
+use error::{DecodingError, Error};
 use ethereum_types::Address;
 use std::collections::HashMap;
 
@@ -52,7 +52,7 @@ impl Linker {
     /// with an address corresponding to the linked object.
     ///
     /// All other entries should be left preserved.
-    pub fn link(&self, mut code: &[u8]) -> Result<Vec<u8>> {
+    pub fn link(&self, mut code: &[u8]) -> Result<Vec<u8>, Error> {
         let mut output = Vec::new();
         let mut n = 0usize;
 
@@ -62,10 +62,10 @@ impl Linker {
                 // section to link
                 &[b'_', b'_'] => {
                     if code.len() < 40 {
-                        bail!(
-                            "expected link section at position {}, but remaining code is too small",
-                            n
-                        );
+                        return Err(Error::BadInputPos {
+                            position: n,
+                            message: "expected link section at position {}, but remaining code is too small",
+                        });
                     }
 
                     let (path, item) = decode_linked(&code[..40])?;
@@ -97,7 +97,10 @@ impl Linker {
                     n += 2;
                 }
                 _ => {
-                    bail!("bad input at position {}, expect `__` or two hex digits", n);
+                    return Err(Error::BadInputPos {
+                        position: n,
+                        message: "expected `__` or two hex digits",
+                    });
                 }
             }
         }
@@ -108,8 +111,8 @@ impl Linker {
         ///
         /// Generally has the structure `<path>:<item>`, where `<item>` is optional since it might
         /// not fit within the section.
-        fn decode_linked(chunk: &[u8]) -> Result<(&str, Option<&str>)> {
-            let chunk = ::std::str::from_utf8(chunk)?;
+        fn decode_linked(chunk: &[u8]) -> Result<(&str, Option<&str>), Error> {
+            let chunk = ::std::str::from_utf8(chunk).map_err(|_| DecodingError)?;
             let mut chunk = chunk.trim_matches('_');
 
             let sep = match chunk.find(':') {

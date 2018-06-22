@@ -15,10 +15,21 @@ ethash = { git = "https://github.com/paritytech/parity.git" }
 ethcore = { git = "https://github.com/paritytech/parity.git", features = ["test-helpers"] }
 ethcore-bytes = { git = "https://github.com/paritytech/parity.git" }
 ethcore-transaction = { git = "https://github.com/paritytech/parity.git" }
+journaldb = { git = "https://github.com/paritytech/parity.git" }
+kvdb = { git = "https://github.com/paritytech/parity.git" }
+kvdb-memorydb = { git = "https://github.com/paritytech/parity.git" }
 evm = { git = "https://github.com/paritytech/parity.git" }
 vm = { git = "https://github.com/paritytech/parity.git" }
+# proptest = { version = "0.8" }
+proptest = { git = "https://github.com/primablock/proptest.git", branch = "proptest-closures" }
 
 failure = "0.1"
 
+rayon = {version = "1.0", optional = true}
+
 [dev-dependencies]
 hex = "0.3"
+
+[features]
+default = ["test-runner"]
+test-runner = ["rayon"]

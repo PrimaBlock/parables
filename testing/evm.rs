@@ -1,16 +1,23 @@
-use error::{CallError, Result};
+use error::{CallError, Error, NonceError};
 use ethabi;
-use ethcore::client::{EvmTestClient, TransactResult};
+use ethcore::db;
+use ethcore::engines;
+use ethcore::executive;
 use ethcore::log_entry::LogEntry;
 use ethcore::receipt::TransactionOutcome;
+use ethcore::spec;
+use ethcore::state;
+use ethcore::state_db;
 use ethcore_transaction::{Action, SignedTransaction, Transaction};
 use ethereum_types::{Address, H256, U256};
+use kvdb::KeyValueDB;
 use parity_vm;
 use std::collections::{hash_map, HashMap};
+use std::fmt;
 use std::mem;
-use std::result;
 use std::sync::Arc;
 use trace;
+use {journaldb, kvdb, kvdb_memorydb};
 
 /// The result of executing a transaction.
 #[derive(Debug, Clone)]
@@ -63,30 +70,78 @@ impl Call {
     }
 }
 
-#[derive(Debug)]
-pub struct Evm<'a> {
+#[derive(Clone)]
+pub struct Evm {
     env_info: parity_vm::EnvInfo,
-    client: EvmTestClient<'a>,
+    state: state::State<state_db::StateDB>,
+    engine: Arc<engines::EthEngine>,
     /// Logs collected by topic.
     logs: HashMap<ethabi::Hash, Vec<LogEntry>>,
 }
 
-impl<'a> Evm<'a> {
-    /// Create a new ethereum virtual machine abstraction.
-    pub fn new(client: EvmTestClient<'a>) -> Self {
-        let author = Self::random_address();
-        let env_info = Self::env_info(author);
+impl fmt::Debug for Evm {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Evm").finish()
+    }
+}
 
-        Evm {
+impl Evm {
+    /// Create a new ethereum virtual machine abstraction.
+    pub fn new(spec: &spec::Spec) -> Result<Self, Error> {
+        let env_info = Self::env_info(Address::random());
+        let engine = Arc::clone(&spec.engine);
+        let state = Self::state_from_spec(spec)?;
+
+        let evm = Evm {
             env_info,
-            client,
+            state,
+            engine,
             logs: HashMap::new(),
-        }
+        };
+
+        Ok(evm)
     }
 
-    /// Create a random address.
-    pub fn random_address() -> Address {
-        Address::random()
+    /// Convert the spec into a state.
+    /// Converted from parity:
+    /// https://github.com/paritytech/parity/blob/98b7c07171cd320f32877dfa5aa528f585dc9a72/ethcore/src/client/evm_test_client.rs#L136
+    fn state_from_spec(spec: &spec::Spec) -> Result<state::State<state_db::StateDB>, Error> {
+        let factories = Default::default();
+
+        let db = Arc::new(kvdb_memorydb::create(
+            db::NUM_COLUMNS.expect("We use column-based DB; qed"),
+        ));
+
+        let journal_db =
+            journaldb::new(db.clone(), journaldb::Algorithm::EarlyMerge, db::COL_STATE);
+
+        let mut state_db = state_db::StateDB::new(journal_db, 5 * 1024 * 1024);
+
+        state_db = spec.ensure_db_good(state_db, &factories)
+            .map_err(|e| format!("bad database state: {}", e))?;
+
+        let genesis = spec.genesis_header();
+
+        // Write DB
+        {
+            let mut batch = kvdb::DBTransaction::new();
+
+            state_db
+                .journal_under(&mut batch, 0, &genesis.hash())
+                .map_err(|e| format!("failed to execute transaction: {}", e))?;
+
+            db.write(batch)
+                .map_err(|e| format!("failed to set up database: {}", e))?;
+        }
+
+        let state = state::State::from_existing(
+            state_db,
+            *genesis.state_root(),
+            spec.engine.account_start_nonce(0),
+            factories,
+        ).map_err(|e| format!("error setting up state: {}", e))?;
+
+        Ok(state)
     }
 
     /// Create a static info structure of the environment.
@@ -103,7 +158,7 @@ impl<'a> Evm<'a> {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy<F>(&mut self, f: F, call: Call) -> Result<Address>
+    pub fn deploy<F>(&mut self, f: F, call: Call) -> Result<Address, CallError>
     where
         F: ethabi::ContractFunction<Output = Address>,
     {
@@ -111,53 +166,34 @@ impl<'a> Evm<'a> {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy_code(&mut self, code: Vec<u8>, call: Call) -> Result<Address> {
-        let nonce = self.client.state().nonce(&call.sender)?;
-
-        let tx = Transaction {
-            nonce,
-            gas_price: call.gas_price,
-            gas: call.gas,
-            action: Action::Create,
-            value: call.value,
-            data: code,
-        };
-
-        let tx = tx.fake_sign(call.sender.into());
-
-        let result = self.run_transaction(tx)?;
+    pub fn deploy_code(&mut self, code: Vec<u8>, call: Call) -> Result<Address, CallError> {
+        let result = self.action(Action::Create, code, call)?;
         self.add_logs(result.logs)?;
 
         let address = result
             .contract_address
-            .ok_or_else(|| format_err!("no address for deployed contract"))?;
+            .ok_or_else(|| format!("no address for deployed contract"))?;
 
         Ok(address)
     }
 
     /// Perform a call against the given contract function.
-    pub fn call<F>(
-        &mut self,
-        address: Address,
-        f: F,
-        call: Call,
-    ) -> result::Result<F::Output, CallError>
+    pub fn call<F>(&mut self, address: Address, f: F, call: Call) -> Result<F::Output, CallError>
     where
         F: ethabi::ContractFunction,
     {
-        let tx = self.call_transaction(address, Some(f.encoded()), call)?;
-        let result = self.run_transaction(tx)?;
+        let result = self.action(Action::Call(address), f.encoded(), call)?;
         self.add_logs(result.logs)?;
 
         let output = f.output(result.output.to_vec())
             .map_err(|e| format!("VM output conversion failed: {}", e))?;
+
         Ok(output)
     }
 
     /// Perform a call against the given contracts' fallback function.
-    pub fn fallback(&mut self, address: Address, call: Call) -> result::Result<(), CallError> {
-        let tx = self.call_transaction(address, None, call)?;
-        let result = self.run_transaction(tx)?;
+    pub fn fallback(&mut self, address: Address, call: Call) -> Result<(), CallError> {
+        let result = self.action(Action::Call(address), Vec::new(), call)?;
         self.add_logs(result.logs)?;
         Ok(())
     }
@@ -173,7 +209,7 @@ impl<'a> Evm<'a> {
     }
 
     /// Drain logs matching the given filter that has been registered so far.
-    pub fn drain_logs<P>(&mut self, filter: &Filter<P>) -> Result<Vec<P::Log>>
+    pub fn drain_logs<P>(&mut self, filter: Filter<P>) -> Result<Vec<P::Log>, Error>
     where
         P: ethabi::ParseLog,
     {
@@ -183,7 +219,10 @@ impl<'a> Evm<'a> {
     /// Drain logs matching the given filter that has been registered so far.
     ///
     /// Include who sent the logs in the result.
-    pub fn drain_logs_with_sender<P>(&mut self, filter: &Filter<P>) -> Result<Vec<(Address, P::Log)>>
+    pub fn drain_logs_with_sender<P>(
+        &mut self,
+        filter: Filter<P>,
+    ) -> Result<Vec<(Address, P::Log)>, Error>
     where
         P: ethabi::ParseLog,
     {
@@ -191,10 +230,10 @@ impl<'a> Evm<'a> {
     }
 
     /// Drain logs matching the given filter that has been registered so far.
-    fn drain_logs_with<P, F, O>(&mut self, filter: &Filter<P>, f: F) -> Result<Vec<O>>
+    fn drain_logs_with<P, M, O>(&mut self, filter: Filter<P>, map: M) -> Result<Vec<O>, Error>
     where
         P: ethabi::ParseLog,
-        F: Fn(Address, P::Log) -> O
+        M: Fn(Address, P::Log) -> O,
     {
         let mut out = Vec::new();
 
@@ -216,9 +255,9 @@ impl<'a> Evm<'a> {
                         let log = filter
                             .parse_log
                             .parse_log((log.topics, log.data).into())
-                            .map_err(|e| format_err!("failed to pase log: {}", e))?;
+                            .map_err(|e| format!("failed to pase log: {}", e))?;
 
-                        out.push(f(sender, log));
+                        out.push(map(sender, log));
                     }
 
                     if !keep.is_empty() {
@@ -238,65 +277,74 @@ impl<'a> Evm<'a> {
         Ok(out)
     }
 
-    /// Add logs, partitioned by topic.
-    fn add_logs(&mut self, logs: Vec<LogEntry>) -> result::Result<(), CallError> {
-        for log in logs {
-            let topic = match log.topics.iter().next() {
-                Some(first) => *first,
-                None => return Err("expected at least one topic".into()),
-            };
-
-            self.logs.entry(topic).or_insert_with(Vec::new).push(log);
-        }
-
-        Ok(())
-    }
-
-    /// Set up a call transaction.
-    fn call_transaction(
+    /// Execute the given action.
+    fn action(
         &mut self,
-        address: Address,
-        data: Option<Vec<u8>>,
+        action: Action,
+        data: Vec<u8>,
         call: Call,
-    ) -> result::Result<SignedTransaction, CallError> {
-        let nonce = self.client
-            .state()
-            .nonce(&call.sender)
-            .map_err(|e| format!("failed to set up nonce: {}", e))?;
+    ) -> Result<Execution, CallError> {
+        let nonce = self.state.nonce(&call.sender).map_err(|_| NonceError)?;
 
         let tx = Transaction {
             nonce,
             gas_price: call.gas_price,
             gas: call.gas,
-            action: Action::Call(address),
+            action: action,
             value: call.value,
-            data: data.unwrap_or_else(Vec::new),
+            data: data,
         };
 
-        Ok(tx.fake_sign(call.sender))
+        let tx = tx.fake_sign(call.sender.into());
+        self.run_transaction(tx)
     }
 
     /// Run the specified transaction.
-    fn run_transaction(&mut self, tx: SignedTransaction) -> result::Result<Execution, CallError> {
-        let res = self.client.transact(
+    fn run_transaction(&mut self, tx: SignedTransaction) -> Result<Execution, CallError> {
+        let initial_gas = tx.gas;
+
+        // Verify transaction
+        let is_ok = tx.verify_basic(
+            true,
+            None,
+            self.env_info.number >= self.engine.params().eip86_transition,
+        );
+
+        if let Err(error) = is_ok {
+            return Err(format!("VM Error: {}", error).into());
+        }
+
+        // Apply transaction
+        let result = self.state.apply_with_tracing(
             &self.env_info,
-            tx,
+            self.engine.machine(),
+            &tx,
             trace::TxTracer::new(),
             trace::TxVmTracer::default(),
         );
 
-        match res {
-            TransactResult::Ok {
-                state_root,
-                gas_left,
-                output,
-                contract_address,
-                logs,
-                outcome,
-                trace,
-                vm_trace,
-                ..
-            } => {
+        let scheme = self.engine
+            .machine()
+            .create_address_scheme(self.env_info.number);
+
+        match result {
+            Ok(result) => {
+                self.state.commit().ok();
+
+                let state_root = *self.state.root();
+                let gas_left = initial_gas - result.receipt.gas_used;
+                let outcome = result.receipt.outcome;
+                let output = result.output;
+                let trace = result.trace;
+                let vm_trace = result.vm_trace;
+                let logs = result.receipt.logs;
+
+                let contract_address = if let Action::Create = tx.action {
+                    Some(executive::contract_address(scheme, &tx.sender(), &tx.nonce, &tx.data).0)
+                } else {
+                    None
+                };
+
                 match vm_trace {
                     Some(trace::TxVmState::Reverted) => {
                         return Err(CallError::Reverted);
@@ -328,10 +376,24 @@ impl<'a> Evm<'a> {
                     outcome,
                 })
             }
-            TransactResult::Err { error, .. } => {
+            Err(error) => {
                 return Err(format!("VM Error: {}", error).into());
             }
         }
+    }
+
+    /// Add logs, partitioned by topic.
+    fn add_logs(&mut self, logs: Vec<LogEntry>) -> Result<(), CallError> {
+        for log in logs {
+            let topic = match log.topics.iter().next() {
+                Some(first) => *first,
+                None => return Err("expected at least one topic".into()),
+            };
+
+            self.logs.entry(topic).or_insert_with(Vec::new).push(log);
+        }
+
+        Ok(())
     }
 }
 
@@ -343,9 +405,9 @@ pub struct Filter<P> {
 }
 
 impl<P> Filter<P> {
-    pub fn new(parse_log: P) -> Result<Self>
+    pub fn new(parse_log: P) -> Result<Self, Error>
     where
-        P: ethabi::LogFilter
+        P: ethabi::LogFilter,
     {
         let filter = parse_log.match_any();
         let topic = extract_this_topic(&filter.topic0)?;
@@ -407,10 +469,39 @@ impl<P> Filter<P> {
     }
 }
 
+impl<P> ethabi::LogFilter for Filter<P>
+where
+    P: ethabi::LogFilter,
+{
+    fn match_any(&self) -> ethabi::TopicFilter {
+        self.parse_log.match_any()
+    }
+}
+
+pub trait InternalTryFrom<T>: Sized {
+    type Error;
+
+    /// TryFrom until std::convert::TryFrom is stable.
+    fn internal_try_from(value: T) -> Result<Self, Self::Error>;
+}
+
+/// Blanket conversion trait so that we don't have to create a Filter instance of anything
+/// implementing LogFilter.
+impl<P> InternalTryFrom<P> for Filter<P>
+where
+    P: ethabi::LogFilter,
+{
+    type Error = Error;
+
+    fn internal_try_from(value: P) -> Result<Filter<P>, Error> {
+        Filter::new(value)
+    }
+}
+
 /// Extract the exact topic or fail.
-pub fn extract_this_topic(topic: &ethabi::Topic<ethabi::Hash>) -> Result<ethabi::Hash> {
+pub fn extract_this_topic(topic: &ethabi::Topic<ethabi::Hash>) -> Result<ethabi::Hash, Error> {
     match *topic {
         ethabi::Topic::This(ref id) => Ok(*id),
-        ref other => bail!("not an exact topic: {:?}", other),
+        ref other => return Err(format!("not an exact topic: {:?}", other).into()),
     }
 }

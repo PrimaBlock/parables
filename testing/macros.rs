@@ -29,19 +29,19 @@ macro_rules! contracts {
     };
 
     (@bin $bin:expr) => {
-        pub fn bin(linker: &$crate::linker::Linker) -> $crate::error::Result<Vec<u8>> {
+        pub fn bin(linker: &$crate::linker::Linker) -> Result<Vec<u8>, $crate::error::Error> {
             use std::io::Read;
             use std::path::Path;
 
             let path = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/", $bin));
 
             let mut file = ::std::fs::File::open(path)
-                .map_err(|e| format_err!("failed to open file: {}: {}", path.display(), e))?;
+                .map_err(|e| format!("failed to open file: {}: {}", path.display(), e))?;
 
             let mut out = Vec::new();
 
             file.read_to_end(&mut out)
-                .map_err(|e| format_err!("failed to read file: {}: {}", path.display(), e))?;
+                .map_err(|e| format!("failed to read file: {}: {}", path.display(), e))?;
 
             let out = linker.link(&out)?;
             Ok(out)
