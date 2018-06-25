@@ -1,3 +1,5 @@
+// Parts borrowed from: https://github.com/paritytech/sol-rs/blob/master/solaris/src/wei.rs
+
 use ethereum_types::U256;
 
 /// Convert ether to wei.
