@@ -1,0 +1,376 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Testing Smart Contracts - Parables User Guide</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+
+    </head>
+    <body class="light">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = 'light'; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html" class="active"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light <span class="default">(default)</span></button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Parables User Guide</h1> 
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="03_testing_smart_contracts.html#testing-smart-contracts" id="testing-smart-contracts"><h1>Testing Smart Contracts</h1></a>
+<p>To test a smart contract, we run it on top of the Ethereum Virtual Machine (EVM) built by <a href="https://github.com/paritytech/parity">parity</a>.</p>
+<p>Parables provides a wrapper for this using the <code>Evm</code> type.</p>
+<p>But before we start testing our contracts, we need to make sure that they are <em>compiled</em> into
+bytecode and abi.</p>
+<p>To do this, we can use solcjs.</p>
+<pre><code class="language-bash">(cd contracts &amp;&amp; solcjs *.sol --bin --abi)
+</code></pre>
+<p>After this, you can put the following in <code>src/main.rs</code>.
+Don't worry, we will walk you through line-by-line what it is below.</p>
+<pre><pre class="playpen"><code class="language-rust">#[macro_use]
+extern crate parables_testing;
+
+use parables_testing::prelude::*;
+
+contracts! {
+    simple_contract {
+        &quot;contracts/SimpleContract_sol_SimpleContract.abi&quot;,
+        &quot;contracts/SimpleContract_sol_SimpleContract.bin&quot;
+    },
+}
+
+fn main() -&gt; Result&lt;()&gt; {
+    // Set up a template call with a default amount of gas.
+    let owner = Address::random();
+    let call = Call::new(owner).gas(1_000_000);
+
+    // Initialize a new linker.
+    let mut linker = Linker::new();
+
+    // Set up a new virtual machine with a default (null) foundation.
+    let foundation = Spec::new_null();
+    let mut evm = Evm::new(&amp;foundation)?;
+
+    // Deploy the SimpleContract.
+    let code = simple_contract::bin(&amp;linker)?;
+    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+
+    // Wrap the virtual machine in a Snapshot type so that it can be shared as a snapshot across
+    // threads.
+    let evm = Snapshot::new(evm);
+
+    let mut tests = TestRunner::new();
+
+    tests.test(&quot;get and increment value a couple of times&quot;, || {
+        use simple_contract::events as ev;
+        use simple_contract::functions as f;
+
+        let mut evm = evm.get()?;
+
+        let mut expected = U256::from(0);
+
+        let out = evm.call(simple, f::get_value(), call)?;
+        assert_eq!(expected, out);
+
+        // change value
+        expected = 1.into();
+
+        evm.call(simple, f::set_value(expected), call)?;
+        let out = evm.call(simple, f::get_value(), call)?;
+        assert_eq!(expected, out);
+
+        Ok(())
+    });
+
+    let reporter = StdoutReporter::new();
+    tests.run(&amp;reporter)?;
+
+    Ok(())
+}
+</code></pre></pre>
+<p>We will now walk through this line-by-line and explain what it is.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+contracts! {
+    simple_contract {
+        &quot;contracts/SimpleContract_sol_SimpleContract.abi&quot;,
+        &quot;contracts/SimpleContract_sol_SimpleContract.bin&quot;
+    },
+}
+#}</code></pre></pre>
+<p>This makes use of ethabi's derive module to build a type-safe model for the contract that we can
+use through the <code>simple_contract</code> module.</p>
+<p>Through this we can import <code>functions</code>, <code>events</code>, and the contract's <code>constructor</code>.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let owner = Address::random();
+let call = Call::new(owner).gas(1_000_000);
+#}</code></pre></pre>
+<p>In main, we start by creating a random <code>owner</code>, and set up the template model we will be using for
+our calls.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let mut linker = Linker::new();
+#}</code></pre></pre>
+<p>Next we set up our linker. There is currently no configuration necessary since our contract doesn't
+link to any other contracts. But we need one anyways.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let foundation = Spec::new_null();
+let mut evm = Evm::new(&amp;foundation)?;
+#}</code></pre></pre>
+<p>Time to set up our <em>foundation</em>. A foundation determines the parameters of the blockchain.
+The <code>null</code> foundation is the default foundation, which makes it operate like your modern Ethereum
+blockchain.
+But we also have access to older foundations like [<code>morden</code>].</p>
+<p>The currently available foundations are:</p>
+<ul>
+<li><code>Spec::new_null</code> - The most default foundation which doesn't have a consensus engine.</li>
+<li><code>Spec::new_instant</code> - A default foundation which has an InstantSeal consensus engine.</li>
+<li><code>Spec::new_test</code> - Morden without a consensus engine.</li>
+</ul>
+<p>For more details, you'll currently have to reference the <a href="https://github.com/paritytech/parity/blob/master/ethcore/src/spec/spec.rs">Spec source code</a>.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let code = simple_lib::bin(&amp;linker)?;
+let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+#}</code></pre></pre>
+<p>For the next line we link our contract, and deploy it to our virtual machine by calling its
+constructor.</p>
+<p>Note that the first argument of the constructor is the code to deploy.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let evm = Snapshot::new(evm);
+#}</code></pre></pre>
+<p>Finally we want to wrap our virtual machine in the <code>Snapshot</code> container.
+The virtual machine has some state that needs to be synchronized when shared across threads, but it
+is clonable.
+The Snapshot class provides us with a convenient <code>get()</code> function that handles the cloning for us.</p>
+<p>Next we enter the code for the test case.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+use simple_contract::events as ev;
+use simple_contract::functions as f;
+#}</code></pre></pre>
+<p>We start out by importing all relevant functions into scope for the test.</p>
+<p>Using these we can access all events being emitted by the contract through <code>ev::SomeEvent</code>, and all
+the functions being exposed as <code>f::some_function</code>.
+Note that the function names are converted from lower camel (solidity standard) to lower snake case
+(rust standard).</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let mut evm = evm.get()?;
+#}</code></pre></pre>
+<p>This line takes a snapshot of the virtual machine.
+The snapshot is guaranteed to be isolated from all other snapshots, letting us run many tests in
+isolation without worrying about trampling on each others feets.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let mut expected = 0;
+
+let out = evm.call(simple, f::get_value(), call)?;
+assert_eq!(expected, out);
+
+// change value
+expected = 1;
+
+evm.call(simple, f::set_value(expected), call)?;
+let out = evm.call(simple, f::get_value(), call)?;
+assert_eq!(expected, out);
+#}</code></pre></pre>
+<p>This final snippet is the complete test case.
+We call the <code>getValue()</code> solidity function and compare it's output, set it using <code>setValue(uint)</code>,
+and make sure that it has been set as expected by getting it again.</p>
+<p>So it's finally time to run your test!
+You do this by calling <code>cargo run</code>.</p>
+<pre><code class="language-bash">cargo run
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="02_getting_started.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="04_property_testing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="02_getting_started.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="04_property_testing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+
+        
+        <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
+        
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+    </body>
+</html>
