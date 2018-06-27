@@ -44,7 +44,7 @@ tests.test("get and increment value randomly within constraints", || {
 });
 ```
 
-Running this now we should not get any test errors.o
+Instead of an error, our test should now pass.
 
 ```
 cargo run
