@@ -1,5 +1,5 @@
-use std::result;
 use proptest;
+use std::result;
 
 #[derive(Debug, Fail)]
 pub enum Error {

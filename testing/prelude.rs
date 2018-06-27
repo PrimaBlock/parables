@@ -14,4 +14,4 @@ pub use wei;
 // re-export property testing prelude.
 pub use proptest::prelude::*;
 
-pub type Result<T> = ::std::result::Result<T, ::failure::Error>;
+pub type Result<T> = ::std::result::Result<T, Error>;

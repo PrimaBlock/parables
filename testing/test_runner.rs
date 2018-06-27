@@ -1,5 +1,5 @@
 //! Provides a simple test scaffolding for running tests in parallel.
-use failure::Error;
+use error::Error;
 use reporter::Reporter;
 use std::any;
 use std::borrow::Cow;

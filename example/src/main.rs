@@ -14,7 +14,6 @@ contracts! {
     },
 }
 
-
 fn main() -> Result<()> {
     let owner = Address::random();
     // template call
