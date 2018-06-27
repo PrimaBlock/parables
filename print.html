@@ -134,13 +134,22 @@
                 <div id="content" class="content">
                     <main>
                         <a class="header" href="print.html#introduction-to-parables" id="introduction-to-parables"><h1>Introduction to Parables</h1></a>
-<p>Parables is a system for testing smart contracts.</p>
-<p>It was built at <a href="https://github.com/primablock">PrimaBlock</a> to support rapid and thorough testing of contracts.
-We wanted to make use of <a href="https://en.wikipedia.org/wiki/Property_testing">property testing</a>, but
-we found that conventional testing frameworks like <a href="https://truffleframework.com/">Truffle</a> were
-not fast enough to support rapid executions of a contract.</p>
-<p>Smart contracts are <em>hard</em> to get right, but our hopes is that Parables can help you on that
-journey.</p>
+<p>Parables is a system for testing smart contracts.
+Smart contracts are <em>hard</em> to get right and the cost of making mistakes is high.
+The way we avoid mistakes is by being exceptional at testing.</p>
+<p>Parables was built at <a href="https://github.com/primablock">PrimaBlock</a> to support thorough testing of contracts.
+We wanted to make use of <a href="https://en.wikipedia.org/wiki/Property_testing">property testing</a>,
+but found that conventional testing frameworks like <a href="https://truffleframework.com/">Truffle</a> were
+too slow to support that.</p>
+<p>Parables can execute contract functions in microseconds since we do it directly on top of the
+<a href="https://github.com/paritytech/parity">parity virtual machine</a>.
+This makes it viable to perform property testing, which typically requires that the thing under
+test is executed hundreds, or even thousands of times with different parameters.</p>
+<a class="header" href="print.html#about-this-book" id="about-this-book"><h2>About this book</h2></a>
+<p>This book is a user guide, suitable for people who want to learn how to do testing on top of
+parables.</p>
+<p>It requires an understanding of Rust, and that you have the <code>cargo</code> toolchain installed.
+If you don't have it, you can get it through <a href="https://rustup.rs">rustup.rs</a>.</p>
 <p>In this book we will walk you though how to write tests using Parables.
 All the way from <a href="./02_getting_started.html">setting up a new project</a>, to performing full-scale <a href="./04_property_testing.html">property testing</a>.</p>
 <p>So sit down, buckle your seat belt, and enjoy the trip!</p>
