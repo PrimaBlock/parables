@@ -20,8 +20,7 @@ kvdb = { git = "https://github.com/paritytech/parity.git" }
 kvdb-memorydb = { git = "https://github.com/paritytech/parity.git" }
 evm = { git = "https://github.com/paritytech/parity.git" }
 vm = { git = "https://github.com/paritytech/parity.git" }
-# proptest = { version = "0.8" }
-proptest = { git = "https://github.com/primablock/proptest.git", branch = "proptest-closures" }
+proptest = { version = "0.8" }
 
 failure = "0.1"
 

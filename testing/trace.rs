@@ -165,7 +165,9 @@ impl trace::VMTracer for TxVmTracer {
         _mem_diff: Option<(usize, &[u8])>,
         _store_diff: Option<(U256, U256)>,
     ) {
-        let info = parity_evm::INSTRUCTIONS[self.instruction as usize];
+        let info = parity_evm::Instruction::from_u8(self.instruction)
+            .expect("legal instruction")
+            .info();
 
         if info.name == "REVERT" {
             self.state = Some(TxVmState::Reverted);
@@ -177,11 +179,8 @@ impl trace::VMTracer for TxVmTracer {
 
         let len = self.stack.len();
 
-        self.stack.truncate(if len > info.args {
-            len - info.args
-        } else {
-            0
-        });
+        self.stack
+            .truncate(if len > info.args { len - info.args } else { 0 });
 
         self.stack.extend_from_slice(stack_push);
 

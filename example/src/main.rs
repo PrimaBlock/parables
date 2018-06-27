@@ -34,8 +34,8 @@ fn main() -> Result<()> {
 
     let mut runner = TestRunner::new();
 
-    runner.test("property #1", proptest! {
-        |(x in 0u32..32)| {
+    runner.test("property #1", || {
+        proptest!(|(x in 0u32..32)| {
             println!("x: {}", x);
             let mut evm = evm.get()?;
 
@@ -78,7 +78,7 @@ fn main() -> Result<()> {
                     // println!("log: {:?}", log);
                 }
             }
-        }
+        });
     });
 
     for i in 0..4 {
