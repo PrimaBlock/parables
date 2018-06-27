@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -e
+
+if ! command -v mdbook > /dev/null 2>&1; then
+    cargo install mdbook
+fi
+
+ROOT=$(dirname $(dirname $(realpath $0)))
+
+repo="git@github.com:primablock/parables.git"
+target=$ROOT/target
+checkout=$target/primablock.github.io_parables/
+book=$ROOT/book
+dist=$book/book
+
+# build the book
+mdbook build $book
+
+if [[ ! -d $dist ]]; then
+    echo "Missing: $dist"
+    exit 1
+fi
+
+git_do() {
+    git --git-dir=$checkout/.git --work-tree=$checkout "$@"
+    return $?
+}
+
+if [[ ! -d $checkout ]]; then
+    echo "Initializing: $checkout"
+    mkdir -p $checkout
+    git_do init
+    git_do remote add origin $repo
+fi
+
+git_do fetch -a origin gh-pages
+git_do reset --hard origin/gh-pages
+git_do clean -fdx
+
+rsync -rav $dist/ $checkout/
+
+git_do add -A
+git_do commit -m "Release $(date)"
+git_do push origin HEAD
