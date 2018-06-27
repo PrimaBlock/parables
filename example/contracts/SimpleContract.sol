@@ -32,7 +32,7 @@ contract SimpleContract {
         return value;
     }
 
-    function setValue(uint update) public ownerOnly() {
+    function setValue(uint update) public payable ownerOnly() {
         value = update;
         emit ValueUpdated(update);
     }

@@ -16,11 +16,11 @@ tests.test("get and increment value randomly", || {
 
         let mut evm = evm.get()?;
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(U256::from(0), out);
 
         evm.call(simple, f::set_value(x), call)?;
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(x, out);
     });
 });

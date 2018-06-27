@@ -1,4 +1,4 @@
-pub use error::{CallError, Error, ResultExt};
+pub use error::{CallError, Error, ResultCallErrorExt, ResultExt};
 pub use ethabi;
 pub use ethcore::spec::Spec;
 pub use ethereum_types::*;

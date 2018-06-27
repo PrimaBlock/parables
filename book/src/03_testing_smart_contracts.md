@@ -43,7 +43,7 @@ fn main() -> Result<()> {
 
     // Deploy the SimpleContract.
     let code = simple_contract::bin(&linker)?;
-    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
 
     // Wrap the virtual machine in a Snapshot type so that it can be shared as a snapshot across
     // threads.
@@ -59,14 +59,14 @@ fn main() -> Result<()> {
 
         let mut expected = U256::from(0);
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
 
         // change value
         expected = 1.into();
 
         evm.call(simple, f::set_value(expected), call)?;
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
 
         Ok(())
@@ -130,7 +130,7 @@ For more details, you'll currently have to reference the [Spec source code].
 
 ```rust
 let code = simple_lib::bin(&linker)?;
-let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
 ```
 
 For the next line we link our contract, and deploy it to our virtual machine by calling its
@@ -172,19 +172,19 @@ isolation without worrying about trampling on each others feets.
 ```rust
 let mut expected = 0;
 
-let out = evm.call(simple, f::get_value(), call)?;
+let out = evm.call(simple, f::get_value(), call)?.output;
 assert_eq!(expected, out);
 
 // change value
 expected = 1;
 
 evm.call(simple, f::set_value(expected), call)?;
-let out = evm.call(simple, f::get_value(), call)?;
+let out = evm.call(simple, f::get_value(), call)?.output;
 assert_eq!(expected, out);
 ```
 
 This final snippet is the complete test case.
-We call the `getValue()` solidity function and compare it's output, set it using `setValue(uint)`,
+We call the `getValue()` solidity function and compare its `output`, set it using `setValue(uint)`,
 and make sure that it has been set as expected by getting it again.
 
 So it's finally time to run your test!

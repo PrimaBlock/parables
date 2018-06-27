@@ -1,15 +1,16 @@
-use error::{CallError, Error, NonceError};
+use error::{BalanceError, CallError, Error, NonceError};
 use ethabi;
 use ethcore::db;
 use ethcore::engines;
 use ethcore::executive;
 use ethcore::log_entry::LogEntry;
+use ethcore::receipt;
 use ethcore::receipt::TransactionOutcome;
 use ethcore::spec;
 use ethcore::state;
 use ethcore::state_db;
 use ethcore_transaction::{Action, SignedTransaction, Transaction};
-use ethereum_types::{Address, H256, U256};
+use ethereum_types::{Address, U256};
 use kvdb::KeyValueDB;
 use parity_vm;
 use std::collections::{hash_map, HashMap};
@@ -19,15 +20,64 @@ use std::sync::Arc;
 use trace;
 use {journaldb, kvdb, kvdb_memorydb};
 
-/// The result of executing a transaction.
+/// The result of executing a call transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CallResult {
+    /// Gas used to perform call.
+    pub gas_used: U256,
+    /// The price payed for each gas.
+    pub gas_price: U256,
+}
+
+impl CallResult {
+    /// Access the total amount of gas used.
+    pub fn gas_total(&self) -> U256 {
+        self.gas_used * self.gas_price
+    }
+}
+
+impl fmt::Display for CallResult {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("CallResult")
+            .field("gas_used", &self.gas_used)
+            .field("gas_price", &self.gas_price)
+            .finish()
+    }
+}
+
+/// The result of executing a create transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CreateResult {
+    /// Address the code was created on.
+    pub address: Address,
+    /// Gas used to create contract.
+    pub gas_used: U256,
+    /// The price payed for each gas.
+    pub gas_price: U256,
+}
+
+impl CreateResult {
+    /// Access the total amount of gas used.
+    pub fn gas_total(&self) -> U256 {
+        self.gas_used * self.gas_price
+    }
+}
+
+impl fmt::Display for CreateResult {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("CreateResult")
+            .field("address", &self.address)
+            .field("gas_used", &self.gas_used)
+            .field("gas_price", &self.gas_price)
+            .finish()
+    }
+}
+
+/// Decoded output and call result in one.
 #[derive(Debug, Clone)]
-pub struct Execution {
-    state_root: H256,
-    gas_left: U256,
-    output: Vec<u8>,
-    contract_address: Option<Address>,
-    logs: Vec<LogEntry>,
-    outcome: TransactionOutcome,
+pub struct CallOutput<T> {
+    pub output: T,
+    pub result: CallResult,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -65,6 +115,22 @@ impl Call {
     pub fn gas<E: Into<U256>>(self, gas: E) -> Self {
         Self {
             gas: gas.into(),
+            ..self
+        }
+    }
+
+    /// Set the call to have the specified gas price.
+    pub fn gas_price<E: Into<U256>>(self, gas_price: E) -> Self {
+        Self {
+            gas_price: gas_price.into(),
+            ..self
+        }
+    }
+
+    /// Set the call to have the specified value.
+    pub fn value<E: Into<U256>>(self, value: E) -> Self {
+        Self {
+            value: value.into(),
             ..self
         }
     }
@@ -158,7 +224,7 @@ impl Evm {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy<F>(&mut self, f: F, call: Call) -> Result<Address, CallError>
+    pub fn deploy<F>(&mut self, f: F, call: Call) -> Result<CreateResult, CallError<CreateResult>>
     where
         F: ethabi::ContractFunction<Output = Address>,
     {
@@ -166,36 +232,44 @@ impl Evm {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy_code(&mut self, code: Vec<u8>, call: Call) -> Result<Address, CallError> {
-        let result = self.action(Action::Create, code, call)?;
-        self.add_logs(result.logs)?;
-
-        let address = result
-            .contract_address
-            .ok_or_else(|| format!("no address for deployed contract"))?;
-
-        Ok(address)
+    pub fn deploy_code(
+        &mut self,
+        code: Vec<u8>,
+        call: Call,
+    ) -> Result<CreateResult, CallError<CreateResult>> {
+        self.action(Action::Create, code, call, Self::create_result)
+            .map(|(_, result)| result)
     }
 
     /// Perform a call against the given contract function.
-    pub fn call<F>(&mut self, address: Address, f: F, call: Call) -> Result<F::Output, CallError>
+    pub fn call<F>(
+        &mut self,
+        address: Address,
+        f: F,
+        call: Call,
+    ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
     where
         F: ethabi::ContractFunction,
     {
-        let result = self.action(Action::Call(address), f.encoded(), call)?;
-        self.add_logs(result.logs)?;
+        let (output, result) =
+            self.action(Action::Call(address), f.encoded(), call, Self::call_result)?;
 
-        let output = f.output(result.output.to_vec())
+        let output = f.output(output)
             .map_err(|e| format!("VM output conversion failed: {}", e))?;
 
-        Ok(output)
+        Ok(CallOutput { output, result })
     }
 
-    /// Perform a call against the given contracts' fallback function.
-    pub fn fallback(&mut self, address: Address, call: Call) -> Result<(), CallError> {
-        let result = self.action(Action::Call(address), Vec::new(), call)?;
-        self.add_logs(result.logs)?;
-        Ok(())
+    /// Perform a call against the given address' fallback function.
+    ///
+    /// This is the same as a straight up transfer.
+    pub fn call_default(
+        &mut self,
+        address: Address,
+        call: Call,
+    ) -> Result<CallResult, CallError<CallResult>> {
+        self.action(Action::Call(address), Vec::new(), call, Self::call_result)
+            .map(|(_, result)| result)
     }
 
     /// Access all logs.
@@ -227,6 +301,18 @@ impl Evm {
         P: ethabi::ParseLog,
     {
         self.drain_logs_with(filter, |sender, log| (sender, log))
+    }
+
+    /// Query the balance of the given account.
+    pub fn balance(&self, address: Address) -> Result<U256, Error> {
+        Ok(self.state.balance(&address).map_err(|_| BalanceError)?)
+    }
+
+    /// Add the given number of wei to the provided account.
+    pub fn add_balance<W: Into<U256>>(&mut self, address: Address, wei: W) -> Result<(), Error> {
+        Ok(self.state
+            .add_balance(&address, &wei.into(), state::CleanupMode::ForceCreate)
+            .map_err(|_| BalanceError)?)
     }
 
     /// Drain logs matching the given filter that has been registered so far.
@@ -278,12 +364,16 @@ impl Evm {
     }
 
     /// Execute the given action.
-    fn action(
+    fn action<F, E>(
         &mut self,
         action: Action,
         data: Vec<u8>,
         call: Call,
-    ) -> Result<Execution, CallError> {
+        map: F,
+    ) -> Result<(Vec<u8>, E), CallError<E>>
+    where
+        F: FnOnce(&mut Evm, &SignedTransaction, &receipt::Receipt) -> E,
+    {
         let nonce = self.state.nonce(&call.sender).map_err(|_| NonceError)?;
 
         let tx = Transaction {
@@ -296,23 +386,54 @@ impl Evm {
         };
 
         let tx = tx.fake_sign(call.sender.into());
-        self.run_transaction(tx)
+        self.run_transaction(tx, map)
+    }
+
+    fn call_result(_: &mut Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
+        let gas_used = receipt.gas_used;
+        let gas_price = tx.gas_price;
+
+        CallResult {
+            gas_used,
+            gas_price,
+        }
+    }
+
+    fn create_result(
+        evm: &mut Evm,
+        tx: &SignedTransaction,
+        receipt: &receipt::Receipt,
+    ) -> CreateResult {
+        let scheme = evm.engine
+            .machine()
+            .create_address_scheme(evm.env_info.number);
+
+        let address = executive::contract_address(scheme, &tx.sender(), &tx.nonce, &tx.data).0;
+        let gas_used = receipt.gas_used;
+        let gas_price = tx.gas_price;
+
+        CreateResult {
+            address,
+            gas_used,
+            gas_price,
+        }
     }
 
     /// Run the specified transaction.
-    fn run_transaction(&mut self, tx: SignedTransaction) -> Result<Execution, CallError> {
-        let initial_gas = tx.gas;
-
+    fn run_transaction<F, E>(
+        &mut self,
+        tx: SignedTransaction,
+        map: F,
+    ) -> Result<(Vec<u8>, E), CallError<E>>
+    where
+        F: FnOnce(&mut Evm, &SignedTransaction, &receipt::Receipt) -> E,
+    {
         // Verify transaction
-        let is_ok = tx.verify_basic(
+        tx.verify_basic(
             true,
             None,
             self.env_info.number >= self.engine.params().eip86_transition,
-        );
-
-        if let Err(error) = is_ok {
-            return Err(format!("VM Error: {}", error).into());
-        }
+        ).map_err(|e| format!("verify failed: {}", e))?;
 
         // Apply transaction
         let result = self.state.apply_with_tracing(
@@ -323,71 +444,50 @@ impl Evm {
             trace::TxVmTracer::default(),
         );
 
-        let scheme = self.engine
-            .machine()
-            .create_address_scheme(self.env_info.number);
+        let result = result.map_err(|e| format!("vm: {}", e))?;
 
-        match result {
-            Ok(result) => {
-                self.state.commit().ok();
+        self.state.commit().ok();
 
-                let state_root = *self.state.root();
-                let gas_left = initial_gas - result.receipt.gas_used;
-                let outcome = result.receipt.outcome;
-                let output = result.output;
-                let trace = result.trace;
-                let vm_trace = result.vm_trace;
-                let logs = result.receipt.logs;
+        let execution = map(self, &tx, &result.receipt);
 
-                let contract_address = if let Action::Create = tx.action {
-                    Some(executive::contract_address(scheme, &tx.sender(), &tx.nonce, &tx.data).0)
-                } else {
-                    None
-                };
+        if let Err(message) = self.add_logs(result.receipt.logs) {
+            return Err(CallError::SyncLogs { execution, message });
+        }
 
-                match vm_trace {
-                    Some(trace::TxVmState::Reverted) => {
-                        return Err(CallError::Reverted);
-                    }
-                    _ => {}
-                }
-
-                if !trace.is_empty() {
-                    return Err(format!("errors in call: {:?}", trace).into());
-                }
-
-                match outcome {
-                    TransactionOutcome::Unknown | TransactionOutcome::StateRoot(_) => {
-                        // OK
-                    }
-                    TransactionOutcome::StatusCode(status) => {
-                        if status != 1 {
-                            return Err(format!("call failed with status code: {}", status).into());
-                        }
-                    }
-                }
-
-                Ok(Execution {
-                    state_root,
-                    gas_left,
-                    output,
-                    contract_address,
-                    logs,
-                    outcome,
-                })
+        match result.vm_trace {
+            Some(trace::TxVmState::Reverted) => {
+                return Err(CallError::Reverted { execution });
             }
-            Err(error) => {
-                return Err(format!("VM Error: {}", error).into());
+            _ => {}
+        }
+
+        if !result.trace.is_empty() {
+            return Err(CallError::Trace {
+                execution,
+                trace: result.trace,
+            });
+        }
+
+        match result.receipt.outcome {
+            TransactionOutcome::Unknown | TransactionOutcome::StateRoot(_) => {
+                // OK
+            }
+            TransactionOutcome::StatusCode(status) => {
+                if status != 1 {
+                    return Err(CallError::Status { execution, status });
+                }
             }
         }
+
+        Ok((result.output, execution))
     }
 
     /// Add logs, partitioned by topic.
-    fn add_logs(&mut self, logs: Vec<LogEntry>) -> Result<(), CallError> {
+    fn add_logs(&mut self, logs: Vec<LogEntry>) -> Result<(), &'static str> {
         for log in logs {
             let topic = match log.topics.iter().next() {
                 Some(first) => *first,
-                None => return Err("expected at least one topic".into()),
+                None => return Err("expected at least one topic"),
             };
 
             self.logs.entry(topic).or_insert_with(Vec::new).push(log);

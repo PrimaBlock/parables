@@ -5,7 +5,8 @@ authors = ["John-John Tedro <udoprog@tedro.se>"]
 license = "GPL-3.0"
 
 [dependencies]
-parables-testing = {git = "https://github.com/primablock/parables"}
+# parables-testing = {git = "https://github.com/primablock/parables"}
+parables-testing = {path = "../testing"}
 
 [build-dependencies]
 parables-build = {git = "https://github.com/primablock/parables"}
