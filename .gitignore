@@ -1,4 +1,4 @@
-
+/book/book/
 /target
 **/*.rs.bk
 /example/contracts/*.bin

@@ -1,0 +1,5 @@
+[book]
+authors = ["John-John Tedro"]
+multilingual = false
+src = "src"
+title = "Parables User Guide"
