@@ -11,6 +11,11 @@ pub fn compile<T: AsRef<Path>>(path: T) -> Result<(), Error> {
 
     let files = files_by_ext(path, "sol").expect("failed to list files");
 
+    // nothing to build
+    if files.len() == 0 {
+        return Ok(());
+    }
+
     for file in files {
         println!("cargo:rerun-if-changed={}", path.join(&file).display());
         c.arg(file);
@@ -29,6 +34,10 @@ pub fn compile<T: AsRef<Path>>(path: T) -> Result<(), Error> {
 
 fn files_by_ext(path: &Path, expected: &str) -> Result<Vec<String>, Error> {
     let mut out = Vec::new();
+
+    if !path.is_dir() {
+        return Ok(out);
+    }
 
     for entry in fs::read_dir(path)? {
         let entry = entry?;
