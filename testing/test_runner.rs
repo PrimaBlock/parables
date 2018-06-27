@@ -109,6 +109,7 @@ impl<'a, 'b: 'a> From<&'a panic::Location<'b>> for Location {
 }
 
 /// The outcome of a single test.
+#[derive(PartialEq, Eq)]
 pub enum Outcome {
     /// Contains information about the failed outcome.
     Failed(PanicInfo),
@@ -215,7 +216,7 @@ impl<'a> TestRunner<'a> {
     }
 
     /// Run by reading filters from argv.
-    pub fn run(self, reporter: &Reporter) -> Result<(), Error> {
+    pub fn run(self, reporter: &Reporter<'a>) -> Result<(), Error> {
         use std::env;
 
         let mut args = env::args();
@@ -230,7 +231,7 @@ impl<'a> TestRunner<'a> {
     ///
     /// Note: this installs a panic hook, so mixing this with another component that fiddles with
     /// the hook will cause unexpected results.
-    pub fn run_with_filters<F>(self, filters: F, reporter: &Reporter) -> Result<(), Error>
+    pub fn run_with_filters<F>(self, filters: F, reporter: &Reporter<'a>) -> Result<(), Error>
     where
         F: IntoIterator<Item = String>,
     {
@@ -332,7 +333,9 @@ impl<'a> TestRunner<'a> {
 #[cfg(test)]
 mod tests {
     use super::{Outcome, TestRunner};
+    use reporter::CollectingReporter;
     use std::collections::HashMap;
+    use std::iter;
 
     #[test]
     pub fn test_runner() {
@@ -340,20 +343,24 @@ mod tests {
         runner.test("my failure", my_failure);
         runner.test("my success", my_success);
 
-        let result = runner.run(vec![]);
+        let reporter = CollectingReporter::new();
+        runner
+            .run_with_filters(iter::empty(), &reporter)
+            .expect("tests to run");
+        let result = reporter.take_results().expect("bad results");
 
         let result = result
             .into_iter()
-            .map(|result| (result.name, result))
+            .map(|result| (result.name.to_string(), result))
             .collect::<HashMap<_, _>>();
 
         assert_eq!(
-            Some(Outcome::Ok),
-            result.get("my success").map(|r| r.outcome.clone())
+            Some(&Outcome::Ok),
+            result.get("my success").map(|r| &r.outcome)
         );
 
-        match result.get("my failure").map(|r| r.outcome.clone()) {
-            Some(Outcome::Failed(info)) => {
+        match result.get("my failure").map(|r| &r.outcome) {
+            Some(&Outcome::Failed(ref info)) => {
                 assert!(info.location.is_some());
                 assert_eq!(
                     Some("my_failure_message"),

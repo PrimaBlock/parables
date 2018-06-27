@@ -1,7 +1,7 @@
 use proptest;
 use std::result;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, PartialEq, Eq, Fail)]
 pub enum Error {
     #[fail(display = "no object item to link named `{}`", item)]
     NoLinkerItem { item: String },
@@ -56,7 +56,7 @@ impl From<Error> for proptest::test_runner::TestCaseError {
 }
 
 /// An error occurred during a call.
-#[derive(Debug, Fail)]
+#[derive(Debug, PartialEq, Eq, Fail)]
 pub enum CallError {
     #[fail(display = "call was reverted")]
     Reverted,

@@ -10,12 +10,12 @@ pub struct Account {
     skipped: u32,
 }
 
-pub trait Reporter: Sync {
+pub trait Reporter<'a>: Sync {
     /// Report a single result.
-    fn report(&self, result: TestResult) -> Result<(), Error>;
+    fn report(&self, result: TestResult<'a>) -> Result<(), Error>;
 
     /// Report that a number of tests have been skipped.
-    fn report_skipped(&self, test: Test) -> Result<(), Error>;
+    fn report_skipped(&self, test: Test<'a>) -> Result<(), Error>;
 
     /// Close the reporter.
     fn close(&self) -> Result<(), Error>;
@@ -34,7 +34,7 @@ impl StdoutReporter {
     }
 }
 
-impl Reporter for StdoutReporter {
+impl<'a> Reporter<'a> for StdoutReporter {
     fn report(&self, result: TestResult) -> Result<(), Error> {
         println!("{:?}", result);
 
@@ -71,6 +71,42 @@ impl Reporter for StdoutReporter {
             skipped = account.skipped,
         );
 
+        Ok(())
+    }
+}
+
+/// A reporter that doesn't report anything.
+pub struct CollectingReporter<'a> {
+    results: Mutex<Vec<TestResult<'a>>>,
+}
+
+impl<'a> CollectingReporter<'a> {
+    pub fn new() -> Self {
+        Self {
+            results: Mutex::new(Vec::new()),
+        }
+    }
+
+    /// Take all collected results.
+    pub fn take_results(self) -> Result<Vec<TestResult<'a>>, Error> {
+        Ok(self.results
+            .into_inner()
+            .map_err(|_| "another lock is held")?)
+    }
+}
+
+impl<'a> Reporter<'a> for CollectingReporter<'a> {
+    fn report(&self, result: TestResult<'a>) -> Result<(), Error> {
+        let mut results = self.results.lock().map_err(|_| "lock poisoned")?;
+        results.push(result);
+        Ok(())
+    }
+
+    fn report_skipped(&self, _test: Test<'a>) -> Result<(), Error> {
+        Ok(())
+    }
+
+    fn close(&self) -> Result<(), Error> {
         Ok(())
     }
 }
