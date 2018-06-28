@@ -29,8 +29,15 @@ We will guide you all the way from [setting up a new project], to performing ful
 
 So sit down, buckle your seat belt, and enjoy the trip!
 
+## Reference Documentation
+
+You can find generated documentation for the parables framework at
+[./doc/parables_testing/](./doc/parables_testing/), in particular you should check out the
+[`prelude`] which links to everything that is imported by default.
+
 [PrimaBlock]: https://github.com/primablock
 [rustup.rs]: https://rustup.rs
 [setting up a new project]: ./02_getting_started.html
 [property testing]: ./04_property_testing.html
 [parity virtual machine]: https://github.com/paritytech/parity
+[`prelude`]: ./doc/parables_testing/prelude/index.html

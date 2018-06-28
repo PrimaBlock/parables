@@ -82,6 +82,14 @@ fn main() -> Result<()> {
 We will now walk through this line-by-line and explain what it is.
 
 ```rust
+use parables_testing::prelude::*;
+```
+
+This imports everything necessary to write parables test into the current scope.
+
+Check out the [prelude documentation] as a reference for what is imported.
+
+```rust
 contracts! {
     simple_contract {
         "contracts/SimpleContract_sol_SimpleContract.abi",
@@ -194,6 +202,7 @@ You do this by calling `cargo run`.
 cargo run
 ```
 
+[prelude documentation]: ./doc/parables_testing/prelude/index.html
 [parity]: https://github.com/paritytech/parity
 [`mordem`]: https://blog.ethereum.org/2016/11/20/from-morden-to-ropsten/
 [Spec source code]: https://github.com/paritytech/parity/blob/master/ethcore/src/spec/spec.rs
