@@ -165,7 +165,7 @@ let res = evm.call_default(b, call)?;
 # #![allow(unused_variables)]
 #fn main() {
 assert_ne!(evm.balance(a), wei::from_ether(90));
-assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_used * res.gas_price);
+assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_total());
 assert_eq!(evm.balance(b), wei::from_ether(10));
 #}</code></pre></pre>
 

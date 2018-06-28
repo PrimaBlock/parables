@@ -208,6 +208,13 @@ fn main() -&gt; Result&lt;()&gt; {
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
+use parables_testing::prelude::*;
+#}</code></pre></pre>
+<p>This imports everything necessary to write parables test into the current scope.</p>
+<p>Check out the <a href="./doc/parables_testing/prelude/index.html">prelude documentation</a> as a reference for what is imported.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
 contracts! {
     simple_contract {
         &quot;contracts/SimpleContract_sol_SimpleContract.abi&quot;,
