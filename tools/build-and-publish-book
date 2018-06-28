@@ -10,26 +10,29 @@ ROOT=$(dirname $(dirname $(realpath $0)))
 
 repo="git@github.com:primablock/parables.git"
 target=$ROOT/target
-checkout=$target/primablock.github.io_parables/
+target_doc=$target/doc/
+checkout_book=$target/primablock.github.io_parables/
+checkout_doc=$checkout_book/doc/
 book=$ROOT/book
-dist=$book/book
+target_book=$book/book
 
 # build the book
 mdbook build $book
+cargo doc
 
-if [[ ! -d $dist ]]; then
-    echo "Missing: $dist"
+if [[ ! -d $target_book ]]; then
+    echo "Missing: $target_book"
     exit 1
 fi
 
 git_do() {
-    git --git-dir=$checkout/.git --work-tree=$checkout "$@"
+    git --git-dir=$checkout_book/.git --work-tree=$checkout_book "$@"
     return $?
 }
 
-if [[ ! -d $checkout ]]; then
-    echo "Initializing: $checkout"
-    mkdir -p $checkout
+if [[ ! -d $checkout_book ]]; then
+    echo "Initializing: $checkout_book"
+    mkdir -p $checkout_book
     git_do init
     git_do remote add origin $repo
 fi
@@ -38,7 +41,8 @@ git_do fetch -a origin gh-pages
 git_do reset --hard origin/gh-pages
 git_do clean -fdx
 
-rsync -rav $dist/ $checkout/
+rsync -rav $target_book/ $checkout_book/
+rsync -rav $target_doc/ $checkout_doc/
 
 git_do add -A
 git_do commit -m "Release $(date)"

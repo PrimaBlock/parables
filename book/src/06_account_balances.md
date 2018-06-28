@@ -33,6 +33,6 @@ Note that account `a` doesn't have `90` ether, we have to take the gas subtracte
 
 ```rust
 assert_ne!(evm.balance(a), wei::from_ether(90));
-assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_used * res.gas_price);
+assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_total());
 assert_eq!(evm.balance(b), wei::from_ether(10));
 ```
