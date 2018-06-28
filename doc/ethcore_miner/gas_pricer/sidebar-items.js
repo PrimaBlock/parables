@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["GasPricer","Struct to look after updating the acceptable gas price of a miner."]],"struct":[["GasPriceCalibrator","The gas price validator variant for a `GasPricer`."],["GasPriceCalibratorOptions","Options for the dynamic gas price recalibrator."]]});

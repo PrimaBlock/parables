@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["HttpsConnector","A Connector for the `https` scheme."]]});

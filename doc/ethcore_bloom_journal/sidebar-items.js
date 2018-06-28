@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Bloom","Bloom filter structure"],["BloomJournal","Bloom journal Returns the tuple of (bloom part index, bloom part value) where each one is representing an index of bloom parts that was updated since the last drain"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PruningInfo","Client pruning info. See module-level docs for more details."]]});

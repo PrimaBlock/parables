@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Algorithm","Journal database operating strategy."]],"fn":[["new","Create a new `JournalDB` trait object over a generic key-value database."]],"mod":[["overlaydb","Disk-backed `HashDB` implementation."]],"trait":[["JournalDB","A `HashDB` which can manage a short-term journal potentially containing many forks of mutually exclusive actions."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Ethash","Engine using Ethash proof-of-work consensus algorithm, suitable for Ethereum mainnet chains in the Olympic, Frontier and Homestead eras."],["EthashParams","Ethash params."],["Seal","Ethash specific seal"]]});

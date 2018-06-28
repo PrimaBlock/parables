@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AccessControlAllowOrigin","Origins allowed to access"],["CorsHeader","CORS Header Result."],["OriginProtocol","Origin Protocol"]],"fn":[["get_cors_header","Returns correct CORS header (if any) given list of allowed origins and current origin."]],"struct":[["Origin","Request Origin"]]});

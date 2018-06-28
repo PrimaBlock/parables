@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["MemoryLruCache","An LRU-cache which operates on memory used."]]});

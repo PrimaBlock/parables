@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PoolClient","Blockchain accesss for transaction pool."]]});

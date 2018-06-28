@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `test_helpers` mod in crate `ethcore`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, test_helpers">
+
+    <title>ethcore::test_helpers - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Module test_helpers</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'><a href='../index.html'>ethcore</a></p><script>window.sidebarCurrent = {name: 'test_helpers', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>ethcore</a>::<wbr><a class="mod" href=''>test_helpers</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/ethcore/test_helpers.rs.html#17-499' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Set of different helpers for client tests</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TestNotify.html"
+                                  title='struct ethcore::test_helpers::TestNotify'>TestNotify</a></td>
+                           <td class='docblock-short'>
+                                <p>Test actor for chain events</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.create_test_block.html"
+                                  title='fn ethcore::test_helpers::create_test_block'>create_test_block</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates test block with corresponding header</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.create_test_block_with_data.html"
+                                  title='fn ethcore::test_helpers::create_test_block_with_data'>create_test_block_with_data</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates test block with corresponding header and data</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_blockchain.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_blockchain'>generate_dummy_blockchain</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy blockchain with corresponding amount of blocks</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_blockchain_with_extra.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_blockchain_with_extra'>generate_dummy_blockchain_with_extra</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy blockchain with corresponding amount of blocks (using creation with extra method for blocks creation)</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_client.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_client'>generate_dummy_client</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy client (not test client) with corresponding amount of blocks</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_client_with_data.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_client_with_data'>generate_dummy_client_with_data</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy client (not test client) with corresponding amount of blocks and txs per every block</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_client_with_spec_accounts_and_data.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_client_with_spec_accounts_and_data'>generate_dummy_client_with_spec_accounts_and_data</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy client (not test client) with corresponding blocks, accounts and spec</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_client_with_spec_and_accounts.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_client_with_spec_and_accounts'>generate_dummy_client_with_spec_and_accounts</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy client (not test client) with corresponding spec and accounts</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_client_with_spec_and_data.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_client_with_spec_and_data'>generate_dummy_client_with_spec_and_data</a></td>
+                           <td class='docblock-short'>
+                                <p>Generates dummy client (not test client) with corresponding amount of blocks, txs per block and spec</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.generate_dummy_empty_blockchain.html"
+                                  title='fn ethcore::test_helpers::generate_dummy_empty_blockchain'>generate_dummy_empty_blockchain</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns empty dummy blockchain</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_bad_state_dummy_block.html"
+                                  title='fn ethcore::test_helpers::get_bad_state_dummy_block'>get_bad_state_dummy_block</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns hash of the dummy block with incorrect state root</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_good_dummy_block.html"
+                                  title='fn ethcore::test_helpers::get_good_dummy_block'>get_good_dummy_block</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns hash of the correct dummy block</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_good_dummy_block_fork_seq.html"
+                                  title='fn ethcore::test_helpers::get_good_dummy_block_fork_seq'>get_good_dummy_block_fork_seq</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns sequence of hashes of the dummy blocks beginning from corresponding parent</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_good_dummy_block_hash.html"
+                                  title='fn ethcore::test_helpers::get_good_dummy_block_hash'>get_good_dummy_block_hash</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns hash and header of the correct dummy block</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_good_dummy_block_seq.html"
+                                  title='fn ethcore::test_helpers::get_good_dummy_block_seq'>get_good_dummy_block_seq</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns sequence of hashes of the dummy blocks</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_temp_state.html"
+                                  title='fn ethcore::test_helpers::get_temp_state'>get_temp_state</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns temp state</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_temp_state_db.html"
+                                  title='fn ethcore::test_helpers::get_temp_state_db'>get_temp_state_db</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns temp state db</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_temp_state_with_factory.html"
+                                  title='fn ethcore::test_helpers::get_temp_state_with_factory'>get_temp_state_with_factory</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns temp state using coresponding factory</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.get_test_client_with_blocks.html"
+                                  title='fn ethcore::test_helpers::get_test_client_with_blocks'>get_test_client_with_blocks</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates dummy client (not test client) with corresponding blocks</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.new_db.html"
+                                  title='fn ethcore::test_helpers::new_db'>new_db</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates new test instance of <code>BlockChainDB</code></p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.push_block_with_transactions.html"
+                                  title='fn ethcore::test_helpers::push_block_with_transactions'>push_block_with_transactions</a></td>
+                           <td class='docblock-short'>
+                                <p>Adds one block with transactions</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.push_blocks_to_client.html"
+                                  title='fn ethcore::test_helpers::push_blocks_to_client'>push_blocks_to_client</a></td>
+                           <td class='docblock-short'>
+                                <p>Adds blocks to the client</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.restoration_db_handler.html"
+                                  title='fn ethcore::test_helpers::restoration_db_handler'>restoration_db_handler</a></td>
+                           <td class='docblock-short'>
+                                <p>Creates new instance of KeyValueDBHandler</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

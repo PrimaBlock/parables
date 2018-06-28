@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Node","Type of node in the trie and essential information thereof."],["OwnedNode","An owning node type. Useful for trie iterators."]],"type":[["NodeKey","Partial node key type."]]});

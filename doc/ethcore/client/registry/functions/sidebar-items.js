@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ConfirmReverse",""],["Drain",""],["Drop",""],["Fee",""],["Get",""],["GetAddress",""],["GetUint",""],["Owner",""],["ProposeReverse",""],["RemoveReverse",""],["Reserve",""],["Reserved",""],["Reverse",""],["Set",""],["SetAddress",""],["SetFee",""],["SetOwner",""],["SetUint",""],["Transfer",""]]});

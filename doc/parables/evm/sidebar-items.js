@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Call",""],["Evm",""],["Execution","The result of executing a transaction."],["Filter",""]]});

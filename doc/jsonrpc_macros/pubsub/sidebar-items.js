@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["SubscriptionId","Unique subscription id. NOTE Assigning same id to different requests will cause the previous request to be unsubscribed."]],"struct":[["Sink","Subscriber sink."],["Subscriber","New PUB-SUB subcriber."]]});

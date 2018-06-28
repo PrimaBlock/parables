@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `handshake` mod in crate `rustls`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, handshake">
+
+    <title>rustls::internal::msgs::handshake - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle">
+    <script src="../../../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Module handshake</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../../../index.html'>rustls</a>::<wbr><a href='../../index.html'>internal</a>::<wbr><a href='../index.html'>msgs</a></p><script>window.sidebarCurrent = {name: 'handshake', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../../../index.html'>rustls</a>::<wbr><a href='../../index.html'>internal</a>::<wbr><a href='../index.html'>msgs</a>::<wbr><a class="mod" href=''>handshake</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#1-2270' title='goto source code'>[src]</a></span></h1><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CertificateEntry.html"
+                                  title='struct rustls::internal::msgs::handshake::CertificateEntry'>CertificateEntry</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CertificatePayloadTLS13.html"
+                                  title='struct rustls::internal::msgs::handshake::CertificatePayloadTLS13'>CertificatePayloadTLS13</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CertificateRequestPayload.html"
+                                  title='struct rustls::internal::msgs::handshake::CertificateRequestPayload'>CertificateRequestPayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CertificateRequestPayloadTLS13.html"
+                                  title='struct rustls::internal::msgs::handshake::CertificateRequestPayloadTLS13'>CertificateRequestPayloadTLS13</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CertificateStatus.html"
+                                  title='struct rustls::internal::msgs::handshake::CertificateStatus'>CertificateStatus</a></td>
+                           <td class='docblock-short'>
+                                <p>Only supports OCSP</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ClientECDHParams.html"
+                                  title='struct rustls::internal::msgs::handshake::ClientECDHParams'>ClientECDHParams</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ClientHelloPayload.html"
+                                  title='struct rustls::internal::msgs::handshake::ClientHelloPayload'>ClientHelloPayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DigitallySignedStruct.html"
+                                  title='struct rustls::internal::msgs::handshake::DigitallySignedStruct'>DigitallySignedStruct</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ECDHEServerKeyExchange.html"
+                                  title='struct rustls::internal::msgs::handshake::ECDHEServerKeyExchange'>ECDHEServerKeyExchange</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ECParameters.html"
+                                  title='struct rustls::internal::msgs::handshake::ECParameters'>ECParameters</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.HandshakeMessagePayload.html"
+                                  title='struct rustls::internal::msgs::handshake::HandshakeMessagePayload'>HandshakeMessagePayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.HelloRetryRequest.html"
+                                  title='struct rustls::internal::msgs::handshake::HelloRetryRequest'>HelloRetryRequest</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.KeyShareEntry.html"
+                                  title='struct rustls::internal::msgs::handshake::KeyShareEntry'>KeyShareEntry</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.NewSessionTicketPayload.html"
+                                  title='struct rustls::internal::msgs::handshake::NewSessionTicketPayload'>NewSessionTicketPayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.NewSessionTicketPayloadTLS13.html"
+                                  title='struct rustls::internal::msgs::handshake::NewSessionTicketPayloadTLS13'>NewSessionTicketPayloadTLS13</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.OCSPCertificateStatusRequest.html"
+                                  title='struct rustls::internal::msgs::handshake::OCSPCertificateStatusRequest'>OCSPCertificateStatusRequest</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PresharedKeyIdentity.html"
+                                  title='struct rustls::internal::msgs::handshake::PresharedKeyIdentity'>PresharedKeyIdentity</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PresharedKeyOffer.html"
+                                  title='struct rustls::internal::msgs::handshake::PresharedKeyOffer'>PresharedKeyOffer</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Random.html"
+                                  title='struct rustls::internal::msgs::handshake::Random'>Random</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ServerECDHParams.html"
+                                  title='struct rustls::internal::msgs::handshake::ServerECDHParams'>ServerECDHParams</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ServerHelloPayload.html"
+                                  title='struct rustls::internal::msgs::handshake::ServerHelloPayload'>ServerHelloPayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ServerName.html"
+                                  title='struct rustls::internal::msgs::handshake::ServerName'>ServerName</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SessionID.html"
+                                  title='struct rustls::internal::msgs::handshake::SessionID'>SessionID</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UnknownExtension.html"
+                                  title='struct rustls::internal::msgs::handshake::UnknownExtension'>UnknownExtension</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CertificateExtension.html"
+                                  title='enum rustls::internal::msgs::handshake::CertificateExtension'>CertificateExtension</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CertificateStatusRequest.html"
+                                  title='enum rustls::internal::msgs::handshake::CertificateStatusRequest'>CertificateStatusRequest</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ClientExtension.html"
+                                  title='enum rustls::internal::msgs::handshake::ClientExtension'>ClientExtension</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.HandshakePayload.html"
+                                  title='enum rustls::internal::msgs::handshake::HandshakePayload'>HandshakePayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.HelloRetryExtension.html"
+                                  title='enum rustls::internal::msgs::handshake::HelloRetryExtension'>HelloRetryExtension</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.KeyExchangeAlgorithm.html"
+                                  title='enum rustls::internal::msgs::handshake::KeyExchangeAlgorithm'>KeyExchangeAlgorithm</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.NewSessionTicketExtension.html"
+                                  title='enum rustls::internal::msgs::handshake::NewSessionTicketExtension'>NewSessionTicketExtension</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ServerExtension.html"
+                                  title='enum rustls::internal::msgs::handshake::ServerExtension'>ServerExtension</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ServerKeyExchangePayload.html"
+                                  title='enum rustls::internal::msgs::handshake::ServerKeyExchangePayload'>ServerKeyExchangePayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ServerNamePayload.html"
+                                  title='enum rustls::internal::msgs::handshake::ServerNamePayload'>ServerNamePayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.ConvertProtocolNameList.html"
+                                  title='trait rustls::internal::msgs::handshake::ConvertProtocolNameList'>ConvertProtocolNameList</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.ConvertServerNameList.html"
+                                  title='trait rustls::internal::msgs::handshake::ConvertServerNameList'>ConvertServerNameList</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.DecomposedSignatureScheme.html"
+                                  title='trait rustls::internal::msgs::handshake::DecomposedSignatureScheme'>DecomposedSignatureScheme</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.HasServerExtensions.html"
+                                  title='trait rustls::internal::msgs::handshake::HasServerExtensions'>HasServerExtensions</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.SupportedGroups.html"
+                                  title='trait rustls::internal::msgs::handshake::SupportedGroups'>SupportedGroups</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.SupportedMandatedSignatureSchemes.html"
+                                  title='trait rustls::internal::msgs::handshake::SupportedMandatedSignatureSchemes'>SupportedMandatedSignatureSchemes</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.SupportedPointFormats.html"
+                                  title='trait rustls::internal::msgs::handshake::SupportedPointFormats'>SupportedPointFormats</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.same_hostname_or_both_none.html"
+                                  title='fn rustls::internal::msgs::handshake::same_hostname_or_both_none'>same_hostname_or_both_none</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.CertificateExtensions.html"
+                                  title='type rustls::internal::msgs::handshake::CertificateExtensions'>CertificateExtensions</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.CertificatePayload.html"
+                                  title='type rustls::internal::msgs::handshake::CertificatePayload'>CertificatePayload</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ClientCertificateTypes.html"
+                                  title='type rustls::internal::msgs::handshake::ClientCertificateTypes'>ClientCertificateTypes</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.DistinguishedName.html"
+                                  title='type rustls::internal::msgs::handshake::DistinguishedName'>DistinguishedName</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.DistinguishedNames.html"
+                                  title='type rustls::internal::msgs::handshake::DistinguishedNames'>DistinguishedNames</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ECPointFormatList.html"
+                                  title='type rustls::internal::msgs::handshake::ECPointFormatList'>ECPointFormatList</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.EncryptedExtensions.html"
+                                  title='type rustls::internal::msgs::handshake::EncryptedExtensions'>EncryptedExtensions</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.KeyShareEntries.html"
+                                  title='type rustls::internal::msgs::handshake::KeyShareEntries'>KeyShareEntries</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.NamedGroups.html"
+                                  title='type rustls::internal::msgs::handshake::NamedGroups'>NamedGroups</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.NewSessionTicketExtensions.html"
+                                  title='type rustls::internal::msgs::handshake::NewSessionTicketExtensions'>NewSessionTicketExtensions</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.PSKKeyExchangeModes.html"
+                                  title='type rustls::internal::msgs::handshake::PSKKeyExchangeModes'>PSKKeyExchangeModes</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.PresharedKeyBinder.html"
+                                  title='type rustls::internal::msgs::handshake::PresharedKeyBinder'>PresharedKeyBinder</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.PresharedKeyBinders.html"
+                                  title='type rustls::internal::msgs::handshake::PresharedKeyBinders'>PresharedKeyBinders</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.PresharedKeyIdentities.html"
+                                  title='type rustls::internal::msgs::handshake::PresharedKeyIdentities'>PresharedKeyIdentities</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ProtocolNameList.html"
+                                  title='type rustls::internal::msgs::handshake::ProtocolNameList'>ProtocolNameList</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ProtocolVersions.html"
+                                  title='type rustls::internal::msgs::handshake::ProtocolVersions'>ProtocolVersions</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.SCTList.html"
+                                  title='type rustls::internal::msgs::handshake::SCTList'>SCTList</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ServerNameRequest.html"
+                                  title='type rustls::internal::msgs::handshake::ServerNameRequest'>ServerNameRequest</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.SupportedSignatureSchemes.html"
+                                  title='type rustls::internal::msgs::handshake::SupportedSignatureSchemes'>SupportedSignatureSchemes</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.VecU16OfPayloadU8.html"
+                                  title='type rustls::internal::msgs::handshake::VecU16OfPayloadU8'>VecU16OfPayloadU8</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.VecU16OfPayloadU16.html"
+                                  title='type rustls::internal::msgs::handshake::VecU16OfPayloadU16'>VecU16OfPayloadU16</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../../";
+        window.currentCrate = "rustls";
+    </script>
+    <script src="../../../../main.js"></script>
+    <script defer src="../../../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["AuthorityRound","Authority engine deserialization."],["AuthorityRoundParams","Authority params deserialization."]]});

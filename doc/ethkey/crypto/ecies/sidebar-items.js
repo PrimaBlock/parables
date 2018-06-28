@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["decrypt","Decrypt a message with a secret key, checking HMAC for ciphertext and authenticated data validity."],["encrypt","Encrypt a message with a public key, writing an HMAC covering both the plaintext and authenticated data."]]});

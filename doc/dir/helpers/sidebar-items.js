@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["replace_home","Replaces `$HOME` str with home directory path."],["replace_home_and_local","Replaces `$HOME` str with home directory path and `$LOCAL` with local path."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["State","Blockchain test state deserializer."]]});

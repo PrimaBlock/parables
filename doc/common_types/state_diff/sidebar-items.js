@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["StateDiff","Expression for the delta between two system states. Encoded the delta of every altered account."]]});

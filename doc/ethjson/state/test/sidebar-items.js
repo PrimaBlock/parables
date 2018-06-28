@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ForkSpec","State test transaction deserialization."]],"struct":[["MultiTransaction","State test transaction deserialization."],["PostStateIndexes","State test indexes deserialization."],["PostStateResult","State test indexed state result deserialization."],["State","State test deserialization."],["Test","State test deserializer."]]});

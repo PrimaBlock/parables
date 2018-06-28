@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Status","Status of local transaction. Can indicate that the transaction is currently part of the queue (`Pending/Future`) or gives a reason why the transaction was removed."]],"struct":[["LocalTransactionsList","Keeps track of local transactions that are in the queue or were mined/dropped recently."]]});

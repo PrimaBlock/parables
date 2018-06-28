@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Factory","Evm factory. Creates appropriate Evm."]]});

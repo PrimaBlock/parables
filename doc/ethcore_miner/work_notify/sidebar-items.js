@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["WorkPoster","POSTs info about new work to given urls."]],"trait":[["NotifyWork","Trait for notifying about new mining work"]]});

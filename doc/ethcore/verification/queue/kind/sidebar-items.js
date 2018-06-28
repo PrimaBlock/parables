@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["blocks","The blocks verification module."],["headers","Verification for headers."]],"trait":[["BlockLike","Something which can produce a hash and a parent hash."],["Kind","Defines transitions between stages of verification."]]});

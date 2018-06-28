@@ -69,7 +69,7 @@
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html" class="active"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li></ol>
+            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html" class="active"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li><li><a href="06_account_balances.html"><strong aria-hidden="true">6.</strong> Account Balances</a></li></ol>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -169,7 +169,7 @@ fn main() -&gt; Result&lt;()&gt; {
 
     // Deploy the SimpleContract.
     let code = simple_contract::bin(&amp;linker)?;
-    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
 
     // Wrap the virtual machine in a Snapshot type so that it can be shared as a snapshot across
     // threads.
@@ -185,14 +185,14 @@ fn main() -&gt; Result&lt;()&gt; {
 
         let mut expected = U256::from(0);
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
 
         // change value
         expected = 1.into();
 
         evm.call(simple, f::set_value(expected), call)?;
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
 
         Ok(())
@@ -254,7 +254,7 @@ But we also have access to older foundations like [<code>morden</code>].</p>
 # #![allow(unused_variables)]
 #fn main() {
 let code = simple_lib::bin(&amp;linker)?;
-let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
 #}</code></pre></pre>
 <p>For the next line we link our contract, and deploy it to our virtual machine by calling its
 constructor.</p>
@@ -293,18 +293,18 @@ isolation without worrying about trampling on each others feets.</p>
 #fn main() {
 let mut expected = 0;
 
-let out = evm.call(simple, f::get_value(), call)?;
+let out = evm.call(simple, f::get_value(), call)?.output;
 assert_eq!(expected, out);
 
 // change value
 expected = 1;
 
 evm.call(simple, f::set_value(expected), call)?;
-let out = evm.call(simple, f::get_value(), call)?;
+let out = evm.call(simple, f::get_value(), call)?.output;
 assert_eq!(expected, out);
 #}</code></pre></pre>
 <p>This final snippet is the complete test case.
-We call the <code>getValue()</code> solidity function and compare it's output, set it using <code>setValue(uint)</code>,
+We call the <code>getValue()</code> solidity function and compare its <code>output</code>, set it using <code>setValue(uint)</code>,
 and make sure that it has been set as expected by getting it again.</p>
 <p>So it's finally time to run your test!
 You do this by calling <code>cargo run</code>.</p>

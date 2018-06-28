@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `webpki` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, webpki">
+
+    <title>webpki - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate webpki</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#statics">Statics</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'webpki', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>webpki</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/webpki/webpki.rs.html#15-290' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>webpki: Web PKI X.509 Certificate Validation.</p>
+<p><code>git clone https://github.com/briansmith/webpki</code></p>
+<p>See <code>EndEntityCert</code>'s documentation for a description of the certificate
+processing steps necessary for a TLS connection.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="trust_anchor_util/index.html"
+                                  title='mod webpki::trust_anchor_util'>trust_anchor_util</a></td>
+                           <td class='docblock-short'>
+                                <p>Utilities for efficiently embedding trust anchors in programs.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.EndEntityCert.html"
+                                  title='struct webpki::EndEntityCert'>EndEntityCert</a></td>
+                           <td class='docblock-short'>
+                                <p>An end-entity certificate.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SignatureAlgorithm.html"
+                                  title='struct webpki::SignatureAlgorithm'>SignatureAlgorithm</a></td>
+                           <td class='docblock-short'>
+                                <p>A signature algorithm.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TLSServerTrustAnchors.html"
+                                  title='struct webpki::TLSServerTrustAnchors'>TLSServerTrustAnchors</a></td>
+                           <td class='docblock-short'>
+                                <p>Trust anchors which may be used for authenticating servers.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Time.html"
+                                  title='struct webpki::Time'>Time</a></td>
+                           <td class='docblock-short'>
+                                <p>The time type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TrustAnchor.html"
+                                  title='struct webpki::TrustAnchor'>TrustAnchor</a></td>
+                           <td class='docblock-short'>
+                                <p>A trust anchor (a.k.a. root CA).</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Error.html"
+                                  title='enum webpki::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>An error that occurs during certificate validation or name validation.</p>
+
+                           </td>
+                       </tr></table><h2 id='statics' class='section-header'><a href="#statics">Statics</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.ECDSA_P256_SHA256.html"
+                                  title='static webpki::ECDSA_P256_SHA256'>ECDSA_P256_SHA256</a></td>
+                           <td class='docblock-short'>
+                                <p>ECDSA signatures using the P-256 curve and SHA-256.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.ECDSA_P256_SHA384.html"
+                                  title='static webpki::ECDSA_P256_SHA384'>ECDSA_P256_SHA384</a></td>
+                           <td class='docblock-short'>
+                                <p>ECDSA signatures using the P-256 curve and SHA-384. Deprecated.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.ECDSA_P384_SHA256.html"
+                                  title='static webpki::ECDSA_P384_SHA256'>ECDSA_P384_SHA256</a></td>
+                           <td class='docblock-short'>
+                                <p>ECDSA signatures using the P-384 curve and SHA-256. Deprecated.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.ECDSA_P384_SHA384.html"
+                                  title='static webpki::ECDSA_P384_SHA384'>ECDSA_P384_SHA384</a></td>
+                           <td class='docblock-short'>
+                                <p>ECDSA signatures using the P-384 curve and SHA-384.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PKCS1_2048_8192_SHA1.html"
+                                  title='static webpki::RSA_PKCS1_2048_8192_SHA1'>RSA_PKCS1_2048_8192_SHA1</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PKCS#1 1.5 signatures using SHA-1 for keys of 2048-8192 bits.
+Deprecated.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PKCS1_2048_8192_SHA256.html"
+                                  title='static webpki::RSA_PKCS1_2048_8192_SHA256'>RSA_PKCS1_2048_8192_SHA256</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PKCS#1 1.5 signatures using SHA-256 for keys of 2048-8192 bits.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PKCS1_2048_8192_SHA384.html"
+                                  title='static webpki::RSA_PKCS1_2048_8192_SHA384'>RSA_PKCS1_2048_8192_SHA384</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PKCS#1 1.5 signatures using SHA-384 for keys of 2048-8192 bits.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PKCS1_2048_8192_SHA512.html"
+                                  title='static webpki::RSA_PKCS1_2048_8192_SHA512'>RSA_PKCS1_2048_8192_SHA512</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PKCS#1 1.5 signatures using SHA-512 for keys of 2048-8192 bits.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PKCS1_3072_8192_SHA384.html"
+                                  title='static webpki::RSA_PKCS1_3072_8192_SHA384'>RSA_PKCS1_3072_8192_SHA384</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PKCS#1 1.5 signatures using SHA-384 for keys of 3072-8192 bits.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PSS_2048_8192_SHA256_LEGACY_KEY.html"
+                                  title='static webpki::RSA_PSS_2048_8192_SHA256_LEGACY_KEY'>RSA_PSS_2048_8192_SHA256_LEGACY_KEY</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PSS signatures using SHA-256 for keys of 2048-8192 bits and of
+type rsaEncryption; see https://tools.ietf.org/html/rfc4055#section-1.2</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PSS_2048_8192_SHA384_LEGACY_KEY.html"
+                                  title='static webpki::RSA_PSS_2048_8192_SHA384_LEGACY_KEY'>RSA_PSS_2048_8192_SHA384_LEGACY_KEY</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PSS signatures using SHA-384 for keys of 2048-8192 bits and of
+type rsaEncryption; see https://tools.ietf.org/html/rfc4055#section-1.2</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.RSA_PSS_2048_8192_SHA512_LEGACY_KEY.html"
+                                  title='static webpki::RSA_PSS_2048_8192_SHA512_LEGACY_KEY'>RSA_PSS_2048_8192_SHA512_LEGACY_KEY</a></td>
+                           <td class='docblock-short'>
+                                <p>RSA PSS signatures using SHA-512 for keys of 2048-8192 bits and of
+type rsaEncryption; see https://tools.ietf.org/html/rfc4055#section-1.2</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "webpki";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

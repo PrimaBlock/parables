@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["rotational_from_df_output","Given output of df command return Linux rotational flag file path."]],"struct":[["CompactionProfile","Compaction profile for the database settings"],["Database","Key-Value database."],["DatabaseConfig","Database configuration"],["DatabaseIterator","Database iterator (for flushed data only)"]]});

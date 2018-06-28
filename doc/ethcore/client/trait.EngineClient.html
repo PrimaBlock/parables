@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `EngineClient` trait in crate `ethcore`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, EngineClient">
+
+    <title>ethcore::client::EngineClient - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc trait">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Trait EngineClient</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#required-methods">Required Methods</a><div class="sidebar-links"><a href="#tymethod.update_sealing">update_sealing</a><a href="#tymethod.submit_seal">submit_seal</a><a href="#tymethod.broadcast_consensus_message">broadcast_consensus_message</a><a href="#tymethod.epoch_transition_for">epoch_transition_for</a><a href="#tymethod.as_full_client">as_full_client</a><a href="#tymethod.block_number">block_number</a><a href="#tymethod.block_header">block_header</a></div><a class="sidebar-title" href="#implementors">Implementors</a></div><p class='location'><a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>client</a></p><script>window.sidebarCurrent = {name: 'EngineClient', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>client</a>::<wbr><a class="trait" href=''>EngineClient</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/ethcore/client/traits.rs.html#426-451' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust trait'>pub trait EngineClient: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + <a class="trait" href="../../ethcore/client/trait.ChainInfo.html" title="trait ethcore::client::ChainInfo">ChainInfo</a> {
+    fn <a href='#tymethod.update_sealing' class='fnname'>update_sealing</a>(&amp;self);
+<div class='item-spacer'></div>    fn <a href='#tymethod.submit_seal' class='fnname'>submit_seal</a>(&amp;self, block_hash: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, seal: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;);
+<div class='item-spacer'></div>    fn <a href='#tymethod.broadcast_consensus_message' class='fnname'>broadcast_consensus_message</a>(&amp;self, message: <a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>);
+<div class='item-spacer'></div>    fn <a href='#tymethod.epoch_transition_for' class='fnname'>epoch_transition_for</a>(&amp;self, parent_hash: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../ethcore/engines/epoch/struct.Transition.html" title="struct ethcore::engines::epoch::Transition">EpochTransition</a>&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.as_full_client' class='fnname'>as_full_client</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="trait" href="../../ethcore/client/trait.BlockChainClient.html" title="trait ethcore::client::BlockChainClient">BlockChainClient</a>&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.block_number' class='fnname'>block_number</a>(&amp;self, id: <a class="enum" href="../../common_types/ids/enum.BlockId.html" title="enum common_types::ids::BlockId">BlockId</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../../ethcore/header/type.BlockNumber.html" title="type ethcore::header::BlockNumber">BlockNumber</a>&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.block_header' class='fnname'>block_header</a>(&amp;self, id: <a class="enum" href="../../common_types/ids/enum.BlockId.html" title="enum common_types::ids::BlockId">BlockId</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../ethcore/encoded/struct.Header.html" title="struct ethcore::encoded::Header">Header</a>&gt;;
+}</pre></div><div class='docblock'><p>Client facilities used by internally sealing Engines.</p>
+</div>
+            <h2 id='required-methods' class='small-section-header'>
+              Required Methods<a href='#required-methods' class='anchor'></a>
+            </h2>
+            <div class='methods'>
+        <h3 id='tymethod.update_sealing' class='method'><span id='update_sealing.v' class='invisible'><code>fn <a href='#tymethod.update_sealing' class='fnname'>update_sealing</a>(&amp;self)</code></span></h3><div class='docblock'><p>Make a new block and seal it.</p>
+</div><h3 id='tymethod.submit_seal' class='method'><span id='submit_seal.v' class='invisible'><code>fn <a href='#tymethod.submit_seal' class='fnname'>submit_seal</a>(&amp;self, block_hash: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, seal: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;)</code></span></h3><div class='docblock'><p>Submit a seal for a block in the mining queue.</p>
+</div><h3 id='tymethod.broadcast_consensus_message' class='method'><span id='broadcast_consensus_message.v' class='invisible'><code>fn <a href='#tymethod.broadcast_consensus_message' class='fnname'>broadcast_consensus_message</a>(&amp;self, message: <a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>)</code></span></h3><div class='docblock'><p>Broadcast a consensus message to the network.</p>
+</div><h3 id='tymethod.epoch_transition_for' class='method'><span id='epoch_transition_for.v' class='invisible'><code>fn <a href='#tymethod.epoch_transition_for' class='fnname'>epoch_transition_for</a>(&amp;self, parent_hash: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../ethcore/engines/epoch/struct.Transition.html" title="struct ethcore::engines::epoch::Transition">EpochTransition</a>&gt;</code></span></h3><div class='docblock'><p>Get the transition to the epoch the given parent hash is part of
+or transitions to.
+This will give the epoch that any children of this parent belong to.</p>
+<p>The block corresponding the the parent hash must be stored already.</p>
+</div><h3 id='tymethod.as_full_client' class='method'><span id='as_full_client.v' class='invisible'><code>fn <a href='#tymethod.as_full_client' class='fnname'>as_full_client</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="trait" href="../../ethcore/client/trait.BlockChainClient.html" title="trait ethcore::client::BlockChainClient">BlockChainClient</a>&gt;</code></span></h3><div class='docblock'><p>Attempt to cast the engine client to a full client.</p>
+</div><h3 id='tymethod.block_number' class='method'><span id='block_number.v' class='invisible'><code>fn <a href='#tymethod.block_number' class='fnname'>block_number</a>(&amp;self, id: <a class="enum" href="../../common_types/ids/enum.BlockId.html" title="enum common_types::ids::BlockId">BlockId</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../../ethcore/header/type.BlockNumber.html" title="type ethcore::header::BlockNumber">BlockNumber</a>&gt;</code></span></h3><div class='docblock'><p>Get a block number by ID.</p>
+</div><h3 id='tymethod.block_header' class='method'><span id='block_header.v' class='invisible'><code>fn <a href='#tymethod.block_header' class='fnname'>block_header</a>(&amp;self, id: <a class="enum" href="../../common_types/ids/enum.BlockId.html" title="enum common_types::ids::BlockId">BlockId</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../ethcore/encoded/struct.Header.html" title="struct ethcore::encoded::Header">Header</a>&gt;</code></span></h3><div class='docblock'><p>Get raw block header data by block id.</p>
+</div></div>
+        <h2 id='implementors' class='small-section-header'>
+          Implementors<a href='#implementors' class='anchor'></a>
+        </h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><table class='table-display'><tbody><tr><td><code>impl EngineClient for <a class="struct" href="../../ethcore/client/struct.Client.html" title="struct ethcore::client::Client">Client</a></code><td><div class='out-of-band'><a class='srclink' href='../../src/ethcore/client/client.rs.html#2243-2272' title='goto source code'>[src]</a></div></td></tr></tbody></table></li>
+<li><table class='table-display'><tbody><tr><td><code>impl EngineClient for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><td><div class='out-of-band'><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#887-914' title='goto source code'>[src]</a></div></td></tr></tbody></table></li>
+</ul><script type="text/javascript">window.inlined_types=new Set([]);</script><script type="text/javascript" async
+                         src="../../implementors/ethcore/client/trait.EngineClient.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

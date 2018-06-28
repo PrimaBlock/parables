@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["GetAction","Take an item or just clone it?"]],"struct":[["UsingQueue","Special queue-like datastructure that includes the notion of usage to avoid items that were queued but never used from making it into the queue."]]});

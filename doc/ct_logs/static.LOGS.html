@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `LOGS` static in crate `ct_logs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, LOGS">
+
+    <title>ct_logs::LOGS - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc static">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <div class="sidebar-elems"><p class='location'><a href='index.html'>ct_logs</a></p><script>window.sidebarCurrent = {name: 'LOGS', ty: 'static', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Static <a href='index.html'>ct_logs</a>::<wbr><a class="static" href=''>LOGS</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/ct_logs/lib.rs.html#11-354' title='goto source code'>[src]</a></span></h1><pre class='rust static'>pub static LOGS: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">[</a>&amp;<a class="struct" href="../sct/struct.Log.html" title="struct sct::Log">Log</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">; 16]</a><code> = </code><code>[&amp;sct::Log{description: &quot;Venafi Gen2 CT log&quot;,
+           url: &quot;ctlog-gen2.api.venafi.com/&quot;,
+           operated_by: &quot;Venafi&quot;,
+           key:
+               b&quot;\x04\x8e\&#39;\&#39;z\xb6U\tt\xeblK\x94\x84e\xbc\xe4\x15\xf1\xeaZ\xd8|\x0e7\xce\xba?l\t\xda\xe7)\x96\xd3EPo\xde\x1e\xb4\x1c\xd2\x83\x88\xff)/\xce\xa9\xff\xdf4\xdeu\x0f\xc0\xcc\x18\r\x94.\xfc7\x01&quot;,
+           id:
+               [3, 1, 157, 243, 253, 133, 166, 154, 142, 189, 31, 172, 198,
+                218, 155, 167, 62, 70, 151, 116, 254, 119, 245, 121, 252, 90,
+                8, 184, 50, 140, 29, 107],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Symantec \&#39;Sirius\&#39; log&quot;,
+           url: &quot;sirius.ws.symantec.com/&quot;,
+           operated_by: &quot;Symantec&quot;,
+           key:
+               b&quot;\x04\xa3\x02d\x84\&quot;\xbb%\xec\r\xe3\xbc\xc2\xc9\x89}\xddE\xd0\xee\xe6\x15\x85\x8f\xd9\xe7\x17\x1b\x13\x80\xea\xed\xb2\x857\xadj\xc5\xd8%\x9d\xfa\xf4\xb4\xf3n\x16(%7\xea\xa37d\xb2\xc7\x0b\xfdQ\xe5\xc1\x05\xf4\x0e\xb5&quot;,
+           id:
+               [21, 151, 4, 136, 215, 185, 151, 160, 91, 235, 82, 81, 42, 222,
+                232, 210, 232, 180, 163, 22, 82, 100, 18, 26, 159, 171, 251,
+                213, 248, 90, 217, 63],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Google \&#39;Icarus\&#39; log&quot;,
+           url: &quot;ct.googleapis.com/icarus/&quot;,
+           operated_by: &quot;Google&quot;,
+           key:
+               b&quot;\x04N\xd2\xbc\xbf\xb3\x08\n\xf7\xb9\xea\xa4\xc7\x1c8a\x04\xeb\x95\xe0\x89ThD\xb1f\xbc\x82~OPlo\\\xa3\xf0\xaa&gt;\xf4\xec\x80\xf0\xdb\n\x9az\xa0[r\x00|%\x0e\x19\xef\xaf\xb2b\x8dtC\xf4&amp;\xf6\x14&quot;,
+           id:
+               [41, 60, 81, 150, 84, 200, 57, 101, 186, 170, 80, 252, 88, 7,
+                212, 183, 111, 191, 88, 122, 41, 114, 220, 164, 195, 12, 244,
+                229, 69, 71, 244, 120],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;StartCom log&quot;,
+           url: &quot;ct.startssl.com/&quot;,
+           operated_by: &quot;StartCom&quot;,
+           key:
+               b&quot;\x04H\xf3Y\xf3\xf6\x05\x18\xd3\xdb\xb2\xedF~\xcf\xc8\x11\xb5W\xb1\xa8\xd6L\xe6\x9f\xb7J\x1a\x14\x86C\xa9H\xb0\xcbZ?&lt;J\xca\xdf\xc4\x82\x14U\x9a\xf8\xf7\x8e@U\xdc\xf4\xd2\xaf\xeaut\xfbN\x7f`\x86.Q&quot;,
+           id:
+               [52, 187, 106, 214, 195, 223, 156, 3, 238, 168, 164, 153, 255,
+                120, 145, 72, 108, 157, 94, 92, 172, 146, 208, 31, 123, 253,
+                27, 206, 25, 219, 72, 239],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;WoSign log&quot;,
+           url: &quot;ctlog.wosign.com/&quot;,
+           operated_by: &quot;WoSign&quot;,
+           key:
+               b&quot;\x04\xcc\x11\x88{-f\xcb\xae\x8fM0f\&#39;\x19%\&quot;\x93!F\xb4/\x01\xd3\xc6\xf9+\xd5\xc8\xbas\x9b\x06\xa2\xf0\x8a\x02\x9c\xd0kF\x180\x85\xba\xe9$\x8b\x0e\xd1[p(\x0c~\xf1:E\x7fZ\xf3\x82B`1&quot;,
+           id:
+               [65, 178, 220, 46, 137, 230, 60, 228, 175, 27, 167, 187, 41,
+                191, 104, 198, 222, 230, 249, 241, 204, 4, 126, 48, 223, 250,
+                227, 179, 186, 37, 146, 99],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Comodo \&#39;Sabre\&#39; CT log&quot;,
+           url: &quot;sabre.ct.comodo.com/&quot;,
+           operated_by: &quot;Comodo&quot;,
+           key:
+               b&quot;\x04\xf2o\xd2\x89\x0f?\xc5\xf8\x87\x1e\xabe\xb3\xd9\xbb\x17#\x8c\x06\x0e\tU\x96=\n\x08\xa2\xc5q\xb3\xd1\xa9/(&gt;\x83\x10\xbf\x12\xd0Df\x15\xefT\xe1\x98\x80\xd0\xce$m&gt;g\x9a\xe97#\xceR\x93\x86\xda\x80&quot;,
+           id:
+               [85, 129, 212, 194, 22, 144, 54, 1, 74, 234, 11, 155, 87, 60,
+                83, 240, 192, 228, 56, 120, 112, 37, 8, 23, 47, 163, 170, 29,
+                7, 19, 211, 12],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;DigiCert Log Server&quot;,
+           url: &quot;ct1.digicert-ct.com/log/&quot;,
+           operated_by: &quot;DigiCert&quot;,
+           key:
+               b&quot;\x04\x02F\xc5\xbe\x1b\xbb\x82@\x16\xe8\xc1\xd2\xac\x19i\x13Y\xf8\xf8p\x85F@\xb98\xb0#\x82\xa8dL\x7f\xbf\xbb4\x9fJ_(\x8a\xcf\x19\xc4\x00\xf66\x06\x93e\xedL\xf5\xa9!bZ\xd8\x91\xeb8$@\xac\xe8&quot;,
+           id:
+               [86, 20, 6, 154, 47, 215, 194, 236, 211, 245, 225, 189, 68,
+                178, 62, 199, 70, 118, 185, 188, 153, 17, 92, 192, 239, 148,
+                152, 85, 214, 137, 208, 221],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Google \&#39;Aviator\&#39; log&quot;,
+           url: &quot;ct.googleapis.com/aviator/&quot;,
+           operated_by: &quot;Google&quot;,
+           key:
+               b&quot;\x04\xd7\xf4\xcci\xb2\xe4\x0e\x90\xa3\x8a\xeaZp\tO\xef\x13b\xd0\x8dI`\xff\x1b@P\x07\x0cmq\x86\xda%I\x8de\xe1\x08\rG4k\xbd\&#39;\xbc\x96!&gt;4\xf5\x87v1\xb1\x7f\x1d\xc9\x85;\r\xf7\x1f?\xe9&quot;,
+           id:
+               [104, 246, 152, 248, 31, 100, 130, 190, 58, 140, 238, 185, 40,
+                29, 76, 252, 113, 81, 93, 103, 147, 212, 68, 209, 10, 103,
+                172, 187, 79, 79, 251, 196],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Comodo \&#39;Mammoth\&#39; CT log&quot;,
+           url: &quot;mammoth.ct.comodo.com/&quot;,
+           operated_by: &quot;Comodo&quot;,
+           key:
+               b&quot;\x04\xef\xe4}t.\x15\x15\xb6\xe9\xbb#\x8b\xfb,\xb5\xe1\xc7\x80\x98G\xfb@ih\xfcI\xadaN\x83G&lt;\x1a\xb7\x8d\xdf\xff{0\xb4\xba\xff/\xcb\xa0\x14\xe3\xad\xd5\x85?DY\x8c\x8c`\x8b\xd7\xb8\xb1\xbf\xae\x8cg&quot;,
+           id:
+               [111, 83, 118, 172, 49, 240, 49, 25, 216, 153, 0, 164, 81, 21,
+                255, 119, 21, 28, 17, 217, 2, 193, 0, 41, 6, 141, 178, 8, 154,
+                55, 217, 19],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;DigiCert Log Server 2&quot;,
+           url: &quot;ct2.digicert-ct.com/log/&quot;,
+           operated_by: &quot;DigiCert&quot;,
+           key:
+               b&quot;\x04\xcc]9/f\xb8L\x7f\xc1.\x03\xa14\xa3\xe8\x8a\x86\x02\xaeJ\x11\xc6\xf7&amp;j7\x9b\xf08\xf8]\t\x8dc\xe81k\x86f\xcfy\xb3%&lt;\x1e\xdfx\xb4\xa8\xc5i\xfa\xb7\xf0\x82ybC\xf6\xcc\xfe\x81f\x84&quot;,
+           id:
+               [135, 117, 191, 231, 89, 124, 248, 140, 67, 153, 95, 189, 243,
+                110, 255, 86, 141, 71, 86, 54, 255, 74, 181, 96, 193, 180,
+                234, 255, 94, 160, 131, 15],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Google \&#39;Pilot\&#39; log&quot;,
+           url: &quot;ct.googleapis.com/pilot/&quot;,
+           operated_by: &quot;Google&quot;,
+           key:
+               b&quot;\x04}\xa8K\x12)\x80\xa3=\xad\xd3Zw\xb8\xcc\xe2\x88\xb3\xa5\xfd\xf1\xd3\x0c\xcd\x18\x0c\xe8AF\xe8\x81\x01\x1b\x15\xe1K\xf1\x1bb\xdd6\n\x08\x18\xba\xed\x0b5\x84\xd0\x9e@&lt;-\x9e\x9b\x82e\xbd\x1f\x04\x10AL\xa0&quot;,
+           id:
+               [164, 185, 9, 144, 180, 24, 88, 20, 135, 187, 19, 162, 204,
+                103, 112, 10, 60, 53, 152, 4, 249, 27, 223, 184, 227, 119,
+                205, 14, 200, 13, 220, 16],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;CNNIC CT log&quot;,
+           url: &quot;ctserver.cnnic.cn/&quot;,
+           operated_by: &quot;CNNIC&quot;,
+           key:
+               b&quot;0\x82\x01\n\x02\x82\x01\x01\x00\xbf\xb5\x08a\x9a)2\x04\xd3%c\xe9\xd8\x85\xe1\x86\xe0\x1f\xd6^\x9a\xf73;\x80\x1b\xe7\xb6&gt;_-\xa1f\xf6\x95J\x84\xa6!Vy\xe8\xf7\x85\xee]\xe3|\x12\xc0\xe0\x89\&quot;\t\&quot;&gt;\xba\x16\x95\x06\xbd\xa8\xb9\xb1\xa9\xb2z\xd6a.\x87\x11\xb9x@\x89u\xdb\x0c\xdc\x90\xe0\xa4y\xd6\xd5^n\xd1*\xdb4\xf4\x99?e\x89;F\xc2),\x15\x07\x1c\xc9K\x1aT\xf8l\x1e\xaf`\&#39;b\ne\xd5\x9a\xb9P6\x16nq\xf6\x1f\x01\xf7\x12\xa7\xfc\xbf\xf6!\xa3)\x90\x86-w\xde\xbbL\xd4\xcf\xfd\xd2\xcf\x82,M\xd4\xf2\xc2-\xac\xa9\xbe\xea\xc3\x19%C\xb2\xe5\x9al\r\xc5\x1c\xa5\x8b\xf7?0\xaf\xb9\x01\x91\xb7i\x12\x12\xe5\x83a\xfe4\x00\xbe\xf6q\x8a\xc7\xebP\x92\xe8Y\xfe\x15\x91\xeb\x96\x97\xf8#T?-\x8e\x07\xdf\xee\xda\xb3O\xc8&lt;\x9do\xdf&lt;,CW\xa1G\x0c\x91\x04\xf4uM\xda\x89\x81\xa4\x14\x064\xb9\x98\xc3\xda\xf1\xfd\xed36\xd3\x16-5\x02\x03\x01\x00\x01&quot;,
+           id:
+               [165, 119, 172, 156, 237, 117, 72, 221, 143, 2, 91, 103, 162,
+                65, 8, 157, 248, 110, 15, 71, 110, 194, 3, 194, 236, 190, 219,
+                24, 95, 40, 38, 56],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Google \&#39;Skydiver\&#39; log&quot;,
+           url: &quot;ct.googleapis.com/skydiver/&quot;,
+           operated_by: &quot;Google&quot;,
+           key:
+               b&quot;\x04\x12l\x86\x0e\xf6\x17\xb1\x12l7%\xd2\xad\x87=\x0e1\xec!\xad\xb1\xcd\xbe\x14G\xb6qV\x85z\x9a\xb7=\x89\x90{\xc62:\xf8\xda\xce\x8b\x01\xfe?\xfcq\x91\x19\x8e\x14n\x89z]\xb4\xab~\xe1N\x1e|\xac&quot;,
+           id:
+               [187, 217, 223, 188, 31, 138, 113, 181, 147, 148, 35, 151, 170,
+                146, 123, 71, 56, 87, 149, 10, 171, 82, 232, 26, 144, 150,
+                100, 54, 142, 30, 209, 133],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Symantec \&#39;Vega\&#39; log&quot;,
+           url: &quot;vega.ws.symantec.com/&quot;,
+           operated_by: &quot;Symantec&quot;,
+           key:
+               b&quot;\x04\xea\x95\x9e\x02\xff\xee\xf13mK\x87\xbc\xcd\xfd\x19\x17b\xff\x94\xd3\xd0Y\x07?\x02-\x1c\x90\xfe\xc8G0;\xf1\xdd\r\xb8\x11\x0c]\x1d\x86\xdd\xab\xd3+Ff\xfbne\xb7;\xfdYh\xac\xdf\xa6\xf8\xce\xd2\x18M&quot;,
+           id:
+               [188, 120, 225, 223, 197, 246, 60, 104, 70, 73, 51, 77, 161,
+                15, 161, 95, 9, 121, 105, 32, 9, 192, 129, 180, 243, 246, 145,
+                127, 62, 217, 184, 165],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Symantec log&quot;,
+           url: &quot;ct.ws.symantec.com/&quot;,
+           operated_by: &quot;Symantec&quot;,
+           key:
+               b&quot;\x04\x96\xea\xac\x1cF\x0c\x1bU\xdc\r\xfc\xb5\x94\&#39;FWBp:i\x18\xe2\xbf;\xc4\xdb\xab\xa0\xf4\xb6l\xc0S?MB\x103\xf0X\x97\x8fk\xber\xf4*\xec\x1cB\xaa\x03/\x1a~(5v\x99\x08=!\x14\x86&quot;,
+           id:
+               [221, 235, 29, 43, 122, 13, 79, 166, 32, 139, 129, 173, 129,
+                104, 112, 126, 46, 142, 157, 1, 213, 92, 136, 141, 61, 17,
+                196, 205, 182, 236, 190, 204],
+           max_merge_delay: 86400,},
+ &amp;sct::Log{description: &quot;Google \&#39;Rocketeer\&#39; log&quot;,
+           url: &quot;ct.googleapis.com/rocketeer/&quot;,
+           operated_by: &quot;Google&quot;,
+           key:
+               b&quot;\x04 [\x18\xc8&lt;\xc1\x8b\xb31\x08\x00\xbf\xa0\x90W+\xb7G\x8co\xb5h\xb0\x8e\x90x\xe9\xa0s\xeaO(!.\x9c\xc0\xf4\x16\x1b\xaa\xf9\xd5\xd7\xa9\x80\xc3N/R&lt;\x98\x01%F$%(#w-\x05\xc2@z&quot;,
+           id:
+               [238, 75, 189, 183, 117, 206, 96, 186, 225, 66, 105, 31, 171,
+                225, 158, 102, 163, 15, 126, 95, 176, 114, 216, 131, 0, 196,
+                123, 137, 122, 168, 253, 203],
+           max_merge_delay: 86400,}]</code></pre></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "ct_logs";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

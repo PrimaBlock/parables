@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ServerBuilder` struct in crate `jsonrpc_tcp_server`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ServerBuilder">
+
+    <title>jsonrpc_tcp_server::ServerBuilder - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct ServerBuilder</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.with_meta_extractor">with_meta_extractor</a><a href="#method.event_loop_remote">event_loop_remote</a><a href="#method.session_meta_extractor">session_meta_extractor</a><a href="#method.request_separators">request_separators</a><a href="#method.start">start</a><a href="#method.dispatcher">dispatcher</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='index.html'>jsonrpc_tcp_server</a></p><script>window.sidebarCurrent = {name: 'ServerBuilder', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>jsonrpc_tcp_server</a>::<wbr><a class="struct" href=''>ServerBuilder</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#18-25' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct ServerBuilder&lt;M:&nbsp;<a class="trait" href="../jsonrpc_core/calls/trait.Metadata.html" title="trait jsonrpc_core::calls::Metadata">Metadata</a>&nbsp;=&nbsp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>, S:&nbsp;<a class="trait" href="../jsonrpc_core/middleware/trait.Middleware.html" title="trait jsonrpc_core::middleware::Middleware">Middleware</a>&lt;M&gt;&nbsp;=&nbsp;<a class="struct" href="../jsonrpc_core/middleware/struct.Noop.html" title="struct jsonrpc_core::middleware::Noop">NoopMiddleware</a>&gt; { /* fields omitted */ }</pre></div><div class='docblock'><p>TCP server builder</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;M:&nbsp;<a class="trait" href="../jsonrpc_core/calls/trait.Metadata.html" title="trait jsonrpc_core::calls::Metadata">Metadata</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a>, S:&nbsp;<a class="trait" href="../jsonrpc_core/middleware/trait.Middleware.html" title="trait jsonrpc_core::middleware::Middleware">Middleware</a>&lt;M&gt; + 'static&gt; <a class="struct" href="../jsonrpc_tcp_server/struct.ServerBuilder.html" title="struct jsonrpc_tcp_server::ServerBuilder">ServerBuilder</a>&lt;M, S&gt;</code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#27-34' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new' class='fnname'>new</a>&lt;T&gt;(handler: T) -&gt; Self <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="../jsonrpc_core/io/struct.MetaIoHandler.html" title="struct jsonrpc_core::io::MetaIoHandler">MetaIoHandler</a>&lt;M, S&gt;&gt;,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#29-33' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates new <code>SeverBuilder</code> wih given <code>IoHandler</code></p>
+</div></div><h3 id='impl-1' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;M:&nbsp;<a class="trait" href="../jsonrpc_core/calls/trait.Metadata.html" title="trait jsonrpc_core::calls::Metadata">Metadata</a>, S:&nbsp;<a class="trait" href="../jsonrpc_core/middleware/trait.Middleware.html" title="trait jsonrpc_core::middleware::Middleware">Middleware</a>&lt;M&gt; + 'static&gt; <a class="struct" href="../jsonrpc_tcp_server/struct.ServerBuilder.html" title="struct jsonrpc_tcp_server::ServerBuilder">ServerBuilder</a>&lt;M, S&gt;</code><a href='#impl-1' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#36-183' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.with_meta_extractor' class="method"><span id='with_meta_extractor.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.with_meta_extractor' class='fnname'>with_meta_extractor</a>&lt;T, E&gt;(handler: T, extractor: E) -&gt; Self <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="struct" href="../jsonrpc_core/io/struct.MetaIoHandler.html" title="struct jsonrpc_core::io::MetaIoHandler">MetaIoHandler</a>&lt;M, S&gt;&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;E: <a class="trait" href="../jsonrpc_tcp_server/trait.MetaExtractor.html" title="trait jsonrpc_tcp_server::MetaExtractor">MetaExtractor</a>&lt;M&gt; + 'static,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#38-50' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates new <code>SeverBuilder</code> wih given <code>IoHandler</code></p>
+</div><h4 id='method.event_loop_remote' class="method"><span id='event_loop_remote.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.event_loop_remote' class='fnname'>event_loop_remote</a>(self, remote: <a class="struct" href="../jsonrpc_tcp_server/tokio_core/reactor/struct.Remote.html" title="struct jsonrpc_tcp_server::tokio_core::reactor::Remote">Remote</a>) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#53-56' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Utilize existing event loop remote.</p>
+</div><h4 id='method.session_meta_extractor' class="method"><span id='session_meta_extractor.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.session_meta_extractor' class='fnname'>session_meta_extractor</a>&lt;T:&nbsp;<a class="trait" href="../jsonrpc_tcp_server/trait.MetaExtractor.html" title="trait jsonrpc_tcp_server::MetaExtractor">MetaExtractor</a>&lt;M&gt; + 'static&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;meta_extractor: T<br>) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#59-62' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Sets session meta extractor</p>
+</div><h4 id='method.request_separators' class="method"><span id='request_separators.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.request_separators' class='fnname'>request_separators</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;incoming: <a class="enum" href="../jsonrpc_server_utils/stream_codec/enum.Separator.html" title="enum jsonrpc_server_utils::stream_codec::Separator">Separator</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;outgoing: <a class="enum" href="../jsonrpc_server_utils/stream_codec/enum.Separator.html" title="enum jsonrpc_server_utils::stream_codec::Separator">Separator</a><br>) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#65-69' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Sets the incoming and outgoing requests separator</p>
+</div><h4 id='method.start' class="method"><span id='start.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.start' class='fnname'>start</a>(self, addr: &amp;<a class="enum" href="https://doc.rust-lang.org/nightly/std/net/addr/enum.SocketAddr.html" title="enum std::net::addr::SocketAddr">SocketAddr</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/std/io/error/type.Result.html" title="type std::io::error::Result">Result</a>&lt;<a class="struct" href="../jsonrpc_tcp_server/struct.Server.html" title="struct jsonrpc_tcp_server::Server">Server</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#72-177' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Starts a new server</p>
+</div><h4 id='method.dispatcher' class="method"><span id='dispatcher.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.dispatcher' class='fnname'>dispatcher</a>(&amp;self) -&gt; <a class="struct" href="../jsonrpc_tcp_server/struct.Dispatcher.html" title="struct jsonrpc_tcp_server::Dispatcher">Dispatcher</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/jsonrpc_tcp_server/server.rs.html#180-182' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns dispatcher</p>
+</div></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        </div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;M, S&gt; <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../jsonrpc_tcp_server/struct.ServerBuilder.html" title="struct jsonrpc_tcp_server::ServerBuilder">ServerBuilder</a>&lt;M, S&gt;</code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;M, S&gt; <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../jsonrpc_tcp_server/struct.ServerBuilder.html" title="struct jsonrpc_tcp_server::ServerBuilder">ServerBuilder</a>&lt;M, S&gt;</code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "jsonrpc_tcp_server";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

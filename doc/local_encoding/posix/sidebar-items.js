@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["EncoderUtf8","Convert UTF-8 bytes to String."]]});

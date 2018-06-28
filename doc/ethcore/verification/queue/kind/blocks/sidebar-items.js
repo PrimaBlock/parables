@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Blocks","A mode for verifying blocks."],["Unverified","An unverified block."]]});

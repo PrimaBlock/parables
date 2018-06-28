@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Scoring` trait in crate `transaction_pool`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Scoring">
+
+    <title>transaction_pool::scoring::Scoring - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc trait">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Trait Scoring</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#associated-types">Associated Types</a><div class="sidebar-links"><a href="#associatedtype.Score">Score</a><a href="#associatedtype.Event">Event</a></div><a class="sidebar-title" href="#required-methods">Required Methods</a><div class="sidebar-links"><a href="#tymethod.compare">compare</a><a href="#tymethod.choose">choose</a><a href="#tymethod.update_scores">update_scores</a><a href="#tymethod.should_replace">should_replace</a></div><a class="sidebar-title" href="#implementors">Implementors</a></div><p class='location'><a href='../index.html'>transaction_pool</a>::<wbr><a href='index.html'>scoring</a></p><script>window.sidebarCurrent = {name: 'Scoring', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>transaction_pool</a>::<wbr><a href='index.html'>scoring</a>::<wbr><a class="trait" href=''>Scoring</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/transaction_pool/scoring.rs.html#84-103' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust trait'>pub trait Scoring&lt;T&gt;: <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> {
+    type <a href='#associatedtype.Score' class="type">Score</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a>;
+    type <a href='#associatedtype.Event' class="type">Event</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a>;
+    fn <a href='#tymethod.compare' class='fnname'>compare</a>(&amp;self, old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html" title="enum core::cmp::Ordering">Ordering</a>;
+<div class='item-spacer'></div>    fn <a href='#tymethod.choose' class='fnname'>choose</a>(&amp;self, old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T, new: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="enum" href="../../transaction_pool/scoring/enum.Choice.html" title="enum transaction_pool::scoring::Choice">Choice</a>;
+<div class='item-spacer'></div>    fn <a href='#tymethod.update_scores' class='fnname'>update_scores</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&amp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;txs: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="struct" href="../../transaction_pool/struct.Transaction.html" title="struct transaction_pool::Transaction">Transaction</a>&lt;T&gt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scores: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;mut [</a>Self::<a class="type" href="../../transaction_pool/scoring/trait.Scoring.html#associatedtype.Score" title="type transaction_pool::scoring::Scoring::Score">Score</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;change: <a class="enum" href="../../transaction_pool/scoring/enum.Change.html" title="enum transaction_pool::scoring::Change">Change</a>&lt;Self::<a class="type" href="../../transaction_pool/scoring/trait.Scoring.html#associatedtype.Event" title="type transaction_pool::scoring::Scoring::Event">Event</a>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;);
+<div class='item-spacer'></div>    fn <a href='#tymethod.should_replace' class='fnname'>should_replace</a>(&amp;self, old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T, new: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>;
+}</pre></div><div class='docblock'><p>A transaction ordering.</p>
+<p>The implementation should decide on order of transactions in the pool.
+Each transaction should also get assigned a <code>Score</code> which is used to later
+prioritize transactions in the pending set.</p>
+<p>Implementation notes:</p>
+<ul>
+<li>Returned <code>Score</code>s should match ordering of <code>compare</code> method.</li>
+<li><code>compare</code> will be called only within a context of transactions from the same sender.</li>
+<li><code>choose</code> may be called even if <code>compare</code> returns <code>Ordering::Equal</code></li>
+<li><code>should_replace</code> is used to decide if new transaction should push out an old transaction already in the queue.</li>
+<li><code>Score</code>s and <code>compare</code> should align with <code>Ready</code> implementation.</li>
+</ul>
+<p>Example: Natural ordering of Ethereum transactions.</p>
+<ul>
+<li><code>compare</code>: compares transaction <code>nonce</code> ()</li>
+<li><code>choose</code>: compares transactions <code>gasPrice</code> (decides if old transaction should be replaced)</li>
+<li><code>update_scores</code>: score defined as <code>gasPrice</code> if <code>n==0</code> and <code>max(scores[n-1], gasPrice)</code> if <code>n&gt;0</code></li>
+<li><code>should_replace</code>: compares <code>gasPrice</code> (decides if transaction from a different sender is more valuable)</li>
+</ul>
+</div>
+            <h2 id='associated-types' class='small-section-header'>
+              Associated Types<a href='#associated-types' class='anchor'></a>
+            </h2>
+            <div class='methods'>
+        <h3 id='associatedtype.Score' class='method'><span id='Score.t' class='invisible'><code>type <a href='#associatedtype.Score' class="type">Score</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a></code></span></h3><div class='docblock'><p>A score of a transaction.</p>
+</div><h3 id='associatedtype.Event' class='method'><span id='Event.t' class='invisible'><code>type <a href='#associatedtype.Event' class="type">Event</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a></code></span></h3><div class='docblock'><p>Custom scoring update event type.</p>
+</div></div>
+            <h2 id='required-methods' class='small-section-header'>
+              Required Methods<a href='#required-methods' class='anchor'></a>
+            </h2>
+            <div class='methods'>
+        <h3 id='tymethod.compare' class='method'><span id='compare.v' class='invisible'><code>fn <a href='#tymethod.compare' class='fnname'>compare</a>(&amp;self, old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html" title="enum core::cmp::Ordering">Ordering</a></code></span></h3><div class='docblock'><p>Decides on ordering of <code>T</code>s from a particular sender.</p>
+</div><h3 id='tymethod.choose' class='method'><span id='choose.v' class='invisible'><code>fn <a href='#tymethod.choose' class='fnname'>choose</a>(&amp;self, old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T, new: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="enum" href="../../transaction_pool/scoring/enum.Choice.html" title="enum transaction_pool::scoring::Choice">Choice</a></code></span></h3><div class='docblock'><p>Decides how to deal with two transactions from a sender that seem to occupy the same slot in the queue.</p>
+</div><h3 id='tymethod.update_scores' class='method'><span id='update_scores.v' class='invisible'><code>fn <a href='#tymethod.update_scores' class='fnname'>update_scores</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;txs: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="struct" href="../../transaction_pool/struct.Transaction.html" title="struct transaction_pool::Transaction">Transaction</a>&lt;T&gt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;scores: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;mut [</a>Self::<a class="type" href="../../transaction_pool/scoring/trait.Scoring.html#associatedtype.Score" title="type transaction_pool::scoring::Scoring::Score">Score</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;change: <a class="enum" href="../../transaction_pool/scoring/enum.Change.html" title="enum transaction_pool::scoring::Change">Change</a>&lt;Self::<a class="type" href="../../transaction_pool/scoring/trait.Scoring.html#associatedtype.Event" title="type transaction_pool::scoring::Scoring::Event">Event</a>&gt;<br>)</code></span></h3><div class='docblock'><p>Updates the transaction scores given a list of transactions and a change to previous scoring.
+NOTE: you can safely assume that both slices have the same length.
+(i.e. score at index <code>i</code> represents transaction at the same index)</p>
+</div><h3 id='tymethod.should_replace' class='method'><span id='should_replace.v' class='invisible'><code>fn <a href='#tymethod.should_replace' class='fnname'>should_replace</a>(&amp;self, old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T, new: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></h3><div class='docblock'><p>Decides if <code>new</code> should push out <code>old</code> transaction from the pool.</p>
+</div></div>
+        <h2 id='implementors' class='small-section-header'>
+          Implementors<a href='#implementors' class='anchor'></a>
+        </h2>
+        <ul class='item-list' id='implementors-list'>
+    </ul><script type="text/javascript">window.inlined_types=new Set([]);</script><script type="text/javascript" async
+                         src="../../implementors/transaction_pool/scoring/trait.Scoring.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "transaction_pool";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

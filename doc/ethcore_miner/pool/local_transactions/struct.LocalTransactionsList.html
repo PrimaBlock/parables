@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `LocalTransactionsList` struct in crate `ethcore_miner`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, LocalTransactionsList">
+
+    <title>ethcore_miner::pool::local_transactions::LocalTransactionsList - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle">
+    <script src="../../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct LocalTransactionsList</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.contains">contains</a><a href="#method.all_transactions">all_transactions</a><a href="#method.has_pending">has_pending</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a><a href="#impl-Default">Default</a><a href="#impl-Listener%3CTransaction%3E">Listener&lt;Transaction&gt;</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../index.html'>ethcore_miner</a>::<wbr><a href='../index.html'>pool</a>::<wbr><a href='index.html'>local_transactions</a></p><script>window.sidebarCurrent = {name: 'LocalTransactionsList', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>ethcore_miner</a>::<wbr><a href='../index.html'>pool</a>::<wbr><a href='index.html'>local_transactions</a>::<wbr><a class="struct" href=''>LocalTransactionsList</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#64-68' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct LocalTransactionsList { /* fields omitted */ }</pre></div><div class='docblock'><p>Keeps track of local transactions that are in the queue or were mined/dropped recently.</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="struct" href="../../../ethcore_miner/pool/local_transactions/struct.LocalTransactionsList.html" title="struct ethcore_miner::pool::local_transactions::LocalTransactionsList">LocalTransactionsList</a></code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#76-127' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new' class='fnname'>new</a>(max_old: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#78-84' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Create a new list of local transactions.</p>
+</div><h4 id='method.contains' class="method"><span id='contains.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.contains' class='fnname'>contains</a>(&amp;self, hash: &amp;<a class="struct" href="../../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#87-89' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns true if the transaction is already in local transactions.</p>
+</div><h4 id='method.all_transactions' class="method"><span id='all_transactions.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.all_transactions' class='fnname'>all_transactions</a>(&amp;self) -&gt; &amp;<a class="struct" href="../../../linked_hash_map/struct.LinkedHashMap.html" title="struct linked_hash_map::LinkedHashMap">LinkedHashMap</a>&lt;<a class="struct" href="../../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, <a class="enum" href="../../../ethcore_miner/pool/local_transactions/enum.Status.html" title="enum ethcore_miner::pool::local_transactions::Status">Status</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#92-94' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Return a map of all currently stored transactions.</p>
+</div><h4 id='method.has_pending' class="method"><span id='has_pending.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.has_pending' class='fnname'>has_pending</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#97-99' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns true if there are pending local transactions.</p>
+</div></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        <h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../../../ethcore_miner/pool/local_transactions/struct.LocalTransactionsList.html" title="struct ethcore_miner::pool::local_transactions::LocalTransactionsList">LocalTransactionsList</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#63' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#63' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+</div></div><h3 id='impl-Default' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> for <a class="struct" href="../../../ethcore_miner/pool/local_transactions/struct.LocalTransactionsList.html" title="struct ethcore_miner::pool::local_transactions::LocalTransactionsList">LocalTransactionsList</a></code><a href='#impl-Default' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#70-74' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.default' class="method"><span id='default.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#71-73' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+</div></div><h3 id='impl-Listener%3CTransaction%3E' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../../transaction_pool/listener/trait.Listener.html" title="trait transaction_pool::listener::Listener">Listener</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt; for <a class="struct" href="../../../ethcore_miner/pool/local_transactions/struct.LocalTransactionsList.html" title="struct ethcore_miner::pool::local_transactions::LocalTransactionsList">LocalTransactionsList</a></code><a href='#impl-Listener%3CTransaction%3E' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#129-202' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.added' class="method"><span id='added.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../../transaction_pool/listener/trait.Listener.html#method.added' class='fnname'>added</a>(&amp;mut self, tx: &amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;, old: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#130-148' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>The transaction has been successfuly added to the pool. If second argument is <code>Some</code> the transaction has took place of some other transaction which was already in pool. NOTE: You won't be notified about drop of <code>old</code> transaction separately. <a href="../../../transaction_pool/listener/trait.Listener.html#method.added">Read more</a></p>
+</div><h4 id='method.rejected' class="method"><span id='rejected.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../../transaction_pool/listener/trait.Listener.html#method.rejected' class='fnname'>rejected</a>(&amp;mut self, tx: &amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;, reason: &amp;<a class="enum" href="../../../transaction_pool/error/enum.ErrorKind.html" title="enum transaction_pool::error::ErrorKind">ErrorKind</a>)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#150-158' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>The transaction was rejected from the pool. It means that it was too cheap to replace any transaction already in the pool. <a href="../../../transaction_pool/listener/trait.Listener.html#method.rejected">Read more</a></p>
+</div><h4 id='method.dropped' class="method"><span id='dropped.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../../transaction_pool/listener/trait.Listener.html#method.dropped' class='fnname'>dropped</a>(&amp;mut self, tx: &amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;, new: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#160-171' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>The transaction was pushed out from the pool because of the limit.</p>
+</div><h4 id='method.invalid' class="method"><span id='invalid.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../../transaction_pool/listener/trait.Listener.html#method.invalid' class='fnname'>invalid</a>(&amp;mut self, tx: &amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#173-181' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>The transaction was marked as invalid by executor.</p>
+</div><h4 id='method.canceled' class="method"><span id='canceled.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../../transaction_pool/listener/trait.Listener.html#method.canceled' class='fnname'>canceled</a>(&amp;mut self, tx: &amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#183-191' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>The transaction has been canceled.</p>
+</div><h4 id='method.mined' class="method"><span id='mined.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../../transaction_pool/listener/trait.Listener.html#method.mined' class='fnname'>mined</a>(&amp;mut self, tx: &amp;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="struct" href="../../../ethcore_miner/pool/struct.VerifiedTransaction.html" title="struct ethcore_miner::pool::VerifiedTransaction">Transaction</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/ethcore_miner/pool/local_transactions.rs.html#194-201' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>The transaction has been mined.</p>
+</div></div></div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../../ethcore_miner/pool/local_transactions/struct.LocalTransactionsList.html" title="struct ethcore_miner::pool::local_transactions::LocalTransactionsList">LocalTransactionsList</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../../ethcore_miner/pool/local_transactions/struct.LocalTransactionsList.html" title="struct ethcore_miner::pool::local_transactions::LocalTransactionsList">LocalTransactionsList</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "ethcore_miner";
+    </script>
+    <script src="../../../main.js"></script>
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

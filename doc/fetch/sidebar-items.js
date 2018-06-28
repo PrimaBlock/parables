@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Method","The Request Method (VERB)"]],"mod":[["client","Fetch client implementation."]],"struct":[["Url","A parsed URL record."]]});

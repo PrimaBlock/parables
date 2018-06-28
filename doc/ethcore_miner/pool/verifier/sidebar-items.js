@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Transaction","Transaction to verify."]],"struct":[["Options","Verification options."],["Verifier","Transaction verifier."]]});

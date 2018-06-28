@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Executive` struct in crate `ethcore`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Executive">
+
+    <title>ethcore::executive::Executive - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct Executive</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.from_parent">from_parent</a><a href="#method.as_externalities">as_externalities</a><a href="#method.transact">transact</a><a href="#method.transact_virtual">transact_virtual</a><a href="#method.call">call</a><a href="#method.create">create</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">!Sync</a></div></div><p class='location'><a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>executive</a></p><script>window.sidebarCurrent = {name: 'Executive', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>executive</a>::<wbr><a class="struct" href=''>Executive</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/ethcore/executive.rs.html#166-172' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct Executive&lt;'a, B:&nbsp;'a + <a class="trait" href="../../ethcore/state/backend/trait.Backend.html" title="trait ethcore::state::backend::Backend">StateBackend</a>&gt; { /* fields omitted */ }</pre></div><div class='docblock'><p>Transaction executor.</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a, B:&nbsp;'a + <a class="trait" href="../../ethcore/state/backend/trait.Backend.html" title="trait ethcore::state::backend::Backend">StateBackend</a>&gt; <a class="struct" href="../../ethcore/executive/struct.Executive.html" title="struct ethcore::executive::Executive">Executive</a>&lt;'a, B&gt;</code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#174-702' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new' class='fnname'>new</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;state: &amp;'a mut <a class="struct" href="../../ethcore/state/struct.State.html" title="struct ethcore::state::State">State</a>&lt;B&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;info: &amp;'a <a class="struct" href="../../ethcore/client/struct.EnvInfo.html" title="struct ethcore::client::EnvInfo">EnvInfo</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;machine: &amp;'a <a class="struct" href="../../ethcore/machine/struct.EthereumMachine.html" title="struct ethcore::machine::EthereumMachine">Machine</a><br>) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#176-184' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Basic constructor.</p>
+</div><h4 id='method.from_parent' class="method"><span id='from_parent.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.from_parent' class='fnname'>from_parent</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;state: &amp;'a mut <a class="struct" href="../../ethcore/state/struct.State.html" title="struct ethcore::state::State">State</a>&lt;B&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;info: &amp;'a <a class="struct" href="../../ethcore/client/struct.EnvInfo.html" title="struct ethcore::client::EnvInfo">EnvInfo</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;machine: &amp;'a <a class="struct" href="../../ethcore/machine/struct.EthereumMachine.html" title="struct ethcore::machine::EthereumMachine">Machine</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;parent_depth: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;static_flag: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><br>) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#187-195' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Populates executive from parent properties. Increments executive depth.</p>
+</div><h4 id='method.as_externalities' class="method"><span id='as_externalities.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.as_externalities' class='fnname'>as_externalities</a>&lt;'any, T, V&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;'any mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;origin_info: OriginInfo, <br>&nbsp;&nbsp;&nbsp;&nbsp;substate: &amp;'any mut <a class="struct" href="../../ethcore/state/struct.Substate.html" title="struct ethcore::state::Substate">Substate</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;output: OutputPolicy&lt;'any, 'any&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;tracer: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;'any mut </a>T, <br>&nbsp;&nbsp;&nbsp;&nbsp;vm_tracer: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;'any mut </a>V, <br>&nbsp;&nbsp;&nbsp;&nbsp;static_call: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><br>) -&gt; Externalities&lt;'any, T, V, B&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../ethcore/trace/trait.Tracer.html" title="trait ethcore::trace::Tracer">Tracer</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;V: <a class="trait" href="../../ethcore/trace/trait.VMTracer.html" title="trait ethcore::trace::VMTracer">VMTracer</a>,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#198-209' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates <code>Externalities</code> from <code>Executive</code>.</p>
+</div><h4 id='method.transact' class="method"><span id='transact.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.transact' class='fnname'>transact</a>&lt;T, V&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;'a mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;t: &amp;<a class="struct" href="../../ethcore_transaction/transaction/struct.SignedTransaction.html" title="struct ethcore_transaction::transaction::SignedTransaction">SignedTransaction</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;options: <a class="struct" href="../../ethcore/executive/struct.TransactOptions.html" title="struct ethcore::executive::TransactOptions">TransactOptions</a>&lt;T, V&gt;<br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../../ethcore/executed/struct.Executed.html" title="struct ethcore::executed::Executed">Executed</a>&lt;T::<a class="type" href="../../ethcore/trace/trait.Tracer.html#associatedtype.Output" title="type ethcore::trace::Tracer::Output">Output</a>, V::<a class="type" href="../../ethcore/trace/trait.VMTracer.html#associatedtype.Output" title="type ethcore::trace::VMTracer::Output">Output</a>&gt;, <a class="enum" href="../../ethcore/executed/enum.ExecutionError.html" title="enum ethcore::executed::ExecutionError">ExecutionError</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../ethcore/trace/trait.Tracer.html" title="trait ethcore::trace::Tracer">Tracer</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;V: <a class="trait" href="../../ethcore/trace/trait.VMTracer.html" title="trait ethcore::trace::VMTracer">VMTracer</a>,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#212-216' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This function should be used to execute transaction.</p>
+</div><h4 id='method.transact_virtual' class="method"><span id='transact_virtual.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.transact_virtual' class='fnname'>transact_virtual</a>&lt;T, V&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;'a mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;t: &amp;<a class="struct" href="../../ethcore_transaction/transaction/struct.SignedTransaction.html" title="struct ethcore_transaction::transaction::SignedTransaction">SignedTransaction</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;options: <a class="struct" href="../../ethcore/executive/struct.TransactOptions.html" title="struct ethcore::executive::TransactOptions">TransactOptions</a>&lt;T, V&gt;<br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../../ethcore/executed/struct.Executed.html" title="struct ethcore::executed::Executed">Executed</a>&lt;T::<a class="type" href="../../ethcore/trace/trait.Tracer.html#associatedtype.Output" title="type ethcore::trace::Tracer::Output">Output</a>, V::<a class="type" href="../../ethcore/trace/trait.VMTracer.html#associatedtype.Output" title="type ethcore::trace::VMTracer::Output">Output</a>&gt;, <a class="enum" href="../../ethcore/executed/enum.ExecutionError.html" title="enum ethcore::executed::ExecutionError">ExecutionError</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../ethcore/trace/trait.Tracer.html" title="trait ethcore::trace::Tracer">Tracer</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;V: <a class="trait" href="../../ethcore/trace/trait.VMTracer.html" title="trait ethcore::trace::VMTracer">VMTracer</a>,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#221-233' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Execute a transaction in a &quot;virtual&quot; context.
+This will ensure the caller has enough balance to execute the desired transaction.
+Used for extra-block executions for things like consensus contracts and RPCs</p>
+</div><h4 id='method.call' class="method"><span id='call.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.call' class='fnname'>call</a>&lt;T, V&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;params: <a class="struct" href="../../vm/action_params/struct.ActionParams.html" title="struct vm::action_params::ActionParams">ActionParams</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;substate: &amp;mut <a class="struct" href="../../ethcore/state/struct.Substate.html" title="struct ethcore::state::Substate">Substate</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;output: <a class="enum" href="../../ethcore_bytes/enum.BytesRef.html" title="enum ethcore_bytes::BytesRef">BytesRef</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;tracer: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;mut </a>T, <br>&nbsp;&nbsp;&nbsp;&nbsp;vm_tracer: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;mut </a>V<br>) -&gt; <a class="type" href="../../vm/error/type.Result.html" title="type vm::error::Result">Result</a>&lt;<a class="struct" href="../../evm/evm/struct.FinalizationResult.html" title="struct evm::evm::FinalizationResult">FinalizationResult</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../ethcore/trace/trait.Tracer.html" title="trait ethcore::trace::Tracer">Tracer</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;V: <a class="trait" href="../../ethcore/trace/trait.VMTracer.html" title="trait ethcore::trace::VMTracer">VMTracer</a>,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#375-518' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Calls contract function with given contract params.
+NOTE. It does not finalize the transaction (doesn't do refunds, nor suicides).
+Modifies the substate and the output.
+Returns either gas_left or <code>vm::Error</code>.</p>
+</div><h4 id='method.create' class="method"><span id='create.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.create' class='fnname'>create</a>&lt;T, V&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;params: <a class="struct" href="../../vm/action_params/struct.ActionParams.html" title="struct vm::action_params::ActionParams">ActionParams</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;substate: &amp;mut <a class="struct" href="../../ethcore/state/struct.Substate.html" title="struct ethcore::state::Substate">Substate</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;output: &amp;mut <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;tracer: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;mut </a>T, <br>&nbsp;&nbsp;&nbsp;&nbsp;vm_tracer: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;mut </a>V<br>) -&gt; <a class="type" href="../../vm/error/type.Result.html" title="type vm::error::Result">Result</a>&lt;<a class="struct" href="../../evm/evm/struct.FinalizationResult.html" title="struct evm::evm::FinalizationResult">FinalizationResult</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../ethcore/trace/trait.Tracer.html" title="trait ethcore::trace::Tracer">Tracer</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;V: <a class="trait" href="../../ethcore/trace/trait.VMTracer.html" title="trait ethcore::trace::VMTracer">VMTracer</a>,&nbsp;</span></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/executive.rs.html#523-598' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates contract with given contract params.
+NOTE. It does not finalize the transaction (doesn't do refunds, nor suicides).
+Modifies the substate.</p>
+</div></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        </div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a, B&gt; <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../ethcore/executive/struct.Executive.html" title="struct ethcore::executive::Executive">Executive</a>&lt;'a, B&gt;</code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a, B&gt; !<a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../ethcore/executive/struct.Executive.html" title="struct ethcore::executive::Executive">Executive</a>&lt;'a, B&gt;</code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

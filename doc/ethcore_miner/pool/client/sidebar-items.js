@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["TransactionType","Transaction type"]],"struct":[["AccountDetails","Account Details"]],"trait":[["Client","Verification client."],["NonceClient","State nonce client"]]});

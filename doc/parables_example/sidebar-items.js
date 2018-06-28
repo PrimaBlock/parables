@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["simple_contract",""],["simple_lib",""]]});

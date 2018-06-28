@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ServiceParams` struct in crate `ethcore`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ServiceParams">
+
+    <title>ethcore::snapshot::service::ServiceParams - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle">
+    <script src="../../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct ServiceParams</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.engine">engine</a><a href="#structfield.genesis_block">genesis_block</a><a href="#structfield.pruning">pruning</a><a href="#structfield.restoration_db_handler">restoration_db_handler</a><a href="#structfield.channel">channel</a><a href="#structfield.snapshot_root">snapshot_root</a><a href="#structfield.db_restore">db_restore</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../index.html'>ethcore</a>::<wbr><a href='../index.html'>snapshot</a>::<wbr><a href='index.html'>service</a></p><script>window.sidebarCurrent = {name: 'ServiceParams', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>ethcore</a>::<wbr><a href='../index.html'>snapshot</a>::<wbr><a href='index.html'>service</a>::<wbr><a class="struct" href=''>ServiceParams</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../../src/ethcore/snapshot/service.rs.html#207-223' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct ServiceParams {
+    pub engine: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../../../ethcore/engines/trait.EthEngine.html" title="trait ethcore::engines::EthEngine">EthEngine</a>&gt;,
+    pub genesis_block: <a class="type" href="../../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>,
+    pub pruning: <a class="enum" href="../../../journaldb/enum.Algorithm.html" title="enum journaldb::Algorithm">Algorithm</a>,
+    pub restoration_db_handler: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;<a class="trait" href="../../../ethcore/trait.BlockChainDBHandler.html" title="trait ethcore::BlockChainDBHandler">BlockChainDBHandler</a>&gt;,
+    pub channel: <a class="type" href="../../../ethcore/snapshot/service/type.Channel.html" title="type ethcore::snapshot::service::Channel">Channel</a>,
+    pub snapshot_root: <a class="struct" href="https://doc.rust-lang.org/nightly/std/path/struct.PathBuf.html" title="struct std::path::PathBuf">PathBuf</a>,
+    pub db_restore: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../../../ethcore/snapshot/service/trait.DatabaseRestore.html" title="trait ethcore::snapshot::service::DatabaseRestore">DatabaseRestore</a>&gt;,
+}</pre></div><div class='docblock'><p>Snapshot service parameters.</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.engine" class="structfield small-section-header">
+                           <a href="#structfield.engine" class="anchor field"></a>
+                           <span id="engine.v" class='invisible'>
+                           <code>engine: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../../../ethcore/engines/trait.EthEngine.html" title="trait ethcore::engines::EthEngine">EthEngine</a>&gt;</code>
+                           </span></span><div class='docblock'><p>The consensus engine this is built on.</p>
+</div><span id="structfield.genesis_block" class="structfield small-section-header">
+                           <a href="#structfield.genesis_block" class="anchor field"></a>
+                           <span id="genesis_block.v" class='invisible'>
+                           <code>genesis_block: <a class="type" href="../../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a></code>
+                           </span></span><div class='docblock'><p>The chain's genesis block.</p>
+</div><span id="structfield.pruning" class="structfield small-section-header">
+                           <a href="#structfield.pruning" class="anchor field"></a>
+                           <span id="pruning.v" class='invisible'>
+                           <code>pruning: <a class="enum" href="../../../journaldb/enum.Algorithm.html" title="enum journaldb::Algorithm">Algorithm</a></code>
+                           </span></span><div class='docblock'><p>State pruning algorithm.</p>
+</div><span id="structfield.restoration_db_handler" class="structfield small-section-header">
+                           <a href="#structfield.restoration_db_handler" class="anchor field"></a>
+                           <span id="restoration_db_handler.v" class='invisible'>
+                           <code>restoration_db_handler: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;<a class="trait" href="../../../ethcore/trait.BlockChainDBHandler.html" title="trait ethcore::BlockChainDBHandler">BlockChainDBHandler</a>&gt;</code>
+                           </span></span><div class='docblock'><p>Handler for opening a restoration DB.</p>
+</div><span id="structfield.channel" class="structfield small-section-header">
+                           <a href="#structfield.channel" class="anchor field"></a>
+                           <span id="channel.v" class='invisible'>
+                           <code>channel: <a class="type" href="../../../ethcore/snapshot/service/type.Channel.html" title="type ethcore::snapshot::service::Channel">Channel</a></code>
+                           </span></span><div class='docblock'><p>Async IO channel for sending messages.</p>
+</div><span id="structfield.snapshot_root" class="structfield small-section-header">
+                           <a href="#structfield.snapshot_root" class="anchor field"></a>
+                           <span id="snapshot_root.v" class='invisible'>
+                           <code>snapshot_root: <a class="struct" href="https://doc.rust-lang.org/nightly/std/path/struct.PathBuf.html" title="struct std::path::PathBuf">PathBuf</a></code>
+                           </span></span><div class='docblock'><p>The directory to put snapshots in.
+Usually &quot;<chain hash>/snapshot&quot;</p>
+</div><span id="structfield.db_restore" class="structfield small-section-header">
+                           <a href="#structfield.db_restore" class="anchor field"></a>
+                           <span id="db_restore.v" class='invisible'>
+                           <code>db_restore: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../../../ethcore/snapshot/service/trait.DatabaseRestore.html" title="trait ethcore::snapshot::service::DatabaseRestore">DatabaseRestore</a>&gt;</code>
+                           </span></span><div class='docblock'><p>A handle for database restoration.</p>
+</div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        </div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../../ethcore/snapshot/service/struct.ServiceParams.html" title="struct ethcore::snapshot::service::ServiceParams">ServiceParams</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../../ethcore/snapshot/service/struct.ServiceParams.html" title="struct ethcore::snapshot::service::ServiceParams">ServiceParams</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../../../main.js"></script>
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Memzero","Wrapper to zero out memory when dropped."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["diff_pod","Calculate and return diff between `pre` state and `post` state."]],"struct":[["PodState","State of all accounts in the system expressed in Plain Old Data."]]});

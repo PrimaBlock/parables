@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["FakeCallType",""]],"fn":[["test_finalize",""]],"struct":[["FakeCall",""],["FakeExt","Fake externalities test structure."],["FakeLogEntry",""]]});

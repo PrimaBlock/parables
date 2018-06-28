@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BlockChain","Blockchain deserialization."]]});

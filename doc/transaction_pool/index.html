@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `transaction_pool` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, transaction_pool">
+
+    <title>transaction_pool - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate transaction_pool</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'transaction_pool', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>transaction_pool</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/transaction_pool/lib.rs.html#17-124' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Generic Transaction Pool</p>
+<p>An extensible and performant implementation of Ethereum Transaction Pool.
+The pool stores ordered, verified transactions according to some pluggable
+<code>Scoring</code> implementation.
+The pool also allows you to construct a set of <code>pending</code> transactions according
+to some notion of <code>Readiness</code> (pluggable).</p>
+<p>The pool is generic over transactions and should make no assumptions about them.
+The only thing we can rely on is the <code>Scoring</code> that defines:</p>
+<ul>
+<li>the ordering of transactions from a single sender</li>
+<li>the priority of the transaction compared to other transactions from different senders</li>
+</ul>
+<p>NOTE: the transactions from a single sender are not ordered by priority,
+but still when constructing pending set we always need to maintain the ordering
+(i.e. <code>txs[1]</code> always needs to be included after <code>txs[0]</code> even if it has higher priority)</p>
+<h3 id="design-details" class="section-header"><a href="#design-details">Design Details</a></h3>
+<p>Performance assumptions:</p>
+<ul>
+<li>Possibility to handle tens of thousands of transactions</li>
+<li>Fast insertions and replacements <code>O(per-sender + log(senders))</code></li>
+<li>Reasonably fast removal of stalled transactions <code>O(per-sender)</code></li>
+<li>Reasonably fast construction of pending set <code>O(txs * (log(senders) + log(per-sender))</code></li>
+</ul>
+<p>The removal performance could be improved by trading some memory. Currently <code>SmallVec</code> is used
+to store senders transactions, instead we could use <code>VecDeque</code> and efficiently <code>pop_front</code>
+the best transactions.</p>
+<p>The pending set construction and insertion complexity could be reduced by introducing
+a notion of <code>nonce</code> - an absolute, numeric ordering of transactions.
+We don't do that because of possible implications of EIP208 where nonce might not be
+explicitly available.</p>
+<ol>
+<li>The pool groups transactions from particular sender together
+and stores them ordered by <code>Scoring</code> within that group
+i.e. <code>HashMap&lt;Sender, Vec&lt;Transaction&gt;&gt;</code>.</li>
+<li>Additionaly we maintain the best and the worst transaction from each sender
+(by <code>Scoring</code> not <code>priority</code>) ordered by <code>priority</code>.
+It means that we can easily identify the best transaction inside the entire pool
+and the worst transaction.</li>
+<li>Whenever new transaction is inserted to the queue:
+<ul>
+<li>first check all the limits (overall, memory, per-sender)</li>
+<li>retrieve all transactions from a sender</li>
+<li>binary search for position to insert the transaction</li>
+<li>decide if we are replacing existing transaction (3 outcomes: drop, replace, insert)</li>
+<li>update best and worst transaction from that sender if affected</li>
+</ul>
+</li>
+<li>Pending List construction:
+<ul>
+<li>Take the best transaction (by priority) from all senders to the List</li>
+<li>Replace the transaction with next transaction (by ordering) from that sender (if any)</li>
+<li>Repeat</li>
+</ul>
+</li>
+</ol>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use self::scoring::<a class="trait" href="../transaction_pool/scoring/trait.Scoring.html" title="trait transaction_pool::scoring::Scoring">Scoring</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="scoring/index.html"
+                                  title='mod transaction_pool::scoring'>scoring</a></td>
+                           <td class='docblock-short'>
+                                <p>A transactions ordering abstraction.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Error.html"
+                                  title='struct transaction_pool::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>The Error type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.LightStatus.html"
+                                  title='struct transaction_pool::LightStatus'>LightStatus</a></td>
+                           <td class='docblock-short'>
+                                <p>Light pool status.
+This status is cheap to compute and can be called frequently.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.NoopListener.html"
+                                  title='struct transaction_pool::NoopListener'>NoopListener</a></td>
+                           <td class='docblock-short'>
+                                <p>A no-op implementation of <code>Listener</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Options.html"
+                                  title='struct transaction_pool::Options'>Options</a></td>
+                           <td class='docblock-short'>
+                                <p>Transaction Pool options.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PendingIterator.html"
+                                  title='struct transaction_pool::PendingIterator'>PendingIterator</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over all pending (ready) transactions.
+NOTE: the transactions are not removed from the queue.
+You might remove them later by calling <code>cull</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Pool.html"
+                                  title='struct transaction_pool::Pool'>Pool</a></td>
+                           <td class='docblock-short'>
+                                <p>A transaction pool.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Status.html"
+                                  title='struct transaction_pool::Status'>Status</a></td>
+                           <td class='docblock-short'>
+                                <p>A full queue status.
+To compute this status it is required to provide <code>Ready</code>.
+NOTE: To compute the status we need to visit each transaction in the pool.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Transaction.html"
+                                  title='struct transaction_pool::Transaction'>Transaction</a></td>
+                           <td class='docblock-short'>
+                                <p>Internal representation of transaction.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ErrorKind.html"
+                                  title='enum transaction_pool::ErrorKind'>ErrorKind</a></td>
+                           <td class='docblock-short'>
+                                <p>The kind of an error.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Readiness.html"
+                                  title='enum transaction_pool::Readiness'>Readiness</a></td>
+                           <td class='docblock-short'>
+                                <p>Transaction readiness.</p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Listener.html"
+                                  title='trait transaction_pool::Listener'>Listener</a></td>
+                           <td class='docblock-short'>
+                                <p>Transaction pool listener.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Ready.html"
+                                  title='trait transaction_pool::Ready'>Ready</a></td>
+                           <td class='docblock-short'>
+                                <p>A readiness indicator.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.VerifiedTransaction.html"
+                                  title='trait transaction_pool::VerifiedTransaction'>VerifiedTransaction</a></td>
+                           <td class='docblock-short'>
+                                <p>Already verified transaction that can be safely queued.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Verifier.html"
+                                  title='trait transaction_pool::Verifier'>Verifier</a></td>
+                           <td class='docblock-short'>
+                                <p>Transaction verification.</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "transaction_pool";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

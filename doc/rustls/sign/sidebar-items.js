@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CertifiedKey","A packaged together certificate chain, matching `SigningKey` and optional stapled OCSP response and/or SCT."],["RSASigningKey","A `SigningKey` for RSA-PKCS1 or RSA-PSS"]],"trait":[["Signer","A thing that can sign a message."],["SigningKey","An abstract signing key."]]});

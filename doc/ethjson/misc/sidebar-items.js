@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["NewDappsPolicy","Accounts policy for new dapps."]],"struct":[["AccountMeta","Collected account metadata"],["DappsHistory","History for specific dapp."],["DappsSettings","Settings for specific dapp."]]});

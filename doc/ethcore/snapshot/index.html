@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `snapshot` mod in crate `ethcore`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, snapshot">
+
+    <title>ethcore::snapshot - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Module snapshot</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../index.html'>ethcore</a></p><script>window.sidebarCurrent = {name: 'snapshot', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>ethcore</a>::<wbr><a class="mod" href=''>snapshot</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/ethcore/snapshot/mod.rs.html#17-496' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Snapshot creation, restoration, and network service.</p>
+<p>Documentation of the format can be found at
+https://github.com/paritytech/parity/wiki/Warp-Sync-Snapshot-Format</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use self::service::<a class="struct" href="../../ethcore/snapshot/service/struct.Service.html" title="struct ethcore::snapshot::service::Service">Service</a>;</code></td></tr><tr><td><code>pub use self::service::<a class="trait" href="../../ethcore/snapshot/service/trait.DatabaseRestore.html" title="trait ethcore::snapshot::service::DatabaseRestore">DatabaseRestore</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="io/index.html"
+                                  title='mod ethcore::snapshot::io'>io</a></td>
+                           <td class='docblock-short'>
+                                <p>Snapshot i/o.
+Ways of writing and reading snapshots. This module supports writing and reading
+snapshots of two different formats: packed and loose.
+Packed snapshots are written to a single file, and loose snapshots are
+written to multiple files in one directory.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="service/index.html"
+                                  title='mod ethcore::snapshot::service'>service</a></td>
+                           <td class='docblock-short'>
+                                <p>Snapshot network service implementation.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BasicAccount.html"
+                                  title='struct ethcore::snapshot::BasicAccount'>BasicAccount</a></td>
+                           <td class='docblock-short'>
+                                <p>Basic account type.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ManifestData.html"
+                                  title='struct ethcore::snapshot::ManifestData'>ManifestData</a></td>
+                           <td class='docblock-short'>
+                                <p>Manifest data.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PoaSnapshot.html"
+                                  title='struct ethcore::snapshot::PoaSnapshot'>PoaSnapshot</a></td>
+                           <td class='docblock-short'>
+                                <p>Snapshot creation and restoration for PoA chains.
+Chunk format:</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PowRebuilder.html"
+                                  title='struct ethcore::snapshot::PowRebuilder'>PowRebuilder</a></td>
+                           <td class='docblock-short'>
+                                <p>Rebuilder for proof-of-work chains.
+Does basic verification for all blocks, but <code>PoW</code> verification for some.
+Blocks must be fed in-order.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PowSnapshot.html"
+                                  title='struct ethcore::snapshot::PowSnapshot'>PowSnapshot</a></td>
+                           <td class='docblock-short'>
+                                <p>Snapshot creation and restoration for PoW chains.
+This includes blocks from the head of the chain as a
+loose assurance that the chain is valid.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Progress.html"
+                                  title='struct ethcore::snapshot::Progress'>Progress</a></td>
+                           <td class='docblock-short'>
+                                <p>A progress indicator for snapshots.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StateRebuilder.html"
+                                  title='struct ethcore::snapshot::StateRebuilder'>StateRebuilder</a></td>
+                           <td class='docblock-short'>
+                                <p>Used to rebuild the state trie piece by piece.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Watcher.html"
+                                  title='struct ethcore::snapshot::Watcher'>Watcher</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>ChainNotify</code> implementation which will trigger a snapshot event
+at certain block numbers.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Error.html"
+                                  title='enum ethcore::snapshot::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>Snapshot-related errors.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.RestorationStatus.html"
+                                  title='enum ethcore::snapshot::RestorationStatus'>RestorationStatus</a></td>
+                           <td class='docblock-short'>
+                                <p>Statuses for restorations.</p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Rebuilder.html"
+                                  title='trait ethcore::snapshot::Rebuilder'>Rebuilder</a></td>
+                           <td class='docblock-short'>
+                                <p>Restore from secondary snapshot chunks.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.SnapshotComponents.html"
+                                  title='trait ethcore::snapshot::SnapshotComponents'>SnapshotComponents</a></td>
+                           <td class='docblock-short'>
+                                <p>Components necessary for snapshot creation and restoration.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.SnapshotService.html"
+                                  title='trait ethcore::snapshot::SnapshotService'>SnapshotService</a></td>
+                           <td class='docblock-short'>
+                                <p>The interface for a snapshot network service.
+This handles:</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.chunk_secondary.html"
+                                  title='fn ethcore::snapshot::chunk_secondary'>chunk_secondary</a></td>
+                           <td class='docblock-short'>
+                                <p>Create and write out all secondary chunks to disk, returning a vector of all
+the hashes of secondary chunks created.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.chunk_state.html"
+                                  title='fn ethcore::snapshot::chunk_state'>chunk_state</a></td>
+                           <td class='docblock-short'>
+                                <p>Walk the given state database starting from the given root,
+creating chunks and writing them out.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.take_snapshot.html"
+                                  title='fn ethcore::snapshot::take_snapshot'>take_snapshot</a></td>
+                           <td class='docblock-short'>
+                                <p>Take a snapshot using the given blockchain, starting block hash, and database, writing into the given writer.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.verify_old_block.html"
+                                  title='fn ethcore::snapshot::verify_old_block'>verify_old_block</a></td>
+                           <td class='docblock-short'>
+                                <p>Verify an old block with the given header, engine, blockchain, body. If <code>always</code> is set, it will perform
+the fullest verification possible. If not, it will take a random sample to determine whether it will
+do heavy or light verification.</p>
+
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ChunkSink.html"
+                                  title='type ethcore::snapshot::ChunkSink'>ChunkSink</a></td>
+                           <td class='docblock-short'>
+                                <p>A sink for produced chunks.</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

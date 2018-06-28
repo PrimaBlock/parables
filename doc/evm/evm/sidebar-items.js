@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["FinalizationResult","Finalization result. Gas Left: either it is a known value, or it needs to be computed by processing a return instruction."]],"trait":[["CostType","Cost calculation type. For low-gas usage we calculate costs using usize instead of U256"],["Finalize","Types that can be \"finalized\" using an EVM."]]});

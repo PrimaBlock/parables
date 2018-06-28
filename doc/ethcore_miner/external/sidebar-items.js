@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ExternalMiner","External Miner."]],"trait":[["ExternalMinerService","External miner interface."]]});

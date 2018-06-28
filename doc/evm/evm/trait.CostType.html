@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `CostType` trait in crate `evm`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, CostType">
+
+    <title>evm::evm::CostType - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc trait">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Trait CostType</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#required-methods">Required Methods</a><div class="sidebar-links"><a href="#tymethod.as_u256">as_u256</a><a href="#tymethod.from_u256">from_u256</a><a href="#tymethod.as_usize">as_usize</a><a href="#tymethod.overflow_add">overflow_add</a><a href="#tymethod.overflow_mul">overflow_mul</a><a href="#tymethod.overflow_mul_shr">overflow_mul_shr</a></div><a class="sidebar-title" href="#foreign-impls">Implementations on Foreign Types</a><div class="sidebar-links"><a href="#impl-CostType">U256</a><a href="#impl-CostType">usize</a></div><a class="sidebar-title" href="#implementors">Implementors</a></div><p class='location'><a href='../index.html'>evm</a>::<wbr><a href='index.html'>evm</a></p><script>window.sidebarCurrent = {name: 'CostType', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>evm</a>::<wbr><a href='index.html'>evm</a>::<wbr><a class="trait" href=''>CostType</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/evm/evm.rs.html#59-76' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust trait'>pub trait CostType: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.From.html" title="trait core::convert::From">From</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html" title="trait core::marker::Copy">Copy</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/arith/trait.Mul.html" title="trait core::ops::arith::Mul">Mul</a>&lt;Output = Self&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/arith/trait.Div.html" title="trait core::ops::arith::Div">Div</a>&lt;Output = Self&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/arith/trait.Add.html" title="trait core::ops::arith::Add">Add</a>&lt;Output = Self&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/arith/trait.Sub.html" title="trait core::ops::arith::Sub">Sub</a>&lt;Output = Self&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/bit/trait.Shr.html" title="trait core::ops::bit::Shr">Shr</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, Output = Self&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/bit/trait.Shl.html" title="trait core::ops::bit::Shl">Shl</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, Output = Self&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> {
+    fn <a href='#tymethod.as_u256' class='fnname'>as_u256</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>;
+<div class='item-spacer'></div>    fn <a href='#tymethod.from_u256' class='fnname'>from_u256</a>(val: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>) -&gt; <a class="type" href="../../vm/error/type.Result.html" title="type vm::error::Result">Result</a>&lt;Self&gt;;
+<div class='item-spacer'></div>    fn <a href='#tymethod.as_usize' class='fnname'>as_usize</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>;
+<div class='item-spacer'></div>    fn <a href='#tymethod.overflow_add' class='fnname'>overflow_add</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>;
+<div class='item-spacer'></div>    fn <a href='#tymethod.overflow_mul' class='fnname'>overflow_mul</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>;
+<div class='item-spacer'></div>    fn <a href='#tymethod.overflow_mul_shr' class='fnname'>overflow_mul_shr</a>(self, other: Self, shr: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>;
+}</pre></div><div class='docblock'><p>Cost calculation type. For low-gas usage we calculate costs using usize instead of U256</p>
+</div>
+            <h2 id='required-methods' class='small-section-header'>
+              Required Methods<a href='#required-methods' class='anchor'></a>
+            </h2>
+            <div class='methods'>
+        <h3 id='tymethod.as_u256' class='method'><span id='as_u256.v' class='invisible'><code>fn <a href='#tymethod.as_u256' class='fnname'>as_u256</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></h3><div class='docblock'><p>Converts this cost into <code>U256</code></p>
+</div><h3 id='tymethod.from_u256' class='method'><span id='from_u256.v' class='invisible'><code>fn <a href='#tymethod.from_u256' class='fnname'>from_u256</a>(val: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>) -&gt; <a class="type" href="../../vm/error/type.Result.html" title="type vm::error::Result">Result</a>&lt;Self&gt;</code></span></h3><div class='docblock'><p>Tries to fit <code>U256</code> into this <code>Cost</code> type</p>
+</div><h3 id='tymethod.as_usize' class='method'><span id='as_usize.v' class='invisible'><code>fn <a href='#tymethod.as_usize' class='fnname'>as_usize</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code></span></h3><div class='docblock'><p>Convert to usize (may panic)</p>
+</div><h3 id='tymethod.overflow_add' class='method'><span id='overflow_add.v' class='invisible'><code>fn <a href='#tymethod.overflow_add' class='fnname'>overflow_add</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></h3><div class='docblock'><p>Add with overflow</p>
+</div><h3 id='tymethod.overflow_mul' class='method'><span id='overflow_mul.v' class='invisible'><code>fn <a href='#tymethod.overflow_mul' class='fnname'>overflow_mul</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></h3><div class='docblock'><p>Multiple with overflow</p>
+</div><h3 id='tymethod.overflow_mul_shr' class='method'><span id='overflow_mul_shr.v' class='invisible'><code>fn <a href='#tymethod.overflow_mul_shr' class='fnname'>overflow_mul_shr</a>(self, other: Self, shr: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></h3><div class='docblock'><p>Single-step full multiplication and shift: <code>(self*other) &gt;&gt; shr</code>
+Should not overflow on intermediate steps</p>
+</div></div>
+                <h2 id='foreign-impls' class='small-section-header'>
+                  Implementations on Foreign Types<a href='#foreign-impls' class='anchor'></a>
+                </h2>
+            <h3 id='impl-CostType' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../evm/evm/trait.CostType.html" title="trait evm::evm::CostType">CostType</a> for <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code><a href='#impl-CostType' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#78-109' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><span class='docblock autohide'><div class='impl-items'><h4 id='method.as_u256' class="method"><span id='as_u256.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.as_u256' class='fnname'>as_u256</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#79-81' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.from_u256' class="method"><span id='from_u256.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.from_u256' class='fnname'>from_u256</a>(val: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>) -&gt; <a class="type" href="../../vm/error/type.Result.html" title="type vm::error::Result">Result</a>&lt;Self&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#83-85' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.as_usize' class="method"><span id='as_usize.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.as_usize' class='fnname'>as_usize</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#87-89' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.overflow_add' class="method"><span id='overflow_add.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.overflow_add' class='fnname'>overflow_add</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#91-93' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.overflow_mul' class="method"><span id='overflow_mul.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.overflow_mul' class='fnname'>overflow_mul</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#95-97' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.overflow_mul_shr' class="method"><span id='overflow_mul_shr.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.overflow_mul_shr' class='fnname'>overflow_mul_shr</a>(self, other: Self, shr: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#99-108' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4></div></span><h3 id='impl-CostType-1' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../evm/evm/trait.CostType.html" title="trait evm::evm::CostType">CostType</a> for <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code><a href='#impl-CostType-1' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#111-148' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><span class='docblock autohide'><div class='impl-items'><h4 id='method.as_u256-1' class="method"><span id='as_u256.v-2' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.as_u256' class='fnname'>as_u256</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#112-114' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.from_u256-1' class="method"><span id='from_u256.v-2' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.from_u256' class='fnname'>from_u256</a>(val: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>) -&gt; <a class="type" href="../../vm/error/type.Result.html" title="type vm::error::Result">Result</a>&lt;Self&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#116-125' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.as_usize-1' class="method"><span id='as_usize.v-2' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.as_usize' class='fnname'>as_usize</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#127-129' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.overflow_add-1' class="method"><span id='overflow_add.v-2' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.overflow_add' class='fnname'>overflow_add</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#131-133' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.overflow_mul-1' class="method"><span id='overflow_mul.v-2' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.overflow_mul' class='fnname'>overflow_mul</a>(self, other: Self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#135-137' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><h4 id='method.overflow_mul_shr-1' class="method"><span id='overflow_mul_shr.v-2' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='#method.overflow_mul_shr' class='fnname'>overflow_mul_shr</a>(self, other: Self, shr: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a>Self, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/evm/evm.rs.html#139-147' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4></div></span>
+        <h2 id='implementors' class='small-section-header'>
+          Implementors<a href='#implementors' class='anchor'></a>
+        </h2>
+        <ul class='item-list' id='implementors-list'>
+    </ul><script type="text/javascript">window.inlined_types=new Set([]);</script><script type="text/javascript" async
+                         src="../../implementors/evm/evm/trait.CostType.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "evm";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

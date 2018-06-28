@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["BlockId","Uniquely identifies block."],["TransactionId","Uniquely identifies transaction."]],"struct":[["TraceId","Uniquely identifies Trace."],["UncleId","Uniquely identifies Uncle."]]});

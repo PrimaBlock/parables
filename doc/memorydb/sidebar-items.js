@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["MemoryDB","Reference-counted memory-based `HashDB` implementation."]]});

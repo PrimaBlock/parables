@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Encoding","Text convertation encoding."]],"mod":[["posix","UTF-8 string converting for non-Windows systems."]],"trait":[["Encoder","Converter between string and multibyte encoding."]]});

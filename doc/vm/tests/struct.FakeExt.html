@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `FakeExt` struct in crate `vm`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, FakeExt">
+
+    <title>vm::tests::FakeExt - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct FakeExt</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.store">store</a><a href="#structfield.suicides">suicides</a><a href="#structfield.calls">calls</a><a href="#structfield.sstore_clears">sstore_clears</a><a href="#structfield.depth">depth</a><a href="#structfield.blockhashes">blockhashes</a><a href="#structfield.codes">codes</a><a href="#structfield.logs">logs</a><a href="#structfield.info">info</a><a href="#structfield.schedule">schedule</a><a href="#structfield.balances">balances</a><a href="#structfield.tracing">tracing</a><a href="#structfield.is_static">is_static</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.new_byzantium">new_byzantium</a><a href="#method.new_constantinople">new_constantinople</a><a href="#method.with_wasm">with_wasm</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Default">Default</a><a href="#impl-Ext">Ext</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../index.html'>vm</a>::<wbr><a href='index.html'>tests</a></p><script>window.sidebarCurrent = {name: 'FakeExt', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>vm</a>::<wbr><a href='index.html'>tests</a>::<wbr><a class="struct" href=''>FakeExt</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/vm/tests.rs.html#53-67' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct FakeExt {
+    pub store: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;,
+    pub suicides: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html" title="struct std::collections::hash::set::HashSet">HashSet</a>&lt;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>&gt;,
+    pub calls: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html" title="struct std::collections::hash::set::HashSet">HashSet</a>&lt;<a class="struct" href="../../vm/tests/struct.FakeCall.html" title="struct vm::tests::FakeCall">FakeCall</a>&gt;,
+    pub sstore_clears: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
+    pub depth: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
+    pub blockhashes: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;,
+    pub codes: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;&gt;,
+    pub logs: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="../../vm/tests/struct.FakeLogEntry.html" title="struct vm::tests::FakeLogEntry">FakeLogEntry</a>&gt;,
+    pub info: <a class="struct" href="../../vm/struct.EnvInfo.html" title="struct vm::EnvInfo">EnvInfo</a>,
+    pub schedule: <a class="struct" href="../../vm/struct.Schedule.html" title="struct vm::Schedule">Schedule</a>,
+    pub balances: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>&gt;,
+    pub tracing: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+    pub is_static: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+}</pre></div><div class='docblock'><p>Fake externalities test structure.</p>
+<p>Can't do recursive calls.</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.store" class="structfield small-section-header">
+                           <a href="#structfield.store" class="anchor field"></a>
+                           <span id="store.v" class='invisible'>
+                           <code>store: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;</code>
+                           </span></span><span id="structfield.suicides" class="structfield small-section-header">
+                           <a href="#structfield.suicides" class="anchor field"></a>
+                           <span id="suicides.v" class='invisible'>
+                           <code>suicides: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html" title="struct std::collections::hash::set::HashSet">HashSet</a>&lt;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>&gt;</code>
+                           </span></span><span id="structfield.calls" class="structfield small-section-header">
+                           <a href="#structfield.calls" class="anchor field"></a>
+                           <span id="calls.v" class='invisible'>
+                           <code>calls: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html" title="struct std::collections::hash::set::HashSet">HashSet</a>&lt;<a class="struct" href="../../vm/tests/struct.FakeCall.html" title="struct vm::tests::FakeCall">FakeCall</a>&gt;</code>
+                           </span></span><span id="structfield.sstore_clears" class="structfield small-section-header">
+                           <a href="#structfield.sstore_clears" class="anchor field"></a>
+                           <span id="sstore_clears.v" class='invisible'>
+                           <code>sstore_clears: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code>
+                           </span></span><span id="structfield.depth" class="structfield small-section-header">
+                           <a href="#structfield.depth" class="anchor field"></a>
+                           <span id="depth.v" class='invisible'>
+                           <code>depth: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code>
+                           </span></span><span id="structfield.blockhashes" class="structfield small-section-header">
+                           <a href="#structfield.blockhashes" class="anchor field"></a>
+                           <span id="blockhashes.v" class='invisible'>
+                           <code>blockhashes: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;</code>
+                           </span></span><span id="structfield.codes" class="structfield small-section-header">
+                           <a href="#structfield.codes" class="anchor field"></a>
+                           <span id="codes.v" class='invisible'>
+                           <code>codes: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;&gt;</code>
+                           </span></span><span id="structfield.logs" class="structfield small-section-header">
+                           <a href="#structfield.logs" class="anchor field"></a>
+                           <span id="logs.v" class='invisible'>
+                           <code>logs: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="../../vm/tests/struct.FakeLogEntry.html" title="struct vm::tests::FakeLogEntry">FakeLogEntry</a>&gt;</code>
+                           </span></span><span id="structfield.info" class="structfield small-section-header">
+                           <a href="#structfield.info" class="anchor field"></a>
+                           <span id="info.v" class='invisible'>
+                           <code>info: <a class="struct" href="../../vm/struct.EnvInfo.html" title="struct vm::EnvInfo">EnvInfo</a></code>
+                           </span></span><span id="structfield.schedule" class="structfield small-section-header">
+                           <a href="#structfield.schedule" class="anchor field"></a>
+                           <span id="schedule.v" class='invisible'>
+                           <code>schedule: <a class="struct" href="../../vm/struct.Schedule.html" title="struct vm::Schedule">Schedule</a></code>
+                           </span></span><span id="structfield.balances" class="structfield small-section-header">
+                           <a href="#structfield.balances" class="anchor field"></a>
+                           <span id="balances.v" class='invisible'>
+                           <code>balances: <a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>&gt;</code>
+                           </span></span><span id="structfield.tracing" class="structfield small-section-header">
+                           <a href="#structfield.tracing" class="anchor field"></a>
+                           <span id="tracing.v" class='invisible'>
+                           <code>tracing: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code>
+                           </span></span><span id="structfield.is_static" class="structfield small-section-header">
+                           <a href="#structfield.is_static" class="anchor field"></a>
+                           <span id="is_static.v" class='invisible'>
+                           <code>is_static: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code>
+                           </span></span>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="struct" href="../../vm/tests/struct.FakeExt.html" title="struct vm::tests::FakeExt">FakeExt</a></code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#78-103' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new' class='fnname'>new</a>() -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#80-82' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>New fake externalities</p>
+</div><h4 id='method.new_byzantium' class="method"><span id='new_byzantium.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new_byzantium' class='fnname'>new_byzantium</a>() -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#85-89' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>New fake externalities with byzantium schedule rules</p>
+</div><h4 id='method.new_constantinople' class="method"><span id='new_constantinople.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new_constantinople' class='fnname'>new_constantinople</a>() -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#92-96' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>New fake externalities with constantinople schedule rules</p>
+</div><h4 id='method.with_wasm' class="method"><span id='with_wasm.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.with_wasm' class='fnname'>with_wasm</a>(self) -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#99-102' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Alter fake externalities to allow wasm</p>
+</div></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        <h3 id='impl-Default' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> for <a class="struct" href="../../vm/tests/struct.FakeExt.html" title="struct vm::tests::FakeExt">FakeExt</a></code><a href='#impl-Default' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#52' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.default' class="method"><span id='default.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class="struct" href="../../vm/tests/struct.FakeExt.html" title="struct vm::tests::FakeExt">FakeExt</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#52' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+</div></div><h3 id='impl-Ext' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../vm/trait.Ext.html" title="trait vm::Ext">Ext</a> for <a class="struct" href="../../vm/tests/struct.FakeExt.html" title="struct vm::tests::FakeExt">FakeExt</a></code><a href='#impl-Ext' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#105-219' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.storage_at' class="method"><span id='storage_at.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.storage_at' class='fnname'>storage_at</a>(&amp;self, key: &amp;<a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#106-108' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns a value for given key.</p>
+</div><h4 id='method.set_storage' class="method"><span id='set_storage.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.set_storage' class='fnname'>set_storage</a>(&amp;mut self, key: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, value: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#110-113' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Stores a value for given key.</p>
+</div><h4 id='method.exists' class="method"><span id='exists.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.exists' class='fnname'>exists</a>(&amp;self, address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#115-117' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Determine whether an account exists.</p>
+</div><h4 id='method.exists_and_not_null' class="method"><span id='exists_and_not_null.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.exists_and_not_null' class='fnname'>exists_and_not_null</a>(&amp;self, address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#119-121' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Determine whether an account exists and is not null (zero balance/nonce, no code).</p>
+</div><h4 id='method.origin_balance' class="method"><span id='origin_balance.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.origin_balance' class='fnname'>origin_balance</a>(&amp;self) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#123-125' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Balance of the origin account.</p>
+</div><h4 id='method.balance' class="method"><span id='balance.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.balance' class='fnname'>balance</a>(&amp;self, address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#127-129' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns address balance.</p>
+</div><h4 id='method.blockhash' class="method"><span id='blockhash.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.blockhash' class='fnname'>blockhash</a>(&amp;mut self, number: &amp;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>) -&gt; <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#131-133' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns the hash of one of the 256 most recent complete blocks.</p>
+</div><h4 id='method.create' class="method"><span id='create.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.create' class='fnname'>create</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;gas: &amp;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;value: &amp;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;code: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_address: <a class="enum" href="../../vm/enum.CreateContractAddress.html" title="enum vm::CreateContractAddress">CreateContractAddress</a><br>) -&gt; <a class="enum" href="../../vm/enum.ContractCreateResult.html" title="enum vm::ContractCreateResult">ContractCreateResult</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#135-146' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates new contract. <a href="../../vm/trait.Ext.html#tymethod.create">Read more</a></p>
+</div><h4 id='method.call' class="method"><span id='call.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.call' class='fnname'>call</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;gas: &amp;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;sender_address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;receive_address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;value: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;data: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;code_address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_output: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;mut [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_call_type: <a class="enum" href="../../vm/enum.CallType.html" title="enum vm::CallType">CallType</a><br>) -&gt; <a class="enum" href="../../vm/enum.MessageCallResult.html" title="enum vm::MessageCallResult">MessageCallResult</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#148-169' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Message call. <a href="../../vm/trait.Ext.html#tymethod.call">Read more</a></p>
+</div><h4 id='method.extcode' class="method"><span id='extcode.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.extcode' class='fnname'>extcode</a>(&amp;self, address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#171-173' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns code at given address</p>
+</div><h4 id='method.extcodesize' class="method"><span id='extcodesize.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.extcodesize' class='fnname'>extcodesize</a>(&amp;self, address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#175-177' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns code size at given address</p>
+</div><h4 id='method.log' class="method"><span id='log.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.log' class='fnname'>log</a>(&amp;mut self, topics: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;, data: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#179-185' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates log entry with given topics and data</p>
+</div><h4 id='method.ret' class="method"><span id='ret.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.ret' class='fnname'>ret</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;_gas: &amp;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_data: &amp;<a class="struct" href="../../vm/struct.ReturnData.html" title="struct vm::ReturnData">ReturnData</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_apply_state: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><br>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#187-189' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Should be called when transaction calls <code>RETURN</code> opcode. Returns gas_left if cost of returning the data is not too high. <a href="../../vm/trait.Ext.html#tymethod.ret">Read more</a></p>
+</div><h4 id='method.suicide' class="method"><span id='suicide.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.suicide' class='fnname'>suicide</a>(&amp;mut self, refund_address: &amp;<a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>) -&gt; <a class="type" href="../../vm/type.Result.html" title="type vm::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#191-194' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Should be called when contract commits suicide. Address to which funds should be refunded. <a href="../../vm/trait.Ext.html#tymethod.suicide">Read more</a></p>
+</div><h4 id='method.schedule' class="method"><span id='schedule.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.schedule' class='fnname'>schedule</a>(&amp;self) -&gt; &amp;<a class="struct" href="../../vm/struct.Schedule.html" title="struct vm::Schedule">Schedule</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#196-198' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns schedule.</p>
+</div><h4 id='method.env_info' class="method"><span id='env_info.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.env_info' class='fnname'>env_info</a>(&amp;self) -&gt; &amp;<a class="struct" href="../../vm/struct.EnvInfo.html" title="struct vm::EnvInfo">EnvInfo</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#200-202' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns environment info.</p>
+</div><h4 id='method.depth' class="method"><span id='depth.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.depth' class='fnname'>depth</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#204-206' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns current depth of execution. <a href="../../vm/trait.Ext.html#tymethod.depth">Read more</a></p>
+</div><h4 id='method.is_static' class="method"><span id='is_static.v-1' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.is_static' class='fnname'>is_static</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#208-210' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Check if running in static context.</p>
+</div><h4 id='method.inc_sstore_clears' class="method"><span id='inc_sstore_clears.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#tymethod.inc_sstore_clears' class='fnname'>inc_sstore_clears</a>(&amp;mut self)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#212-214' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Increments sstore refunds count by 1.</p>
+</div><h4 id='method.trace_next_instruction' class="method"><span id='trace_next_instruction.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#method.trace_next_instruction' class='fnname'>trace_next_instruction</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;_pc: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_instruction: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_gas: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a><br>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/tests.rs.html#216-218' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Decide if any more operations should be traced. Passthrough for the VM trace.</p>
+</div><h4 id='method.trace_prepare_execute' class="method"><span id='trace_prepare_execute.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#method.trace_prepare_execute' class='fnname'>trace_prepare_execute</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;_pc: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_instruction: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_gas_cost: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a><br>)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/ext.rs.html#144' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Prepare to trace an operation. Passthrough for the VM trace.</p>
+</div><h4 id='method.trace_executed' class="method"><span id='trace_executed.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../vm/trait.Ext.html#method.trace_executed' class='fnname'>trace_executed</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;_gas_used: <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_stack_push: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;_mem_diff: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;_store_diff: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>&gt;<br>)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/vm/ext.rs.html#147' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Trace the finalised execution of a single instruction.</p>
+</div></div></div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../vm/tests/struct.FakeExt.html" title="struct vm::tests::FakeExt">FakeExt</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../vm/tests/struct.FakeExt.html" title="struct vm::tests::FakeExt">FakeExt</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "vm";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error",""]],"fn":[["compile","Compiles all solidity files in given directory."]]});

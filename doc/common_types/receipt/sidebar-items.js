@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["TransactionOutcome","Transaction outcome store in the receipt."]],"struct":[["LocalizedReceipt","Receipt with additional info."],["Receipt","Information describing execution of a transaction."],["RichReceipt","Receipt with additional info."]]});

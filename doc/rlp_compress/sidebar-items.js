@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["blocks_swapper",""],["compress","Call this function to compress rlp."],["decompress","Call this function to decompress rlp."],["snapshot_swapper",""]],"struct":[["Swapper","Stores RLPs used for compression"]],"trait":[["Compressor","A trait used to compress rlp."],["Decompressor","A trait used to convert compressed rlp into it's original version."]]});

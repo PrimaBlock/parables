@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DataChanged",""],["Drained",""],["Dropped",""],["FeeChanged",""],["NewOwner",""],["Reserved",""],["ReverseConfirmed",""],["ReverseProposed",""],["ReverseRemoved",""],["Transferred",""]]});

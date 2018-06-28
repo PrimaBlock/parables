@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["external","External Miner hashrate tracker."],["gas_pricer","Auto-updates minimal gas price requirement."],["pool","Transaction Pool"],["work_notify","Sends HTTP notifications to a list of URLs every time new work is available."]]});

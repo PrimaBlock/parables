@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["FlatBlockTraces","Represents all traces produced by transactions in a single block."],["FlatTrace","Trace localized in vector of traces produced by a single transaction."],["FlatTransactionTraces","Represents all traces produced by a single transaction."]]});

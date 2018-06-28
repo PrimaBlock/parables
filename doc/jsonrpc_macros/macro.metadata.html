@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `metadata` macro in crate `jsonrpc_macros`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, metadata">
+
+    <title>jsonrpc_macros::metadata - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc macro">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <div class="sidebar-elems"><p class='location'><a href='index.html'>jsonrpc_macros</a></p><script>window.sidebarCurrent = {name: 'metadata', ty: 'macro', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Macro <a href='index.html'>jsonrpc_macros</a>::<wbr><a class="macro" href=''>metadata</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/jsonrpc_macros/auto_args.rs.html#60-71' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class="rust macro">
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">metadata</span> {
+    () <span class="op">=&gt;</span> { ... };
+    (
+		$( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">sub_name</span>: <span class="ident">ident</span> )<span class="op">+</span>
+	) <span class="op">=&gt;</span> { ... };
+}</pre>
+</div><div class='docblock'><p>Auto-generates an RPC trait from trait definition.</p>
+<p>This just copies out all the methods, docs, and adds another
+function <code>to_delegate</code> which will automatically wrap each strongly-typed
+function in a wrapper which handles parameter and output type serialization.</p>
+<p>RPC functions may come in a couple forms: synchronous, async and async with metadata.
+These are parsed with the custom <code>#[rpc]</code> attribute, which must follow
+documentation.</p>
+<h2 id="the-rpc-attribute" class="section-header"><a href="#the-rpc-attribute">The #[rpc] attribute</a></h2>
+<p>Valid forms:</p>
+<ul>
+<li><code>#[rpc(name = &quot;name_here&quot;)]</code> (an async rpc function which should be bound to the given name)</li>
+<li><code>#[rpc(meta, name = &quot;name_here&quot;)]</code> (an async rpc function with metadata which should be bound to the given name)</li>
+</ul>
+<p>Synchronous function format:
+<code>fn foo(&amp;self, Param1, Param2, Param3) -&gt; Result&lt;Out&gt;</code>.</p>
+<p>Asynchronous RPC functions must come in this form:
+`fn foo(&amp;self, Param1, Param2, Param3) -&gt; BoxFuture<Out>;</p>
+<p>Asynchronous RPC functions with metadata must come in this form:
+`fn foo(&amp;self, Self::Metadata, Param1, Param2, Param3) -&gt; BoxFuture<Out>;</p>
+<p>Anything else will be rejected by the code generator.</p>
+<h2 id="the-pubsub-attribute" class="section-header"><a href="#the-pubsub-attribute">The #[pubsub] attribute</a></h2>
+<p>Valid form:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ<span class='tooltiptext'>This example is not tested</span></div></div><pre class="rust rust-example-rendered ignore">
+<span class="attribute">#[<span class="ident">pubsub</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;hello&quot;</span>)]</span> {
+  <span class="attribute">#[<span class="ident">rpc</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;hello_subscribe&quot;</span>)]</span>
+  <span class="kw">fn</span> <span class="ident">subscribe</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="self">Self</span>::<span class="ident">Metadata</span>, <span class="ident">pubsub</span>::<span class="ident">Subscriber</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">u64</span>);
+  <span class="attribute">#[<span class="ident">rpc</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;hello_unsubscribe&quot;</span>)]</span>
+  <span class="kw">fn</span> <span class="ident">unsubscribe</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">SubscriptionId</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
+}</pre>
+<p>The attribute is used to create a new pair of subscription methods
+(if underlying transport supports that.)</p>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "jsonrpc_macros";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

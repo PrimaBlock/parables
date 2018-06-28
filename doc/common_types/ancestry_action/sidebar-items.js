@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AncestryAction","Actions on a live block's parent block. Only committed when the live block is committed. Those actions here must respect the normal blockchain reorganization rules."]]});

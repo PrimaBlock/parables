@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Linker","A solidity bytecode linker."]]});

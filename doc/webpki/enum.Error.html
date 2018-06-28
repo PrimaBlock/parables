@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Error` enum in crate `webpki`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Error">
+
+    <title>webpki::Error - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc enum">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Enum Error</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.BadDER">BadDER</a><a href="#variant.BadDERTime">BadDERTime</a><a href="#variant.CAUsedAsEndEntity">CAUsedAsEndEntity</a><a href="#variant.CertExpired">CertExpired</a><a href="#variant.CertNotValidForName">CertNotValidForName</a><a href="#variant.CertNotValidYet">CertNotValidYet</a><a href="#variant.EndEntityUsedAsCA">EndEntityUsedAsCA</a><a href="#variant.ExtensionValueInvalid">ExtensionValueInvalid</a><a href="#variant.InvalidCertValidity">InvalidCertValidity</a><a href="#variant.InvalidReferenceName">InvalidReferenceName</a><a href="#variant.InvalidSignatureForPublicKey">InvalidSignatureForPublicKey</a><a href="#variant.NameConstraintViolation">NameConstraintViolation</a><a href="#variant.PathLenConstraintViolated">PathLenConstraintViolated</a><a href="#variant.SignatureAlgorithmMismatch">SignatureAlgorithmMismatch</a><a href="#variant.RequiredEKUNotFound">RequiredEKUNotFound</a><a href="#variant.UnknownIssuer">UnknownIssuer</a><a href="#variant.UnsupportedCertVersion">UnsupportedCertVersion</a><a href="#variant.UnsupportedCriticalExtension">UnsupportedCriticalExtension</a><a href="#variant.UnsupportedSignatureAlgorithmForPublicKey">UnsupportedSignatureAlgorithmForPublicKey</a><a href="#variant.UnsupportedSignatureAlgorithm">UnsupportedSignatureAlgorithm</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Clone">Clone</a><a href="#impl-Copy">Copy</a><a href="#impl-Debug">Debug</a><a href="#impl-PartialEq">PartialEq</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='index.html'>webpki</a></p><script>window.sidebarCurrent = {name: 'Error', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>webpki</a>::<wbr><a class="enum" href=''>Error</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/webpki/webpki.rs.html#190-264' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust enum'>pub enum Error {
+    BadDER,
+    BadDERTime,
+    CAUsedAsEndEntity,
+    CertExpired,
+    CertNotValidForName,
+    CertNotValidYet,
+    EndEntityUsedAsCA,
+    ExtensionValueInvalid,
+    InvalidCertValidity,
+    InvalidReferenceName,
+    InvalidSignatureForPublicKey,
+    NameConstraintViolation,
+    PathLenConstraintViolated,
+    SignatureAlgorithmMismatch,
+    RequiredEKUNotFound,
+    UnknownIssuer,
+    UnsupportedCertVersion,
+    UnsupportedCriticalExtension,
+    UnsupportedSignatureAlgorithmForPublicKey,
+    UnsupportedSignatureAlgorithm,
+}</pre></div><div class='docblock'><p>An error that occurs during certificate validation or name validation.</p>
+</div><h2 id='variants' class='variants small-section-header'>
+                   Variants<a href='#variants' class='anchor'></a></h2>
+<span id="variant.BadDER" class="variant small-section-header"><a href="#variant.BadDER" class="anchor field"></a><span id='BadDER.v' class='invisible'><code>BadDER</code></span></span><div class='docblock'><p>The encoding of some ASN.1 DER-encoded item is invalid.</p>
+</div><span id="variant.BadDERTime" class="variant small-section-header"><a href="#variant.BadDERTime" class="anchor field"></a><span id='BadDERTime.v' class='invisible'><code>BadDERTime</code></span></span><div class='docblock'><p>The encoding of an ASN.1 DER-encoded time is invalid.</p>
+</div><span id="variant.CAUsedAsEndEntity" class="variant small-section-header"><a href="#variant.CAUsedAsEndEntity" class="anchor field"></a><span id='CAUsedAsEndEntity.v' class='invisible'><code>CAUsedAsEndEntity</code></span></span><div class='docblock'><p>A CA certificate is veing used as an end-entity certificate.</p>
+</div><span id="variant.CertExpired" class="variant small-section-header"><a href="#variant.CertExpired" class="anchor field"></a><span id='CertExpired.v' class='invisible'><code>CertExpired</code></span></span><div class='docblock'><p>The certificate is expired; i.e. the time it is being validated for is
+later than the certificate's notAfter time.</p>
+</div><span id="variant.CertNotValidForName" class="variant small-section-header"><a href="#variant.CertNotValidForName" class="anchor field"></a><span id='CertNotValidForName.v' class='invisible'><code>CertNotValidForName</code></span></span><div class='docblock'><p>The certificate is not valid for the name it is being validated for.</p>
+</div><span id="variant.CertNotValidYet" class="variant small-section-header"><a href="#variant.CertNotValidYet" class="anchor field"></a><span id='CertNotValidYet.v' class='invisible'><code>CertNotValidYet</code></span></span><div class='docblock'><p>The certificate is not valid yet; i.e. the time it is being validated
+for is earlier than the certificate's notBefore time.</p>
+</div><span id="variant.EndEntityUsedAsCA" class="variant small-section-header"><a href="#variant.EndEntityUsedAsCA" class="anchor field"></a><span id='EndEntityUsedAsCA.v' class='invisible'><code>EndEntityUsedAsCA</code></span></span><div class='docblock'><p>An end-entity certificate is being used as a CA certificate.</p>
+</div><span id="variant.ExtensionValueInvalid" class="variant small-section-header"><a href="#variant.ExtensionValueInvalid" class="anchor field"></a><span id='ExtensionValueInvalid.v' class='invisible'><code>ExtensionValueInvalid</code></span></span><div class='docblock'><p>An X.509 extension is invalid.</p>
+</div><span id="variant.InvalidCertValidity" class="variant small-section-header"><a href="#variant.InvalidCertValidity" class="anchor field"></a><span id='InvalidCertValidity.v' class='invisible'><code>InvalidCertValidity</code></span></span><div class='docblock'><p>The certificate validity period (notBefore, notAfter) is invalid; e.g.
+the notAfter time is earlier than the notBefore time.</p>
+</div><span id="variant.InvalidReferenceName" class="variant small-section-header"><a href="#variant.InvalidReferenceName" class="anchor field"></a><span id='InvalidReferenceName.v' class='invisible'><code>InvalidReferenceName</code></span></span><div class='docblock'><p>The name that a certificate is being validated for is malformed. This
+is not a problem with the certificate, but with the name it is being
+validated for.</p>
+</div><span id="variant.InvalidSignatureForPublicKey" class="variant small-section-header"><a href="#variant.InvalidSignatureForPublicKey" class="anchor field"></a><span id='InvalidSignatureForPublicKey.v' class='invisible'><code>InvalidSignatureForPublicKey</code></span></span><div class='docblock'><p>The signature is invalid for the given public key.</p>
+</div><span id="variant.NameConstraintViolation" class="variant small-section-header"><a href="#variant.NameConstraintViolation" class="anchor field"></a><span id='NameConstraintViolation.v' class='invisible'><code>NameConstraintViolation</code></span></span><div class='docblock'><p>The certificate violates one or more name constraints.</p>
+</div><span id="variant.PathLenConstraintViolated" class="variant small-section-header"><a href="#variant.PathLenConstraintViolated" class="anchor field"></a><span id='PathLenConstraintViolated.v' class='invisible'><code>PathLenConstraintViolated</code></span></span><div class='docblock'><p>The certificate violates one or more path length constraints.</p>
+</div><span id="variant.SignatureAlgorithmMismatch" class="variant small-section-header"><a href="#variant.SignatureAlgorithmMismatch" class="anchor field"></a><span id='SignatureAlgorithmMismatch.v' class='invisible'><code>SignatureAlgorithmMismatch</code></span></span><div class='docblock'><p>The algorithm in the TBSCertificate &quot;signature&quot; field of a certificate
+does not match the algorithm in the signature of the certificate.</p>
+</div><span id="variant.RequiredEKUNotFound" class="variant small-section-header"><a href="#variant.RequiredEKUNotFound" class="anchor field"></a><span id='RequiredEKUNotFound.v' class='invisible'><code>RequiredEKUNotFound</code></span></span><div class='docblock'><p>The certificate is not valid for the Extended Key Usage for which it is
+being validated.</p>
+</div><span id="variant.UnknownIssuer" class="variant small-section-header"><a href="#variant.UnknownIssuer" class="anchor field"></a><span id='UnknownIssuer.v' class='invisible'><code>UnknownIssuer</code></span></span><div class='docblock'><p>A valid issuer for the certificate could not be found.</p>
+</div><span id="variant.UnsupportedCertVersion" class="variant small-section-header"><a href="#variant.UnsupportedCertVersion" class="anchor field"></a><span id='UnsupportedCertVersion.v' class='invisible'><code>UnsupportedCertVersion</code></span></span><div class='docblock'><p>The certificate is not a v3 X.509 certificate.</p>
+</div><span id="variant.UnsupportedCriticalExtension" class="variant small-section-header"><a href="#variant.UnsupportedCriticalExtension" class="anchor field"></a><span id='UnsupportedCriticalExtension.v' class='invisible'><code>UnsupportedCriticalExtension</code></span></span><div class='docblock'><p>The certificate contains an unsupported critical extension.</p>
+</div><span id="variant.UnsupportedSignatureAlgorithmForPublicKey" class="variant small-section-header"><a href="#variant.UnsupportedSignatureAlgorithmForPublicKey" class="anchor field"></a><span id='UnsupportedSignatureAlgorithmForPublicKey.v' class='invisible'><code>UnsupportedSignatureAlgorithmForPublicKey</code></span></span><div class='docblock'><p>The signature's algorithm does not match the algorithm of the public
+key it is being validated for. This may be because the public key
+algorithm's OID isn't recognized (e.g. DSA), or the public key
+algorithm's parameters don't match the supported parameters for that
+algorithm (e.g. ECC keys for unsupported curves), or the public key
+algorithm and the signature algorithm simply don't match (e.g.
+verifying an RSA signature with an ECC public key).</p>
+</div><span id="variant.UnsupportedSignatureAlgorithm" class="variant small-section-header"><a href="#variant.UnsupportedSignatureAlgorithm" class="anchor field"></a><span id='UnsupportedSignatureAlgorithm.v' class='invisible'><code>UnsupportedSignatureAlgorithm</code></span></span><div class='docblock'><p>The signature algorithm for a signature is not in the set of supported
+signature algorithms given.</p>
+</div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        <h3 id='impl-Clone' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code><a href='#impl-Clone' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.clone' class="method"><span id='clone.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class="method"><span id='clone_from.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/clone.rs.html#117-119' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div><h3 id='impl-Copy' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html" title="trait core::marker::Copy">Copy</a> for <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code><a href='#impl-Copy' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+</div></div><h3 id='impl-PartialEq' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a> for <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code><a href='#impl-PartialEq' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.eq' class="method"><span id='eq.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/webpki/webpki.rs.html#189' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests for <code>self</code> and <code>other</code> values to be equal, and is used by <code>==</code>. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq">Read more</a></p>
+</div><h4 id='method.ne' class="method"><span id='ne.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, other: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Rhs) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/cmp.rs.html#121' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>This method tests for <code>!=</code>.</p>
+</div></div></div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="enum" href="../webpki/enum.Error.html" title="enum webpki::Error">Error</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "webpki";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

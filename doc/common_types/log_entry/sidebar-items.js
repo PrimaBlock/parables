@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["LocalizedLogEntry","Log localized in a blockchain."],["LogEntry","A record of execution for a `LOG` operation."]]});

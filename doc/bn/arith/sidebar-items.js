@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","U256/U512 errors"]],"struct":[["BitIterator",""],["U256","256-bit, stack allocated biginteger for use in prime field arithmetic."],["U512","512-bit, stack allocated biginteger for use in extension field serialization and scalar interpretation."]]});

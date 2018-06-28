@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BlockChainInfo","Information about the blockchain gathered together."]]});

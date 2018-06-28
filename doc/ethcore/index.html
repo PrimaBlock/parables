@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ethcore` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ethcore">
+
+    <title>ethcore - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate ethcore</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'ethcore', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>ethcore</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/ethcore/lib.rs.html#17-180' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Ethcore library</p>
+<h3 id="rust-version" class="section-header"><a href="#rust-version">Rust version:</a></h3>
+<ul>
+<li>nightly</li>
+</ul>
+<h3 id="supported-platforms" class="section-header"><a href="#supported-platforms">Supported platforms:</a></h3>
+<ul>
+<li>OSX</li>
+<li>Linux</li>
+</ul>
+<h3 id="building" class="section-header"><a href="#building">Building:</a></h3>
+<ul>
+<li>
+<p>Ubuntu 14.04 and later:</p>
+<pre><code class="language-bash">
+# install rustup
+curl https://sh.rustup.rs -sSf | sh
+
+# download and build parity
+git clone https://github.com/paritytech/parity
+cd parity
+cargo build --release
+</code></pre>
+</li>
+<li>
+<p>OSX:</p>
+<pre><code class="language-bash"># install rocksdb &amp;&amp; rustup
+brew update
+curl https://sh.rustup.rs -sSf | sh
+
+# download and build parity
+git clone https://github.com/paritytech/parity
+cd parity
+cargo build --release
+</code></pre>
+</li>
+</ul>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub extern crate <a class="mod" href="../ethstore/index.html" title="mod ethstore">ethstore</a>;</code></td></tr><tr><td><code>pub use <a class="mod" href="../common_types/index.html" title="mod common_types">types</a>::*;</code></td></tr><tr><td><code>pub use executive::<a class="fn" href="../ethcore/executive/fn.contract_address.html" title="fn ethcore::executive::contract_address">contract_address</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="account_provider/index.html"
+                                  title='mod ethcore::account_provider'>account_provider</a></td>
+                           <td class='docblock-short'>
+                                <p>Account management.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="block/index.html"
+                                  title='mod ethcore::block'>block</a></td>
+                           <td class='docblock-short'>
+                                <p>Blockchain block.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="client/index.html"
+                                  title='mod ethcore::client'>client</a></td>
+                           <td class='docblock-short'>
+                                <p>Blockchain database client.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="db/index.html"
+                                  title='mod ethcore::db'>db</a></td>
+                           <td class='docblock-short'>
+                                <p>Database utilities and definitions.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="encoded/index.html"
+                                  title='mod ethcore::encoded'>encoded</a></td>
+                           <td class='docblock-short'>
+                                <p>Lazily-decoded owning views of RLP-encoded blockchain objects.
+These views are meant to contain <em>trusted</em> data -- without encoding
+errors or inconsistencies.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="engines/index.html"
+                                  title='mod ethcore::engines'>engines</a></td>
+                           <td class='docblock-short'>
+                                <p>Consensus engine specification and basic implementations.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="error/index.html"
+                                  title='mod ethcore::error'>error</a></td>
+                           <td class='docblock-short'>
+                                <p>General error types for use in ethcore.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="ethereum/index.html"
+                                  title='mod ethcore::ethereum'>ethereum</a></td>
+                           <td class='docblock-short'>
+                                <p>Ethereum protocol module.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="executed/index.html"
+                                  title='mod ethcore::executed'>executed</a></td>
+                           <td class='docblock-short'>
+                                <p>Transaction execution format module.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="executive/index.html"
+                                  title='mod ethcore::executive'>executive</a></td>
+                           <td class='docblock-short'>
+                                <p>Transaction Execution environment.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="header/index.html"
+                                  title='mod ethcore::header'>header</a></td>
+                           <td class='docblock-short'>
+                                <p>Block header.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="machine/index.html"
+                                  title='mod ethcore::machine'>machine</a></td>
+                           <td class='docblock-short'>
+                                <p>Ethereum-like state machine definition.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="miner/index.html"
+                                  title='mod ethcore::miner'>miner</a></td>
+                           <td class='docblock-short'>
+                                <p>Miner module
+Keeps track of transactions and currently sealed pending block.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="pod_state/index.html"
+                                  title='mod ethcore::pod_state'>pod_state</a></td>
+                           <td class='docblock-short'>
+                                <p>State of all accounts in the system expressed in Plain Old Data.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="snapshot/index.html"
+                                  title='mod ethcore::snapshot'>snapshot</a></td>
+                           <td class='docblock-short'>
+                                <p>Snapshot creation, restoration, and network service.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="spec/index.html"
+                                  title='mod ethcore::spec'>spec</a></td>
+                           <td class='docblock-short'>
+                                <p>Blockchain params.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="state/index.html"
+                                  title='mod ethcore::state'>state</a></td>
+                           <td class='docblock-short'>
+                                <p>A mutable state representation suitable to execute transactions.
+Generic over a <code>Backend</code>. Deals with <code>Account</code>s.
+Unconfirmed sub-states are managed with <code>checkpoint</code>s which may be canonicalized
+or rolled back.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="state_db/index.html"
+                                  title='mod ethcore::state_db'>state_db</a></td>
+                           <td class='docblock-short'>
+                                <p>State database abstraction. For more info, see the doc for <code>StateDB</code></p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="test_helpers/index.html"
+                                  title='mod ethcore::test_helpers'>test_helpers</a></td>
+                           <td class='docblock-short'>
+                                <p>Set of different helpers for client tests</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="trace/index.html"
+                                  title='mod ethcore::trace'>trace</a></td>
+                           <td class='docblock-short'>
+                                <p>Tracing</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="verification/index.html"
+                                  title='mod ethcore::verification'>verification</a></td>
+                           <td class='docblock-short'>
+                                <p>Block verification utilities.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="views/index.html"
+                                  title='mod ethcore::views'>views</a></td>
+                           <td class='docblock-short'>
+                                <p>Block oriented views onto rlp.</p>
+
+                           </td>
+                       </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.view.html"
+                                  title='macro ethcore::view'>view</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CreateContractAddress.html"
+                                  title='enum ethcore::CreateContractAddress'>CreateContractAddress</a></td>
+                           <td class='docblock-short'>
+                                <p>Specifies how an address is calculated for a new contract.</p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.BlockChainDB.html"
+                                  title='trait ethcore::BlockChainDB'>BlockChainDB</a></td>
+                           <td class='docblock-short'>
+                                <p>Database backing <code>BlockChain</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.BlockChainDBHandler.html"
+                                  title='trait ethcore::BlockChainDBHandler'>BlockChainDBHandler</a></td>
+                           <td class='docblock-short'>
+                                <p>Generic database handler. This trait contains one function <code>open</code>. When called, it opens database with a
+predefined config.</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

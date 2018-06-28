@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Account",""],["CollectingReporter","A reporter that doesn't report anything."],["StdoutReporter","A components that prints test results."]],"trait":[["Reporter",""]]});

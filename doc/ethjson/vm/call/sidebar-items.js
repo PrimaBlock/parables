@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Call","Vm call deserialization."]]});

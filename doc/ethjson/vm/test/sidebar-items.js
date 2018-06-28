@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Test","Vm test deserializer."]]});

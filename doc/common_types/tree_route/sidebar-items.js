@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TreeRoute","Represents a tree route between `from` block and `to` block:"]]});

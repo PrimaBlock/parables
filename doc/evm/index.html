@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `evm` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, evm">
+
+    <title>evm - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate evm</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'evm', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>evm</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/evm/lib.rs.html#17-57' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Ethereum virtual machine.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use self::evm::<a class="trait" href="../evm/evm/trait.Finalize.html" title="trait evm::evm::Finalize">Finalize</a>;</code></td></tr><tr><td><code>pub use self::evm::<a class="struct" href="../evm/evm/struct.FinalizationResult.html" title="struct evm::evm::FinalizationResult">FinalizationResult</a>;</code></td></tr><tr><td><code>pub use self::evm::<a class="trait" href="../evm/evm/trait.CostType.html" title="trait evm::evm::CostType">CostType</a>;</code></td></tr><tr><td><code>pub use self::factory::<a class="struct" href="../evm/factory/struct.Factory.html" title="struct evm::factory::Factory">Factory</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="evm/index.html"
+                                  title='mod evm::evm'>evm</a></td>
+                           <td class='docblock-short'>
+                                <p>Evm interface.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="factory/index.html"
+                                  title='mod evm::factory'>factory</a></td>
+                           <td class='docblock-short'>
+                                <p>Evm factory.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="interpreter/index.html"
+                                  title='mod evm::interpreter'>interpreter</a></td>
+                           <td class='docblock-short'>
+                                <p>Rust VM implementation</p>
+
+                           </td>
+                       </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.evm_test.html"
+                                  title='macro evm::evm_test'>evm_test</a></td>
+                           <td class='docblock-short'>
+                                <p>Create tests by injecting different VM factories</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="macro" href="macro.evm_test_ignore.html"
+                                  title='macro evm::evm_test_ignore'>evm_test_ignore</a></td>
+                           <td class='docblock-short'>
+                                <p>Create ignored tests by injecting different VM factories</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ActionParams.html"
+                                  title='struct evm::ActionParams'>ActionParams</a></td>
+                           <td class='docblock-short'>
+                                <p>Action (call/create) input params. Everything else should be specified in Externalities.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.EnvInfo.html"
+                                  title='struct evm::EnvInfo'>EnvInfo</a></td>
+                           <td class='docblock-short'>
+                                <p>Information concerning the execution environment for a message-call/contract-creation.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.INSTRUCTIONS.html"
+                                  title='struct evm::INSTRUCTIONS'>INSTRUCTIONS</a></td>
+                           <td class='docblock-short'>
+                                <p>Static instruction table.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.InstructionInfo.html"
+                                  title='struct evm::InstructionInfo'>InstructionInfo</a></td>
+                           <td class='docblock-short'>
+                                <p>EVM instruction information.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ReturnData.html"
+                                  title='struct evm::ReturnData'>ReturnData</a></td>
+                           <td class='docblock-short'>
+                                <p>Return data buffer. Holds memory from a previous call and a slice into that memory.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Schedule.html"
+                                  title='struct evm::Schedule'>Schedule</a></td>
+                           <td class='docblock-short'>
+                                <p>Definition of the cost schedule and other parameterisations for the EVM.</p>
+
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CallType.html"
+                                  title='enum evm::CallType'>CallType</a></td>
+                           <td class='docblock-short'>
+                                <p>The type of the call-like instruction.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CleanDustMode.html"
+                                  title='enum evm::CleanDustMode'>CleanDustMode</a></td>
+                           <td class='docblock-short'>
+                                <p>Dust accounts cleanup mode.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ContractCreateResult.html"
+                                  title='enum evm::ContractCreateResult'>ContractCreateResult</a></td>
+                           <td class='docblock-short'>
+                                <p>Result of externalities create function.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.CreateContractAddress.html"
+                                  title='enum evm::CreateContractAddress'>CreateContractAddress</a></td>
+                           <td class='docblock-short'>
+                                <p>Specifies how an address is calculated for a new contract.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.GasLeft.html"
+                                  title='enum evm::GasLeft'>GasLeft</a></td>
+                           <td class='docblock-short'>
+                                <p>Gas Left: either it is a known value, or it needs to be computed by processing
+a return instruction.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.MessageCallResult.html"
+                                  title='enum evm::MessageCallResult'>MessageCallResult</a></td>
+                           <td class='docblock-short'>
+                                <p>Result of externalities call function.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.VMType.html"
+                                  title='enum evm::VMType'>VMType</a></td>
+                           <td class='docblock-short'>
+                                <p>Type of EVM to use.</p>
+
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Ext.html"
+                                  title='trait evm::Ext'>Ext</a></td>
+                           <td class='docblock-short'>
+                                <p>Externalities interface for EVMs</p>
+
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.push_bytes.html"
+                                  title='fn evm::push_bytes'>push_bytes</a></td>
+                           <td class='docblock-short'>
+                                <p>Returns number of bytes to read for <code>PUSHN</code> instruction or 0.</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "evm";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

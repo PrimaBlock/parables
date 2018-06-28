@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["HardcodedSync","Spec hardcoded sync."]]});

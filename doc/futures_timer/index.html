@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `futures_timer` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, futures_timer">
+
+    <title>futures_timer - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate futures_timer</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'futures_timer', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>futures_timer</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/futures_timer/lib.rs.html#1-408' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>A general purpose crate for working with timeouts and delays with futures.</p>
+<p>This crate is intended to provide general purpose timeouts and interval
+streams for working with <code>futures</code>. The implementation may not be optimized
+for your particular use case, though, so be sure to read up on the details
+if you're concerned about that!</p>
+<p>Basic usage of this crate is relatively simple:</p>
+
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
+<span class="kw">use</span> <span class="ident">futures_timer</span>::<span class="ident">Delay</span>;
+<span class="kw">use</span> <span class="ident">futures</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+
+<span class="kw">let</span> <span class="ident">dur</span> <span class="op">=</span> <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">3</span>);
+<span class="kw">let</span> <span class="ident">fires_in_three_seconds</span> <span class="op">=</span> <span class="ident">Delay</span>::<span class="ident">new</span>(<span class="ident">dur</span>)
+    .<span class="ident">map</span>(<span class="op">|</span>()<span class="op">|</span> <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;prints three seconds later&quot;</span>));
+<span class="comment">// spawn or use the future above</span></pre>
+<p>In addition to a one-shot future you can also create a stream of delayed
+notifications with the <code>Interval</code> type:</p>
+
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
+<span class="kw">use</span> <span class="ident">futures_timer</span>::<span class="ident">Interval</span>;
+<span class="kw">use</span> <span class="ident">futures</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+
+<span class="kw">let</span> <span class="ident">dur</span> <span class="op">=</span> <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">4</span>);
+<span class="kw">let</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">Interval</span>::<span class="ident">new</span>(<span class="ident">dur</span>)
+    .<span class="ident">map</span>(<span class="op">|</span>()<span class="op">|</span> <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;prints every four seconds&quot;</span>));
+<span class="comment">// spawn or use the stream</span></pre>
+<p>And you're off to the races! Check out the API documentation for more
+details about the various methods on <code>Delay</code> and <code>Interval</code>.</p>
+<h1 id="implementation-details" class="section-header"><a href="#implementation-details">Implementation details</a></h1>
+<p>The <code>Delay</code> and <code>Interval</code> types are powered by an associated <code>Timer</code>. By
+default constructors like <code>Delay::new</code> and <code>Interval::new</code> use a global
+instance of <code>Timer</code> to power their usage. This global <code>Timer</code> is spawned
+onto a helper thread which continuously runs in the background sending out
+timer notifications.</p>
+<p>If needed, however, a <code>Timer</code> can be constructed manually and the
+<code>Delay::new_handle</code>-style methods can be used to create delays/intervals
+associated with a specific instance of <code>Timer</code>. Each <code>Timer</code> has a
+<code>TimerHandle</code> type which is used to associate new objects to it.</p>
+<p>Note that there's also a <code>TimerHandle::set_fallback</code> method which will
+globally configure the fallback timer handle as well if you'd like to run
+your own timer.</p>
+<p>Finally, the implementation of <code>Timer</code> itself is currently a binary heap.
+Timer insertion is O(log n) where n is the number of active timers, and so
+is firing a timer (which invovles removing from the heap).</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use ext::<a class="trait" href="../futures_timer/ext/trait.FutureExt.html" title="trait futures_timer::ext::FutureExt">FutureExt</a>;</code></td></tr><tr><td><code>pub use ext::<a class="trait" href="../futures_timer/ext/trait.StreamExt.html" title="trait futures_timer::ext::StreamExt">StreamExt</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="ext/index.html"
+                                  title='mod futures_timer::ext'>ext</a></td>
+                           <td class='docblock-short'>
+                                <p>Extension traits for the standard <code>Stream</code> and <code>Future</code> traits.</p>
+
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Delay.html"
+                                  title='struct futures_timer::Delay'>Delay</a></td>
+                           <td class='docblock-short'>
+                                <p>A future representing the notification that an elapsed duration has
+occurred.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Interval.html"
+                                  title='struct futures_timer::Interval'>Interval</a></td>
+                           <td class='docblock-short'>
+                                <p>A stream representing notifications at fixed interval</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SetDefaultError.html"
+                                  title='struct futures_timer::SetDefaultError'>SetDefaultError</a></td>
+                           <td class='docblock-short'>
+                                <p>Error returned from <code>TimerHandle::set_fallback</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Timer.html"
+                                  title='struct futures_timer::Timer'>Timer</a></td>
+                           <td class='docblock-short'>
+                                <p>A &quot;timer heap&quot; used to power separately owned instances of <code>Delay</code> and
+<code>Interval</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TimerHandle.html"
+                                  title='struct futures_timer::TimerHandle'>TimerHandle</a></td>
+                           <td class='docblock-short'>
+                                <p>A handle to a <code>Timer</code> which is used to create instances of a <code>Delay</code>.</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "futures_timer";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

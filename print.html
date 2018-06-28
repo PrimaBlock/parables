@@ -69,7 +69,7 @@
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li></ol>
+            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li><li><a href="06_account_balances.html"><strong aria-hidden="true">6.</strong> Account Balances</a></li></ol>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -304,7 +304,7 @@ fn main() -&gt; Result&lt;()&gt; {
 
     // Deploy the SimpleContract.
     let code = simple_contract::bin(&amp;linker)?;
-    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
 
     // Wrap the virtual machine in a Snapshot type so that it can be shared as a snapshot across
     // threads.
@@ -320,14 +320,14 @@ fn main() -&gt; Result&lt;()&gt; {
 
         let mut expected = U256::from(0);
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
 
         // change value
         expected = 1.into();
 
         evm.call(simple, f::set_value(expected), call)?;
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
 
         Ok(())
@@ -389,7 +389,7 @@ But we also have access to older foundations like [<code>morden</code>].</p>
 # #![allow(unused_variables)]
 #fn main() {
 let code = simple_lib::bin(&amp;linker)?;
-let simple = evm.deploy(simple_contract::constructor(code, 0), call)?;
+let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
 #}</code></pre></pre>
 <p>For the next line we link our contract, and deploy it to our virtual machine by calling its
 constructor.</p>
@@ -428,18 +428,18 @@ isolation without worrying about trampling on each others feets.</p>
 #fn main() {
 let mut expected = 0;
 
-let out = evm.call(simple, f::get_value(), call)?;
+let out = evm.call(simple, f::get_value(), call)?.output;
 assert_eq!(expected, out);
 
 // change value
 expected = 1;
 
 evm.call(simple, f::set_value(expected), call)?;
-let out = evm.call(simple, f::get_value(), call)?;
+let out = evm.call(simple, f::get_value(), call)?.output;
 assert_eq!(expected, out);
 #}</code></pre></pre>
 <p>This final snippet is the complete test case.
-We call the <code>getValue()</code> solidity function and compare it's output, set it using <code>setValue(uint)</code>,
+We call the <code>getValue()</code> solidity function and compare its <code>output</code>, set it using <code>setValue(uint)</code>,
 and make sure that it has been set as expected by getting it again.</p>
 <p>So it's finally time to run your test!
 You do this by calling <code>cargo run</code>.</p>
@@ -461,11 +461,11 @@ tests.test(&quot;get and increment value randomly&quot;, || {
 
         let mut evm = evm.get()?;
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(U256::from(0), out);
 
         evm.call(simple, f::set_value(x), call)?;
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(x, out);
     });
 });
@@ -515,7 +515,7 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, || {
 
         let mut evm = evm.get()?;
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(U256::from(0), out);
 
         let result = evm.call(simple, f::set_value(x), call);
@@ -530,7 +530,7 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, || {
             x
         };
 
-        let out = evm.call(simple, f::get_value(), call)?;
+        let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
     });
 });
@@ -540,6 +540,41 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, || {
 </code></pre>
 <pre><code>get and increment value randomly within constraints in 0.686s: ok
 </code></pre>
+<a class="header" href="print.html#account-balances" id="account-balances"><h1>Account Balances</h1></a>
+<p>Every address has an implicit <em>account</em> associated with it.
+The account acts like a ledger, keeping track of of the balance in ether that any given address
+has.</p>
+<p>Accounts are always in use, any transaction takes into account the amount of ether being attached
+to it and any gas being used.</p>
+<p>To make use of balances, we first need to provide an address with a balance.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let foundation = Spec::new_null();
+let mut evm = Evm::new(&amp;foundation);
+
+let a = Address::random();
+let b = Address::random();
+
+evm.add_balance(a, wei::from_ether(100));
+#}</code></pre></pre>
+<p>The first way we can change the balance of an account is to transfer ether from one account to
+another using a default call.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let call = Call::new(a).gas(21000).gas_price(10);
+let res = evm.call_default(b, call)?;
+#}</code></pre></pre>
+<p>We can now check the balance for each account to make sure it's been modified.</p>
+<p>Note that account <code>a</code> doesn't have <code>90</code> ether, we have to take the gas subtracted into account!</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+assert_ne!(evm.balance(a), wei::from_ether(90));
+assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_used * res.gas_price);
+assert_eq!(evm.balance(b), wei::from_ether(10));
+#}</code></pre></pre>
 
                     </main>
 

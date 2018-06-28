@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ClientConfig` struct in crate `rustls`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ClientConfig">
+
+    <title>rustls::ClientConfig - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct ClientConfig</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.ciphersuites">ciphersuites</a><a href="#structfield.root_store">root_store</a><a href="#structfield.alpn_protocols">alpn_protocols</a><a href="#structfield.session_persistence">session_persistence</a><a href="#structfield.mtu">mtu</a><a href="#structfield.client_auth_cert_resolver">client_auth_cert_resolver</a><a href="#structfield.enable_tickets">enable_tickets</a><a href="#structfield.versions">versions</a><a href="#structfield.ct_logs">ct_logs</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.set_protocols">set_protocols</a><a href="#method.set_persistence">set_persistence</a><a href="#method.set_mtu">set_mtu</a><a href="#method.set_single_client_cert">set_single_client_cert</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Clone">Clone</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='index.html'>rustls</a></p><script>window.sidebarCurrent = {name: 'ClientConfig', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>rustls</a>::<wbr><a class="struct" href=''>ClientConfig</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/rustls/client/mod.rs.html#172-210' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct ClientConfig {
+    pub ciphersuites: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;&amp;'static <a class="struct" href="../rustls/struct.SupportedCipherSuite.html" title="struct rustls::SupportedCipherSuite">SupportedCipherSuite</a>&gt;,
+    pub root_store: <a class="struct" href="../rustls/struct.RootCertStore.html" title="struct rustls::RootCertStore">RootCertStore</a>,
+    pub alpn_protocols: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;,
+    pub session_persistence: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../rustls/trait.StoresClientSessions.html" title="trait rustls::StoresClientSessions">StoresClientSessions</a>&gt;,
+    pub mtu: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;,
+    pub client_auth_cert_resolver: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../rustls/trait.ResolvesClientCert.html" title="trait rustls::ResolvesClientCert">ResolvesClientCert</a>&gt;,
+    pub enable_tickets: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+    pub versions: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../rustls/enum.ProtocolVersion.html" title="enum rustls::ProtocolVersion">ProtocolVersion</a>&gt;,
+    pub ct_logs: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;'static [</a>&amp;'static <a class="struct" href="../sct/struct.Log.html" title="struct sct::Log">Log</a>&lt;'static&gt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>&gt;,
+    // some fields omitted
+}</pre></div><div class='docblock'><p>Common configuration for (typically) all connections made by
+a program.</p>
+<p>Making one of these can be expensive, and should be
+once per process rather than once per connection.</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.ciphersuites" class="structfield small-section-header">
+                           <a href="#structfield.ciphersuites" class="anchor field"></a>
+                           <span id="ciphersuites.v" class='invisible'>
+                           <code>ciphersuites: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;&amp;'static <a class="struct" href="../rustls/struct.SupportedCipherSuite.html" title="struct rustls::SupportedCipherSuite">SupportedCipherSuite</a>&gt;</code>
+                           </span></span><div class='docblock'><p>List of ciphersuites, in preference order.</p>
+</div><span id="structfield.root_store" class="structfield small-section-header">
+                           <a href="#structfield.root_store" class="anchor field"></a>
+                           <span id="root_store.v" class='invisible'>
+                           <code>root_store: <a class="struct" href="../rustls/struct.RootCertStore.html" title="struct rustls::RootCertStore">RootCertStore</a></code>
+                           </span></span><div class='docblock'><p>Collection of root certificates.</p>
+</div><span id="structfield.alpn_protocols" class="structfield small-section-header">
+                           <a href="#structfield.alpn_protocols" class="anchor field"></a>
+                           <span id="alpn_protocols.v" class='invisible'>
+                           <code>alpn_protocols: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;</code>
+                           </span></span><div class='docblock'><p>Which ALPN protocols we include in our client hello.
+If empty, no ALPN extension is sent.</p>
+</div><span id="structfield.session_persistence" class="structfield small-section-header">
+                           <a href="#structfield.session_persistence" class="anchor field"></a>
+                           <span id="session_persistence.v" class='invisible'>
+                           <code>session_persistence: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../rustls/trait.StoresClientSessions.html" title="trait rustls::StoresClientSessions">StoresClientSessions</a>&gt;</code>
+                           </span></span><div class='docblock'><p>How we store session data or tickets.</p>
+</div><span id="structfield.mtu" class="structfield small-section-header">
+                           <a href="#structfield.mtu" class="anchor field"></a>
+                           <span id="mtu.v" class='invisible'>
+                           <code>mtu: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;</code>
+                           </span></span><div class='docblock'><p>Our MTU.  If None, we don't limit TLS message sizes.</p>
+</div><span id="structfield.client_auth_cert_resolver" class="structfield small-section-header">
+                           <a href="#structfield.client_auth_cert_resolver" class="anchor field"></a>
+                           <span id="client_auth_cert_resolver.v" class='invisible'>
+                           <code>client_auth_cert_resolver: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../rustls/trait.ResolvesClientCert.html" title="trait rustls::ResolvesClientCert">ResolvesClientCert</a>&gt;</code>
+                           </span></span><div class='docblock'><p>How to decide what client auth certificate/keys to use.</p>
+</div><span id="structfield.enable_tickets" class="structfield small-section-header">
+                           <a href="#structfield.enable_tickets" class="anchor field"></a>
+                           <span id="enable_tickets.v" class='invisible'>
+                           <code>enable_tickets: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code>
+                           </span></span><div class='docblock'><p>Whether to support RFC5077 tickets.  You must provide a working
+<code>session_persistence</code> member for this to have any meaningful
+effect.</p>
+<p>The default is true.</p>
+</div><span id="structfield.versions" class="structfield small-section-header">
+                           <a href="#structfield.versions" class="anchor field"></a>
+                           <span id="versions.v" class='invisible'>
+                           <code>versions: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../rustls/enum.ProtocolVersion.html" title="enum rustls::ProtocolVersion">ProtocolVersion</a>&gt;</code>
+                           </span></span><div class='docblock'><p>Supported versions, in no particular order.  The default
+is all supported versions.</p>
+</div><span id="structfield.ct_logs" class="structfield small-section-header">
+                           <a href="#structfield.ct_logs" class="anchor field"></a>
+                           <span id="ct_logs.v" class='invisible'>
+                           <code>ct_logs: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;'static [</a>&amp;'static <a class="struct" href="../sct/struct.Log.html" title="struct sct::Log">Log</a>&lt;'static&gt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>&gt;</code>
+                           </span></span><div class='docblock'><p>Collection of certificate transparency logs.
+If this collection is empty, then certificate transparency
+checking is disabled.</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="struct" href="../rustls/struct.ClientConfig.html" title="struct rustls::ClientConfig">ClientConfig</a></code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#212-285' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class="struct" href="../rustls/struct.ClientConfig.html" title="struct rustls::ClientConfig">ClientConfig</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#216-229' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Make a <code>ClientConfig</code> with a default set of ciphersuites,
+no root certificates, no ALPN protocols, no
+session persistence, and no client auth.</p>
+</div><h4 id='method.set_protocols' class="method"><span id='set_protocols.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.set_protocols' class='fnname'>set_protocols</a>(&amp;mut self, protocols: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#240-243' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Set the ALPN protocol list to the given protocol names.
+Overwrites any existing configured protocols.
+The first element in the <code>protocols</code> list is the most
+preferred, the last is the least preferred.</p>
+</div><h4 id='method.set_persistence' class="method"><span id='set_persistence.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.set_persistence' class='fnname'>set_persistence</a>(&amp;mut self, persist: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="trait" href="../rustls/trait.StoresClientSessions.html" title="trait rustls::StoresClientSessions">StoresClientSessions</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#246-248' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Sets persistence layer to <code>persist</code>.</p>
+</div><h4 id='method.set_mtu' class="method"><span id='set_mtu.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.set_mtu' class='fnname'>set_mtu</a>(&amp;mut self, mtu: &amp;<a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#252-265' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Sets MTU to <code>mtu</code>.  If None, the default is used.
+If Some(x) then x must be greater than 5 bytes.</p>
+</div><h4 id='method.set_single_client_cert' class="method"><span id='set_single_client_cert.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.set_single_client_cert' class='fnname'>set_single_client_cert</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;cert_chain: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="../rustls/struct.Certificate.html" title="struct rustls::Certificate">Certificate</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;key_der: <a class="struct" href="../rustls/struct.PrivateKey.html" title="struct rustls::PrivateKey">PrivateKey</a><br>)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#272-277' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Sets a single client authentication certificate and private key.
+This is blindly used for all servers that ask for client auth.</p>
+<p><code>cert_chain</code> is a vector of DER-encoded certificates,
+<code>key_der</code> is a DER-encoded RSA private key.</p>
+</div></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        <h3 id='impl-Clone' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="struct" href="../rustls/struct.ClientConfig.html" title="struct rustls::ClientConfig">ClientConfig</a></code><a href='#impl-Clone' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#171' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.clone' class="method"><span id='clone.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class="struct" href="../rustls/struct.ClientConfig.html" title="struct rustls::ClientConfig">ClientConfig</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rustls/client/mod.rs.html#171' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class="method"><span id='clone_from.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/clone.rs.html#117-119' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div></div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../rustls/struct.ClientConfig.html" title="struct rustls::ClientConfig">ClientConfig</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../rustls/struct.ClientConfig.html" title="struct rustls::ClientConfig">ClientConfig</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "rustls";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

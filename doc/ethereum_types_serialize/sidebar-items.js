@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ExpectedLen","Expected length of bytes vector."]],"fn":[["deserialize_check_len","Deserialize into vector of bytes with additional size check. Returns number of bytes written."],["serialize","Serializes a slice of bytes."],["serialize_uint","Serialize a slice of bytes as uint."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["add_chain_replay_protection","Adds chain id into v"],["check_replay_protection","Returns refined v 0 if `v` would have been 27 under \"Electrum\" notation, 1 if 28 or 4 if invalid."]]});

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `TransactionView` struct in crate `ethcore`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, TransactionView">
+
+    <title>ethcore::views::TransactionView - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct TransactionView</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.rlp">rlp</a><a href="#method.hash">hash</a><a href="#method.nonce">nonce</a><a href="#method.gas_price">gas_price</a><a href="#method.gas">gas</a><a href="#method.value">value</a><a href="#method.data">data</a><a href="#method.v">v</a><a href="#method.r">r</a><a href="#method.s">s</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">!Sync</a></div></div><p class='location'><a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>views</a></p><script>window.sidebarCurrent = {name: 'TransactionView', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>views</a>::<wbr><a class="struct" href=''>TransactionView</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#25-27' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct TransactionView&lt;'a&gt; { /* fields omitted */ }</pre></div><div class='docblock'><p>View onto transaction rlp.</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a&gt; <a class="struct" href="../../ethcore/views/struct.TransactionView.html" title="struct ethcore::views::TransactionView">TransactionView</a>&lt;'a&gt;</code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#29-85' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.new' class='fnname'>new</a>(rlp: <a class="struct" href="../../ethcore/views/struct.ViewRlp.html" title="struct ethcore::views::ViewRlp">ViewRlp</a>&lt;'a&gt;) -&gt; <a class="struct" href="../../ethcore/views/struct.TransactionView.html" title="struct ethcore::views::TransactionView">TransactionView</a>&lt;'a&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#46-50' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Creates new view onto valid transaction rlp.
+Use the <code>view!</code> macro to create this view in order to capture debugging info.</p>
+<h1 id="example" class="section-header"><a href="#example">Example</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore</span>;
+ 
+<span class="kw">use</span> <span class="ident">ethcore</span>::<span class="ident">views</span>::{<span class="ident">TransactionView</span>};
+ 
+<span class="kw">fn</span> <span class="ident">main</span>() {
+<span class="kw">let</span> <span class="ident">bytes</span> : <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[];
+<span class="kw">let</span> <span class="ident">tx_view</span> <span class="op">=</span> <span class="macro">view</span><span class="macro">!</span>(<span class="ident">TransactionView</span>, <span class="ident">bytes</span>);
+}</pre>
+</div><h4 id='method.rlp' class="method"><span id='rlp.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.rlp' class='fnname'>rlp</a>(&amp;self) -&gt; &amp;<a class="struct" href="../../ethcore/views/struct.ViewRlp.html" title="struct ethcore::views::ViewRlp">ViewRlp</a>&lt;'a&gt;</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#53-55' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Return reference to underlaying rlp.</p>
+</div><h4 id='method.hash' class="method"><span id='hash.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.hash' class='fnname'>hash</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#58-60' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns transaction hash.</p>
+</div><h4 id='method.nonce' class="method"><span id='nonce.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.nonce' class='fnname'>nonce</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#63' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the nonce field of the transaction.</p>
+</div><h4 id='method.gas_price' class="method"><span id='gas_price.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.gas_price' class='fnname'>gas_price</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#66' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the gas_price field of the transaction.</p>
+</div><h4 id='method.gas' class="method"><span id='gas.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.gas' class='fnname'>gas</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#69' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the gas field of the transaction.</p>
+</div><h4 id='method.value' class="method"><span id='value.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.value' class='fnname'>value</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#72' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the value field of the transaction.</p>
+</div><h4 id='method.data' class="method"><span id='data.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.data' class='fnname'>data</a>(&amp;self) -&gt; <a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#75' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the data field of the transaction.</p>
+</div><h4 id='method.v' class="method"><span id='v.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.v' class='fnname'>v</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#78' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the v field of the transaction.</p>
+</div><h4 id='method.r' class="method"><span id='r.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.r' class='fnname'>r</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#81' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the r field of the transaction.</p>
+</div><h4 id='method.s' class="method"><span id='s.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.s' class='fnname'>s</a>(&amp;self) -&gt; <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/views/transaction.rs.html#84' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Get the s field of the transaction.</p>
+</div></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        </div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a&gt; <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../ethcore/views/struct.TransactionView.html" title="struct ethcore::views::TransactionView">TransactionView</a>&lt;'a&gt;</code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a&gt; !<a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../ethcore/views/struct.TransactionView.html" title="struct ethcore::views::TransactionView">TransactionView</a>&lt;'a&gt;</code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ethcore";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

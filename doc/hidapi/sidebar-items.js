@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["HidApi","Object for handling hidapi context and implementing RAII for it. Only one instance can exist at a time."],["HidDevice","Object for accessing HID device"],["HidDeviceInfo","Storage for device related information"]],"type":[["HidError",""],["HidResult",""]]});

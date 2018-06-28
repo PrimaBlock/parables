@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["size_of","Returns the size of a type in [`Bytes`]."]],"struct":[["Bytes","Memory size specified in bytes."]],"trait":[["ByteSize","A trait defining the size, in bytes, of one unit of `Self`."],["RoundUpTo","A trait defining round up conversion between various memory units."]]});

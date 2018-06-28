@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Vm","Represents vm execution environment before and after execution of transaction."]]});

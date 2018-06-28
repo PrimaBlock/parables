@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ProtobufValueRef` enum in crate `protobuf`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ProtobufValueRef">
+
+    <title>protobuf::reflect::ProtobufValueRef - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc enum">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Enum ProtobufValueRef</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.U32">U32</a><a href="#variant.U64">U64</a><a href="#variant.I32">I32</a><a href="#variant.I64">I64</a><a href="#variant.F32">F32</a><a href="#variant.F64">F64</a><a href="#variant.Bool">Bool</a><a href="#variant.String">String</a><a href="#variant.Bytes">Bytes</a><a href="#variant.Enum">Enum</a><a href="#variant.Message">Message</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.is_non_zero">is_non_zero</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../index.html'>protobuf</a>::<wbr><a href='index.html'>reflect</a></p><script>window.sidebarCurrent = {name: 'ProtobufValueRef', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Enum <a href='../index.html'>protobuf</a>::<wbr><a href='index.html'>reflect</a>::<wbr><a class="enum" href=''>ProtobufValueRef</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/protobuf/reflect/value.rs.html#131-143' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust enum'>pub enum ProtobufValueRef&lt;'a&gt; {
+    U32(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>),
+    U64(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>),
+    I32(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a>),
+    I64(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i64.html">i64</a>),
+    F32(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>),
+    F64(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>),
+    Bool(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>),
+    String(&amp;'a <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>),
+    Bytes(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;'a [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>),
+    Enum(&amp;'static <a class="struct" href="../../protobuf/reflect/struct.EnumValueDescriptor.html" title="struct protobuf::reflect::EnumValueDescriptor">EnumValueDescriptor</a>),
+    Message(&amp;'a <a class="trait" href="../../protobuf/core/trait.Message.html" title="trait protobuf::core::Message">Message</a>),
+}</pre></div><h2 id='variants' class='variants small-section-header'>
+                   Variants<a href='#variants' class='anchor'></a></h2>
+<span id="variant.U32" class="variant small-section-header"><a href="#variant.U32" class="anchor field"></a><span id='U32.v' class='invisible'><code>U32(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>)</code></span></span><span id="variant.U64" class="variant small-section-header"><a href="#variant.U64" class="anchor field"></a><span id='U64.v' class='invisible'><code>U64(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>)</code></span></span><span id="variant.I32" class="variant small-section-header"><a href="#variant.I32" class="anchor field"></a><span id='I32.v' class='invisible'><code>I32(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a>)</code></span></span><span id="variant.I64" class="variant small-section-header"><a href="#variant.I64" class="anchor field"></a><span id='I64.v' class='invisible'><code>I64(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i64.html">i64</a>)</code></span></span><span id="variant.F32" class="variant small-section-header"><a href="#variant.F32" class="anchor field"></a><span id='F32.v' class='invisible'><code>F32(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>)</code></span></span><span id="variant.F64" class="variant small-section-header"><a href="#variant.F64" class="anchor field"></a><span id='F64.v' class='invisible'><code>F64(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>)</code></span></span><span id="variant.Bool" class="variant small-section-header"><a href="#variant.Bool" class="anchor field"></a><span id='Bool.v' class='invisible'><code>Bool(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>)</code></span></span><span id="variant.String" class="variant small-section-header"><a href="#variant.String" class="anchor field"></a><span id='String.v' class='invisible'><code>String(&amp;'a <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>)</code></span></span><span id="variant.Bytes" class="variant small-section-header"><a href="#variant.Bytes" class="anchor field"></a><span id='Bytes.v' class='invisible'><code>Bytes(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;'a [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>)</code></span></span><span id="variant.Enum" class="variant small-section-header"><a href="#variant.Enum" class="anchor field"></a><span id='Enum.v' class='invisible'><code>Enum(&amp;'static <a class="struct" href="../../protobuf/reflect/struct.EnumValueDescriptor.html" title="struct protobuf::reflect::EnumValueDescriptor">EnumValueDescriptor</a>)</code></span></span><span id="variant.Message" class="variant small-section-header"><a href="#variant.Message" class="anchor field"></a><span id='Message.v' class='invisible'><code>Message(&amp;'a <a class="trait" href="../../protobuf/core/trait.Message.html" title="trait protobuf::core::Message">Message</a>)</code></span></span>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a&gt; <a class="enum" href="../../protobuf/reflect/enum.ProtobufValueRef.html" title="enum protobuf::reflect::ProtobufValueRef">ProtobufValueRef</a>&lt;'a&gt;</code><a href='#impl' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/protobuf/reflect/value.rs.html#145-161' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.is_non_zero' class="method"><span id='is_non_zero.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.is_non_zero' class='fnname'>is_non_zero</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/protobuf/reflect/value.rs.html#146-160' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4></div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+            <div id='implementations-list'>
+        </div>
+                <h2 id='synthetic-implementations' class='small-section-header'>
+                  Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
+                </h2>
+                <div id='synthetic-implementations-list'>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a&gt; <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="enum" href="../../protobuf/reflect/enum.ProtobufValueRef.html" title="enum protobuf::reflect::ProtobufValueRef">ProtobufValueRef</a>&lt;'a&gt;</code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl&lt;'a&gt; <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="enum" href="../../protobuf/reflect/enum.ProtobufValueRef.html" title="enum protobuf::reflect::ProtobufValueRef">ProtobufValueRef</a>&lt;'a&gt;</code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "protobuf";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

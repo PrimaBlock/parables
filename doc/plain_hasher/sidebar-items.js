@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PlainHasher","Hasher that just takes 8 bytes of the provided value. May only be used for keys which are 32 bytes."]],"type":[["H256FastMap","Specialized version of `HashMap` with H256 keys and fast hashing function."],["H256FastSet","Specialized version of `HashSet` with H256 keys and fast hashing function."]]});

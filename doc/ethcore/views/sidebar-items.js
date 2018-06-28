@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BlockView","View onto block rlp."],["BodyView","View onto block rlp."],["HeaderView","View onto block header rlp."],["TransactionView","View onto transaction rlp."],["ViewRlp","Wrapper for trusted rlp, which is expected to be valid, for use in views When created with view!, records the file and line where it was created for debugging"]]});

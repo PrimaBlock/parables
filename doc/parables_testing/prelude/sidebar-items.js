@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["ethabi","Ethereum ABI encoding decoding library."]],"struct":[["Spec","Parameters for a block chain; includes both those intrinsic to the design of the chain and those to be interpreted by the active chain engine."]],"type":[["Result",""]]});

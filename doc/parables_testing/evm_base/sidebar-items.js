@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["EvmBase","A managed Evm instance that can be modified and cloned across threads."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ExtendedHeader","Extended block header, wrapping `Header` with finalized and total difficulty information."],["Header","A block header."]],"type":[["BlockNumber","Type for block number."]]});

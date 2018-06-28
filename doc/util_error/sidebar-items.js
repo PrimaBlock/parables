@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["BaseDataError","Error in database subsystem."],["ErrorKind","The kind of an error."]],"struct":[["UtilError","The Error type."]],"trait":[["ResultExt","Additional methods for `Result`, for easy interaction with this crate."]],"type":[["Result","Convenient wrapper around `std::Result`."]]});

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ffi` mod in crate `secp256k1`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ffi">
+
+    <title>secp256k1::ffi - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
+    <script src="../../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Module ffi</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#constants">Constants</a></li><li><a href="#statics">Statics</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../index.html'>secp256k1</a></p><script>window.sidebarCurrent = {name: 'ffi', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>secp256k1</a>::<wbr><a class="mod" href=''>ffi</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/secp256k1/ffi.rs.html#16-278' title='goto source code'>[src]</a></span></h1><div class='docblock'><h1 id="ffi-bindings" class="section-header"><a href="#ffi-bindings">FFI bindings</a></h1>
+<p>Direct bindings to the underlying C library functions. These should
+not be needed for most users.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Context.html"
+                                  title='struct secp256k1::ffi::Context'>Context</a></td>
+                           <td class='docblock-short'>
+                                <p>A Secp256k1 context, containing various precomputed values and such
+needed to do elliptic curve computations. If you create one of these
+with <code>secp256k1_context_create</code> you MUST destroy it with
+<code>secp256k1_context_destroy</code>, or else you will have a memory leak.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PublicKey.html"
+                                  title='struct secp256k1::ffi::PublicKey'>PublicKey</a></td>
+                           <td class='docblock-short'>
+                                <p>Library-internal representation of a Secp256k1 public key</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RecoverableSignature.html"
+                                  title='struct secp256k1::ffi::RecoverableSignature'>RecoverableSignature</a></td>
+                           <td class='docblock-short'>
+                                <p>Library-internal representation of a Secp256k1 signature + recovery ID</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SharedSecret.html"
+                                  title='struct secp256k1::ffi::SharedSecret'>SharedSecret</a></td>
+                           <td class='docblock-short'>
+                                <p>Library-internal representation of an ECDH shared secret</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Signature.html"
+                                  title='struct secp256k1::ffi::Signature'>Signature</a></td>
+                           <td class='docblock-short'>
+                                <p>Library-internal representation of a Secp256k1 signature</p>
+
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SECP256K1_SER_COMPRESSED.html"
+                                  title='constant secp256k1::ffi::SECP256K1_SER_COMPRESSED'>SECP256K1_SER_COMPRESSED</a></td>
+                           <td class='docblock-short'>
+                                <p>Flag for keys to indicate compressed serialization format</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SECP256K1_SER_UNCOMPRESSED.html"
+                                  title='constant secp256k1::ffi::SECP256K1_SER_UNCOMPRESSED'>SECP256K1_SER_UNCOMPRESSED</a></td>
+                           <td class='docblock-short'>
+                                <p>Flag for keys to indicate uncompressed serialization format</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SECP256K1_START_NONE.html"
+                                  title='constant secp256k1::ffi::SECP256K1_START_NONE'>SECP256K1_START_NONE</a></td>
+                           <td class='docblock-short'>
+                                <p>Flag for context to enable no precomputation</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SECP256K1_START_SIGN.html"
+                                  title='constant secp256k1::ffi::SECP256K1_START_SIGN'>SECP256K1_START_SIGN</a></td>
+                           <td class='docblock-short'>
+                                <p>Flag for context to enable signing precomputation</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SECP256K1_START_VERIFY.html"
+                                  title='constant secp256k1::ffi::SECP256K1_START_VERIFY'>SECP256K1_START_VERIFY</a></td>
+                           <td class='docblock-short'>
+                                <p>Flag for context to enable verification precomputation</p>
+
+                           </td>
+                       </tr></table><h2 id='statics' class='section-header'><a href="#statics">Statics</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.secp256k1_nonce_function_default.html"
+                                  title='static secp256k1::ffi::secp256k1_nonce_function_default'>secp256k1_nonce_function_default</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.secp256k1_nonce_function_rfc6979.html"
+                                  title='static secp256k1::ffi::secp256k1_nonce_function_rfc6979'>secp256k1_nonce_function_rfc6979</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.ecdsa_signature_parse_der_lax.html"
+                                  title='fn secp256k1::ffi::ecdsa_signature_parse_der_lax'>ecdsa_signature_parse_der_lax</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_context_clone.html"
+                                  title='fn secp256k1::ffi::secp256k1_context_clone'>secp256k1_context_clone</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_context_create.html"
+                                  title='fn secp256k1::ffi::secp256k1_context_create'>secp256k1_context_create</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_context_destroy.html"
+                                  title='fn secp256k1::ffi::secp256k1_context_destroy'>secp256k1_context_destroy</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_context_randomize.html"
+                                  title='fn secp256k1::ffi::secp256k1_context_randomize'>secp256k1_context_randomize</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_privkey_inverse.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_privkey_inverse'>secp256k1_ec_privkey_inverse</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_privkey_tweak_add.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_privkey_tweak_add'>secp256k1_ec_privkey_tweak_add</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_privkey_tweak_mul.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_privkey_tweak_mul'>secp256k1_ec_privkey_tweak_mul</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_pubkey_combine.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_pubkey_combine'>secp256k1_ec_pubkey_combine</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_pubkey_create.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_pubkey_create'>secp256k1_ec_pubkey_create</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_pubkey_parse.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_pubkey_parse'>secp256k1_ec_pubkey_parse</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_pubkey_serialize.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_pubkey_serialize'>secp256k1_ec_pubkey_serialize</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_pubkey_tweak_add.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_pubkey_tweak_add'>secp256k1_ec_pubkey_tweak_add</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_pubkey_tweak_mul.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_pubkey_tweak_mul'>secp256k1_ec_pubkey_tweak_mul</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ec_seckey_verify.html"
+                                  title='fn secp256k1::ffi::secp256k1_ec_seckey_verify'>secp256k1_ec_seckey_verify</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdh.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdh'>secp256k1_ecdh</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdh_raw.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdh_raw'>secp256k1_ecdh_raw</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_recover.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_recover'>secp256k1_ecdsa_recover</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_recoverable_signature_convert.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_recoverable_signature_convert'>secp256k1_ecdsa_recoverable_signature_convert</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_recoverable_signature_parse_compact.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_recoverable_signature_parse_compact'>secp256k1_ecdsa_recoverable_signature_parse_compact</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_recoverable_signature_serialize_compact.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_recoverable_signature_serialize_compact'>secp256k1_ecdsa_recoverable_signature_serialize_compact</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_sign.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_sign'>secp256k1_ecdsa_sign</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_sign_recoverable.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_sign_recoverable'>secp256k1_ecdsa_sign_recoverable</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_signature_normalize.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_signature_normalize'>secp256k1_ecdsa_signature_normalize</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_signature_parse_der.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_signature_parse_der'>secp256k1_ecdsa_signature_parse_der</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_signature_serialize_der.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_signature_serialize_der'>secp256k1_ecdsa_signature_serialize_der</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_ecdsa_verify.html"
+                                  title='fn secp256k1::ffi::secp256k1_ecdsa_verify'>secp256k1_ecdsa_verify</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_schnorr_recover.html"
+                                  title='fn secp256k1::ffi::secp256k1_schnorr_recover'>secp256k1_schnorr_recover</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_schnorr_sign.html"
+                                  title='fn secp256k1::ffi::secp256k1_schnorr_sign'>secp256k1_schnorr_sign</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.secp256k1_schnorr_verify.html"
+                                  title='fn secp256k1::ffi::secp256k1_schnorr_verify'>secp256k1_schnorr_verify</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.NonceFn.html"
+                                  title='type secp256k1::ffi::NonceFn'>NonceFn</a></td>
+                           <td class='docblock-short'>
+                                <p>A nonce generation function. Ordinary users of the library
+never need to see this type; only if you need to control
+nonce generation do you need to use it. I have deliberately
+made this hard to do: you have to write your own wrapper
+around the FFI functions to use it. And it's an unsafe type.
+Nonces are generated deterministically by RFC6979 by
+default; there should be no need to ever change this.</p>
+
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "secp256k1";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
