@@ -1,65 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `HandshakePayload` enum in crate `rustls`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, HandshakePayload">
-
-    <title>rustls::internal::msgs::handshake::HandshakePayload - Rust</title>
-
-    <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
-          id="mainThemeStyle">
-    
-    <link rel="stylesheet" type="text/css" href="../../../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle">
-    <script src="../../../../storage.js"></script>
-    
-
-    
-    
-</head>
-<body class="rustdoc enum">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        <div class="sidebar-menu">&#9776;</div>
-        
-        <p class='location'>Enum HandshakePayload</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.HelloRequest">HelloRequest</a><a href="#variant.ClientHello">ClientHello</a><a href="#variant.ServerHello">ServerHello</a><a href="#variant.HelloRetryRequest">HelloRetryRequest</a><a href="#variant.Certificate">Certificate</a><a href="#variant.CertificateTLS13">CertificateTLS13</a><a href="#variant.ServerKeyExchange">ServerKeyExchange</a><a href="#variant.CertificateRequest">CertificateRequest</a><a href="#variant.CertificateRequestTLS13">CertificateRequestTLS13</a><a href="#variant.CertificateVerify">CertificateVerify</a><a href="#variant.ServerHelloDone">ServerHelloDone</a><a href="#variant.ClientKeyExchange">ClientKeyExchange</a><a href="#variant.NewSessionTicket">NewSessionTicket</a><a href="#variant.NewSessionTicketTLS13">NewSessionTicketTLS13</a><a href="#variant.EncryptedExtensions">EncryptedExtensions</a><a href="#variant.KeyUpdate">KeyUpdate</a><a href="#variant.Finished">Finished</a><a href="#variant.CertificateStatus">CertificateStatus</a><a href="#variant.Unknown">Unknown</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../../index.html'>rustls</a>::<wbr><a href='../../index.html'>internal</a>::<wbr><a href='../index.html'>msgs</a>::<wbr><a href='index.html'>handshake</a></p><script>window.sidebarCurrent = {name: 'HandshakePayload', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
-    </nav>
-
-    <div class="theme-picker">
-        <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../../../../brush.svg" width="18" alt="Pick another theme!">
-        </button>
-        <div id="theme-choices"></div>
-    </div>
-    <script src="../../../../theme.js"></script>
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Enum <a href='../../../index.html'>rustls</a>::<wbr><a href='../../index.html'>internal</a>::<wbr><a href='../index.html'>msgs</a>::<wbr><a href='index.html'>handshake</a>::<wbr><a class="enum" href=''>HandshakePayload</a></span><span class='out-of-band'><span id='render-detail'>
-                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                       [<span class='inner'>&#x2212;</span>]
-                   </a>
-               </span><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#2087-2107' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust enum'>pub enum HandshakePayload {
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `HandshakePayload` enum in crate `rustls`."><meta name="keywords" content="rust, rustlang, rust-lang, HandshakePayload"><title>rustls::internal::msgs::handshake::HandshakePayload - Rust</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script src="../../../../storage.js"></script></head><body class="rustdoc enum"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Enum HandshakePayload</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.HelloRequest">HelloRequest</a><a href="#variant.ClientHello">ClientHello</a><a href="#variant.ServerHello">ServerHello</a><a href="#variant.HelloRetryRequest">HelloRetryRequest</a><a href="#variant.Certificate">Certificate</a><a href="#variant.CertificateTLS13">CertificateTLS13</a><a href="#variant.ServerKeyExchange">ServerKeyExchange</a><a href="#variant.CertificateRequest">CertificateRequest</a><a href="#variant.CertificateRequestTLS13">CertificateRequestTLS13</a><a href="#variant.CertificateVerify">CertificateVerify</a><a href="#variant.ServerHelloDone">ServerHelloDone</a><a href="#variant.ClientKeyExchange">ClientKeyExchange</a><a href="#variant.NewSessionTicket">NewSessionTicket</a><a href="#variant.NewSessionTicketTLS13">NewSessionTicketTLS13</a><a href="#variant.EncryptedExtensions">EncryptedExtensions</a><a href="#variant.KeyUpdate">KeyUpdate</a><a href="#variant.Finished">Finished</a><a href="#variant.CertificateStatus">CertificateStatus</a><a href="#variant.Unknown">Unknown</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../../index.html'>rustls</a>::<wbr><a href='../../index.html'>internal</a>::<wbr><a href='../index.html'>msgs</a>::<wbr><a href='index.html'>handshake</a></p><script>window.sidebarCurrent = {name: 'HandshakePayload', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Enum <a href='../../../index.html'>rustls</a>::<wbr><a href='../../index.html'>internal</a>::<wbr><a href='../index.html'>msgs</a>::<wbr><a href='index.html'>handshake</a>::<wbr><a class="enum" href=''>HandshakePayload</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#2087-2107' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust enum'>pub enum HandshakePayload {
     HelloRequest,
     ClientHello(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.ClientHelloPayload.html" title="struct rustls::internal::msgs::handshake::ClientHelloPayload">ClientHelloPayload</a>),
     ServerHello(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.ServerHelloPayload.html" title="struct rustls::internal::msgs::handshake::ServerHelloPayload">ServerHelloPayload</a>),
@@ -82,78 +21,13 @@
 }</pre></div><h2 id='variants' class='variants small-section-header'>
                    Variants<a href='#variants' class='anchor'></a></h2>
 <span id="variant.HelloRequest" class="variant small-section-header"><a href="#variant.HelloRequest" class="anchor field"></a><span id='HelloRequest.v' class='invisible'><code>HelloRequest</code></span></span><span id="variant.ClientHello" class="variant small-section-header"><a href="#variant.ClientHello" class="anchor field"></a><span id='ClientHello.v' class='invisible'><code>ClientHello(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.ClientHelloPayload.html" title="struct rustls::internal::msgs::handshake::ClientHelloPayload">ClientHelloPayload</a>)</code></span></span><span id="variant.ServerHello" class="variant small-section-header"><a href="#variant.ServerHello" class="anchor field"></a><span id='ServerHello.v' class='invisible'><code>ServerHello(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.ServerHelloPayload.html" title="struct rustls::internal::msgs::handshake::ServerHelloPayload">ServerHelloPayload</a>)</code></span></span><span id="variant.HelloRetryRequest" class="variant small-section-header"><a href="#variant.HelloRetryRequest" class="anchor field"></a><span id='HelloRetryRequest.v' class='invisible'><code>HelloRetryRequest(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.HelloRetryRequest.html" title="struct rustls::internal::msgs::handshake::HelloRetryRequest">HelloRetryRequest</a>)</code></span></span><span id="variant.Certificate" class="variant small-section-header"><a href="#variant.Certificate" class="anchor field"></a><span id='Certificate.v' class='invisible'><code>Certificate(<a class="type" href="../../../../rustls/internal/msgs/handshake/type.CertificatePayload.html" title="type rustls::internal::msgs::handshake::CertificatePayload">CertificatePayload</a>)</code></span></span><span id="variant.CertificateTLS13" class="variant small-section-header"><a href="#variant.CertificateTLS13" class="anchor field"></a><span id='CertificateTLS13.v' class='invisible'><code>CertificateTLS13(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.CertificatePayloadTLS13.html" title="struct rustls::internal::msgs::handshake::CertificatePayloadTLS13">CertificatePayloadTLS13</a>)</code></span></span><span id="variant.ServerKeyExchange" class="variant small-section-header"><a href="#variant.ServerKeyExchange" class="anchor field"></a><span id='ServerKeyExchange.v' class='invisible'><code>ServerKeyExchange(<a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.ServerKeyExchangePayload.html" title="enum rustls::internal::msgs::handshake::ServerKeyExchangePayload">ServerKeyExchangePayload</a>)</code></span></span><span id="variant.CertificateRequest" class="variant small-section-header"><a href="#variant.CertificateRequest" class="anchor field"></a><span id='CertificateRequest.v' class='invisible'><code>CertificateRequest(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.CertificateRequestPayload.html" title="struct rustls::internal::msgs::handshake::CertificateRequestPayload">CertificateRequestPayload</a>)</code></span></span><span id="variant.CertificateRequestTLS13" class="variant small-section-header"><a href="#variant.CertificateRequestTLS13" class="anchor field"></a><span id='CertificateRequestTLS13.v' class='invisible'><code>CertificateRequestTLS13(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.CertificateRequestPayloadTLS13.html" title="struct rustls::internal::msgs::handshake::CertificateRequestPayloadTLS13">CertificateRequestPayloadTLS13</a>)</code></span></span><span id="variant.CertificateVerify" class="variant small-section-header"><a href="#variant.CertificateVerify" class="anchor field"></a><span id='CertificateVerify.v' class='invisible'><code>CertificateVerify(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.DigitallySignedStruct.html" title="struct rustls::internal::msgs::handshake::DigitallySignedStruct">DigitallySignedStruct</a>)</code></span></span><span id="variant.ServerHelloDone" class="variant small-section-header"><a href="#variant.ServerHelloDone" class="anchor field"></a><span id='ServerHelloDone.v' class='invisible'><code>ServerHelloDone</code></span></span><span id="variant.ClientKeyExchange" class="variant small-section-header"><a href="#variant.ClientKeyExchange" class="anchor field"></a><span id='ClientKeyExchange.v' class='invisible'><code>ClientKeyExchange(<a class="struct" href="../../../../rustls/internal/msgs/base/struct.Payload.html" title="struct rustls::internal::msgs::base::Payload">Payload</a>)</code></span></span><span id="variant.NewSessionTicket" class="variant small-section-header"><a href="#variant.NewSessionTicket" class="anchor field"></a><span id='NewSessionTicket.v' class='invisible'><code>NewSessionTicket(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.NewSessionTicketPayload.html" title="struct rustls::internal::msgs::handshake::NewSessionTicketPayload">NewSessionTicketPayload</a>)</code></span></span><span id="variant.NewSessionTicketTLS13" class="variant small-section-header"><a href="#variant.NewSessionTicketTLS13" class="anchor field"></a><span id='NewSessionTicketTLS13.v' class='invisible'><code>NewSessionTicketTLS13(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.NewSessionTicketPayloadTLS13.html" title="struct rustls::internal::msgs::handshake::NewSessionTicketPayloadTLS13">NewSessionTicketPayloadTLS13</a>)</code></span></span><span id="variant.EncryptedExtensions" class="variant small-section-header"><a href="#variant.EncryptedExtensions" class="anchor field"></a><span id='EncryptedExtensions.v' class='invisible'><code>EncryptedExtensions(<a class="type" href="../../../../rustls/internal/msgs/handshake/type.EncryptedExtensions.html" title="type rustls::internal::msgs::handshake::EncryptedExtensions">EncryptedExtensions</a>)</code></span></span><span id="variant.KeyUpdate" class="variant small-section-header"><a href="#variant.KeyUpdate" class="anchor field"></a><span id='KeyUpdate.v' class='invisible'><code>KeyUpdate(<a class="enum" href="../../../../rustls/internal/msgs/enums/enum.KeyUpdateRequest.html" title="enum rustls::internal::msgs::enums::KeyUpdateRequest">KeyUpdateRequest</a>)</code></span></span><span id="variant.Finished" class="variant small-section-header"><a href="#variant.Finished" class="anchor field"></a><span id='Finished.v' class='invisible'><code>Finished(<a class="struct" href="../../../../rustls/internal/msgs/base/struct.Payload.html" title="struct rustls::internal::msgs::base::Payload">Payload</a>)</code></span></span><span id="variant.CertificateStatus" class="variant small-section-header"><a href="#variant.CertificateStatus" class="anchor field"></a><span id='CertificateStatus.v' class='invisible'><code>CertificateStatus(<a class="struct" href="../../../../rustls/internal/msgs/handshake/struct.CertificateStatus.html" title="struct rustls::internal::msgs::handshake::CertificateStatus">CertificateStatus</a>)</code></span></span><span id="variant.Unknown" class="variant small-section-header"><a href="#variant.Unknown" class="anchor field"></a><span id='Unknown.v' class='invisible'><code>Unknown(<a class="struct" href="../../../../rustls/internal/msgs/base/struct.Payload.html" title="struct rustls::internal::msgs::base::Payload">Payload</a>)</code></span></span>
-            <h2 id='implementations' class='small-section-header'>
-              Trait Implementations<a href='#implementations' class='anchor'></a>
-            </h2>
-            <div id='implementations-list'>
-        <h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.HandshakePayload.html" title="enum rustls::internal::msgs::handshake::HandshakePayload">HandshakePayload</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#2086' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#2086' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+                <h2 id='implementations' class='small-section-header'>
+                  Trait Implementations<a href='#implementations' class='anchor'></a>
+                </h2>
+                <div id='implementations-list'><h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.HandshakePayload.html" title="enum rustls::internal::msgs::handshake::HandshakePayload">HandshakePayload</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#2086' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../../src/rustls/msgs/handshake.rs.html#2086' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
 </div></div></div>
                 <h2 id='synthetic-implementations' class='small-section-header'>
                   Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
                 </h2>
                 <div id='synthetic-implementations-list'>
-            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.HandshakePayload.html" title="enum rustls::internal::msgs::handshake::HandshakePayload">HandshakePayload</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.HandshakePayload.html" title="enum rustls::internal::msgs::handshake::HandshakePayload">HandshakePayload</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt><kbd>?</kbd></dt>
-                    <dd>Show this help dialog</dd>
-                    <dt><kbd>S</kbd></dt>
-                    <dd>Focus the search field</dd>
-                    <dt><kbd>↑</kbd></dt>
-                    <dd>Move up in search results</dd>
-                    <dt><kbd>↓</kbd></dt>
-                    <dd>Move down in search results</dd>
-                    <dt><kbd>↹</kbd></dt>
-                    <dd>Switch tab</dd>
-                    <dt><kbd>&#9166;</kbd></dt>
-                    <dd>Go to active search result</dd>
-                    <dt><kbd>+</kbd></dt>
-                    <dd>Expand all sections</dd>
-                    <dt><kbd>-</kbd></dt>
-                    <dd>Collapse all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../../../";
-        window.currentCrate = "rustls";
-    </script>
-    <script src="../../../../main.js"></script>
-    <script defer src="../../../../search-index.js"></script>
-</body>
-</html>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.HandshakePayload.html" title="enum rustls::internal::msgs::handshake::HandshakePayload">HandshakePayload</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="enum" href="../../../../rustls/internal/msgs/handshake/enum.HandshakePayload.html" title="enum rustls::internal::msgs::handshake::HandshakePayload">HandshakePayload</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../../";window.currentCrate = "rustls";</script><script src="../../../../aliases.js"></script><script src="../../../../main.js"></script><script defer src="../../../../search-index.js"></script></body></html>

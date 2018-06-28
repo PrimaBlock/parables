@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/slab-0.4.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/slab-0.3.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -835,194 +835,16 @@
 <span id="835">835</span>
 <span id="836">836</span>
 <span id="837">837</span>
-<span id="838">838</span>
-<span id="839">839</span>
-<span id="840">840</span>
-<span id="841">841</span>
-<span id="842">842</span>
-<span id="843">843</span>
-<span id="844">844</span>
-<span id="845">845</span>
-<span id="846">846</span>
-<span id="847">847</span>
-<span id="848">848</span>
-<span id="849">849</span>
-<span id="850">850</span>
-<span id="851">851</span>
-<span id="852">852</span>
-<span id="853">853</span>
-<span id="854">854</span>
-<span id="855">855</span>
-<span id="856">856</span>
-<span id="857">857</span>
-<span id="858">858</span>
-<span id="859">859</span>
-<span id="860">860</span>
-<span id="861">861</span>
-<span id="862">862</span>
-<span id="863">863</span>
-<span id="864">864</span>
-<span id="865">865</span>
-<span id="866">866</span>
-<span id="867">867</span>
-<span id="868">868</span>
-<span id="869">869</span>
-<span id="870">870</span>
-<span id="871">871</span>
-<span id="872">872</span>
-<span id="873">873</span>
-<span id="874">874</span>
-<span id="875">875</span>
-<span id="876">876</span>
-<span id="877">877</span>
-<span id="878">878</span>
-<span id="879">879</span>
-<span id="880">880</span>
-<span id="881">881</span>
-<span id="882">882</span>
-<span id="883">883</span>
-<span id="884">884</span>
-<span id="885">885</span>
-<span id="886">886</span>
-<span id="887">887</span>
-<span id="888">888</span>
-<span id="889">889</span>
-<span id="890">890</span>
-<span id="891">891</span>
-<span id="892">892</span>
-<span id="893">893</span>
-<span id="894">894</span>
-<span id="895">895</span>
-<span id="896">896</span>
-<span id="897">897</span>
-<span id="898">898</span>
-<span id="899">899</span>
-<span id="900">900</span>
-<span id="901">901</span>
-<span id="902">902</span>
-<span id="903">903</span>
-<span id="904">904</span>
-<span id="905">905</span>
-<span id="906">906</span>
 </pre><pre class="rust ">
-<span class="doccomment">//! Pre-allocated storage for a uniform data type.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `Slab` provides pre-allocated storage for a single data type. If many values</span>
-<span class="doccomment">//! of a single type are being allocated, it can be more efficient to</span>
-<span class="doccomment">//! pre-allocate the necessary storage. Since the size of the type is uniform,</span>
-<span class="doccomment">//! memory fragmentation can be avoided. Storing, clearing, and lookup</span>
-<span class="doccomment">//! operations become very cheap.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! While `Slab` may look like other Rust collections, it is not intended to be</span>
-<span class="doccomment">//! used as a general purpose collection. The primary difference between `Slab`</span>
-<span class="doccomment">//! and `Vec` is that `Slab` returns the key when storing the value.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! It is important to note that keys may be reused. In other words, once a</span>
-<span class="doccomment">//! value associated with a given key is removed from a slab, that key may be</span>
-<span class="doccomment">//! returned from future calls to `insert`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Basic storing and retrieval.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use slab::*;</span>
-<span class="doccomment">//! let mut slab = Slab::new();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let hello = slab.insert(&quot;hello&quot;);</span>
-<span class="doccomment">//! let world = slab.insert(&quot;world&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(slab[hello], &quot;hello&quot;);</span>
-<span class="doccomment">//! assert_eq!(slab[world], &quot;world&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! slab[world] = &quot;earth&quot;;</span>
-<span class="doccomment">//! assert_eq!(slab[world], &quot;earth&quot;);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Sometimes it is useful to be able to associate the key with the value being</span>
-<span class="doccomment">//! inserted in the slab. This can be done with the `vacant_entry` API as such:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use slab::*;</span>
-<span class="doccomment">//! let mut slab = Slab::new();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let hello = {</span>
-<span class="doccomment">//!     let entry = slab.vacant_entry();</span>
-<span class="doccomment">//!     let key = entry.key();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     entry.insert((key, &quot;hello&quot;));</span>
-<span class="doccomment">//!     key</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(hello, slab[hello].0);</span>
-<span class="doccomment">//! assert_eq!(&quot;hello&quot;, slab[hello].1);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! It is generally a good idea to specify the desired capacity of a slab at</span>
-<span class="doccomment">//! creation time. Note that `Slab` will grow the internal capacity when</span>
-<span class="doccomment">//! attempting to insert a new value once the existing capacity has been reached.</span>
-<span class="doccomment">//! To avoid this, add a check.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use slab::*;</span>
-<span class="doccomment">//! let mut slab = Slab::with_capacity(1024);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // ... use the slab</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! if slab.len() == slab.capacity() {</span>
-<span class="doccomment">//!     panic!(&quot;slab full&quot;);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! slab.insert(&quot;the slab is not at capacity yet&quot;);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Capacity and reallocation</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The capacity of a slab is the amount of space allocated for any future</span>
-<span class="doccomment">//! values that will be inserted in the slab. This is not to be confused with</span>
-<span class="doccomment">//! the *length* of the slab, which specifies the number of actual values</span>
-<span class="doccomment">//! currently being inserted. If a slab&#39;s length is equal to its capacity, the</span>
-<span class="doccomment">//! next value inserted into the slab will require growing the slab by</span>
-<span class="doccomment">//! reallocating.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For example, a slab with capacity 10 and length 0 would be an empty slab</span>
-<span class="doccomment">//! with space for 10 more stored values. Storing 10 or fewer elements into the</span>
-<span class="doccomment">//! slab will not change its capacity or cause reallocation to occur. However,</span>
-<span class="doccomment">//! if the slab length is increased to 11 (due to another `insert`), it will</span>
-<span class="doccomment">//! have to reallocate, which can be slow. For this reason, it is recommended to</span>
-<span class="doccomment">//! use [`Slab::with_capacity`] whenever possible to specify how many values the</span>
-<span class="doccomment">//! slab is expected to store.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Implementation</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `Slab` is backed by a `Vec` of slots. Each slot is either occupied or</span>
-<span class="doccomment">//! vacant. `Slab` maintains a stack of vacant slots using a linked list. To</span>
-<span class="doccomment">//! find a vacant slot, the stack is popped. When a slot is released, it is</span>
-<span class="doccomment">//! pushed onto the stack.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! If there are no more available slots in the stack, then `Vec::reserve(1)` is</span>
-<span class="doccomment">//! called and a new slot is created.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`Slab::with_capacity`]: struct.Slab.html#with_capacity</span>
-
-<span class="attribute">#![<span class="ident">deny</span>(<span class="ident">warnings</span>, <span class="ident">missing_docs</span>, <span class="ident">missing_debug_implementations</span>)]</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/slab/0.4&quot;</span>)]</span>
-<span class="attribute">#![<span class="ident">crate_name</span> <span class="op">=</span> <span class="string">&quot;slab&quot;</span>]</span>
-
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">mem</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">mem</span>, <span class="ident">usize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">IntoIterator</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 
-<span class="doccomment">/// Pre-allocated storage for a uniform data type</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [module documentation] for more details.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [module documentation]: index.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="doccomment">/// A preallocated chunk of memory for storing objects of the same type.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span> <span class="op">=</span> <span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="comment">// Chunk of memory</span>
-    <span class="ident">entries</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span>,
+    <span class="ident">entries</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Slot</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span>,
 
     <span class="comment">// Number of Filled elements currently in the slab</span>
     <span class="ident">len</span>: <span class="ident">usize</span>,
@@ -1030,671 +852,280 @@
     <span class="comment">// Offset of the next available slot in the slab. Set to the slab&#39;s</span>
     <span class="comment">// capacity when the slab is full.</span>
     <span class="ident">next</span>: <span class="ident">usize</span>,
+
+    <span class="ident">_marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// A handle to an vacant entry in a `Slab`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `VacantEntry` allows constructing values with the key that they will be</span>
-<span class="doccomment">/// assigned to.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// # use slab::*;</span>
-<span class="doccomment">/// let mut slab = Slab::new();</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let hello = {</span>
-<span class="doccomment">///     let entry = slab.vacant_entry();</span>
-<span class="doccomment">///     let key = entry.key();</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     entry.insert((key, &quot;hello&quot;));</span>
-<span class="doccomment">///     key</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(hello, slab[hello].0);</span>
-<span class="doccomment">/// assert_eq!(&quot;hello&quot;, slab[hello].1);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">slab</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">key</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// A handle to an occupied slot in the `Slab`</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">I</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">slab</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>,
+    <span class="ident">idx</span>: <span class="ident">usize</span>,
+}
+
+<span class="doccomment">/// A handle to a vacant slot in the `Slab`</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">I</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">slab</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>,
+    <span class="ident">idx</span>: <span class="ident">usize</span>,
 }
 
 <span class="doccomment">/// An iterator over the values stored in the `Slab`</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">slab</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">curr</span>: <span class="ident">usize</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">I</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">slab</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>,
+    <span class="ident">cur_idx</span>: <span class="ident">usize</span>,
+    <span class="ident">yielded</span>: <span class="ident">usize</span>,
 }
 
 <span class="doccomment">/// A mutable iterator over the values stored in the `Slab`</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">slab</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">curr</span>: <span class="ident">usize</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span>, <span class="ident">I</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">slab</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>,
+    <span class="ident">cur_idx</span>: <span class="ident">usize</span>,
+    <span class="ident">yielded</span>: <span class="ident">usize</span>,
     <span class="ident">_marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> ()<span class="op">&gt;</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">Vacant</span>(<span class="ident">usize</span>),
-    <span class="ident">Occupied</span>(<span class="ident">T</span>),
+<span class="kw">enum</span> <span class="ident">Slot</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="ident">Empty</span>(<span class="ident">usize</span>),
+    <span class="ident">Filled</span>(<span class="ident">T</span>),
+    <span class="ident">Invalid</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Construct a new, empty `Slab`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The function does not allocate and the returned slab will have no</span>
-    <span class="doccomment">/// capacity until `insert` is called or capacity is explicitly reserved.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let slab: Slab&lt;i32&gt; = Slab::new();</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="ident">Slab</span>::<span class="ident">with_capacity</span>(<span class="number">0</span>)
-    }
+<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Send</span> {}
 
-    <span class="doccomment">/// Construct a new, empty `Slab` with the specified capacity.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The returned slab will be able to store exactly `capacity` without</span>
-    <span class="doccomment">/// reallocating. If `capacity` is 0, the slab will not allocate.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It is important to note that this function does not specify the *length*</span>
-    <span class="doccomment">/// of the returned slab, but only the capacity. For an explanation of the</span>
-    <span class="doccomment">/// difference between length and capacity, see [Capacity and</span>
-    <span class="doccomment">/// reallocation](index.html#capacity-and-reallocation).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::with_capacity(10);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // The slab contains no values, even though it has capacity for more</span>
-    <span class="doccomment">/// assert_eq!(slab.len(), 0);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // These are all done without reallocating...</span>
-    <span class="doccomment">/// for i in 0..10 {</span>
-    <span class="doccomment">///     slab.insert(i);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ...but this may make the slab reallocate</span>
-    <span class="doccomment">/// slab.insert(11);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_capacity</span>(<span class="ident">capacity</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">some</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> (<span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>,
+        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+    })
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Returns an empty `Slab` with the requested capacity</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_capacity</span>(<span class="ident">capacity</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">entries</span> <span class="op">=</span> (<span class="number">1</span>..<span class="ident">capacity</span> <span class="op">+</span> <span class="number">1</span>)
+            .<span class="ident">map</span>(<span class="ident">Slot</span>::<span class="ident">Empty</span>)
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+
         <span class="ident">Slab</span> {
-            <span class="ident">entries</span>: <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">capacity</span>),
+            <span class="ident">entries</span>: <span class="ident">entries</span>,
             <span class="ident">next</span>: <span class="number">0</span>,
             <span class="ident">len</span>: <span class="number">0</span>,
-        }
-    }
-
-    <span class="doccomment">/// Returns the number of values the slab can store without reallocating.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let slab: Slab&lt;i32&gt; = Slab::with_capacity(10);</span>
-    <span class="doccomment">/// assert_eq!(slab.capacity(), 10);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">capacity</span>()
-    }
-
-    <span class="doccomment">/// Reserves capacity for at least `additional` more values to be stored</span>
-    <span class="doccomment">/// without allocating.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `reserve` does nothing if the slab already has sufficient capcity for</span>
-    <span class="doccomment">/// `additional` more values. If more capacity is required, a new segment of</span>
-    <span class="doccomment">/// memory will be allocated and all existing values will be copied into it.</span>
-    <span class="doccomment">/// As such, if the slab is already very large, a call to `reserve` can end</span>
-    <span class="doccomment">/// up being expensive.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The slab may reserve more than `additional` extra space in order to</span>
-    <span class="doccomment">/// avoid frequent reallocations. Use `reserve_exact` instead to guarantee</span>
-    <span class="doccomment">/// that only the requested space is allocated.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the new capacity overflows `usize`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">/// slab.reserve(10);</span>
-    <span class="doccomment">/// assert!(slab.capacity() &gt;= 11);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reserve</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">usize</span>) {
-        <span class="kw">let</span> <span class="ident">available</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">len</span>;
-
-        <span class="kw">if</span> <span class="ident">available</span> <span class="op">&gt;=</span> <span class="ident">additional</span> {
-            <span class="kw">return</span>;
-        }
-
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">reserve</span>(<span class="ident">additional</span> <span class="op">-</span> <span class="ident">available</span>);
-    }
-
-    <span class="doccomment">/// Reserves the minimum capacity required to store exactly `additional`</span>
-    <span class="doccomment">/// more values.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `reserve_exact` does nothing if the slab already has sufficient capacity</span>
-    <span class="doccomment">/// for `additional` more valus. If more capacity is required, a new segment</span>
-    <span class="doccomment">/// of memory will be allocated and all existing values will be copied into</span>
-    <span class="doccomment">/// it.  As such, if the slab is already very large, a call to `reserve` can</span>
-    <span class="doccomment">/// end up being expensive.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that the allocator may give the slab more space than it requests.</span>
-    <span class="doccomment">/// Therefore capacity can not be relied upon to be precisely minimal.</span>
-    <span class="doccomment">/// Prefer `reserve` if future insertions are expected.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the new capacity overflows `usize`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">/// slab.reserve_exact(10);</span>
-    <span class="doccomment">/// assert!(slab.capacity() &gt;= 11);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reserve_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">usize</span>) {
-        <span class="kw">let</span> <span class="ident">available</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">len</span>;
-
-        <span class="kw">if</span> <span class="ident">available</span> <span class="op">&gt;=</span> <span class="ident">additional</span> {
-            <span class="kw">return</span>;
-        }
-
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">reserve_exact</span>(<span class="ident">additional</span> <span class="op">-</span> <span class="ident">available</span>);
-    }
-
-    <span class="doccomment">/// Shrinks the capacity of the slab as much as possible.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It will drop down as close as possible to the length but the allocator</span>
-    <span class="doccomment">/// may still inform the vector that there is space for a few more elements.</span>
-    <span class="doccomment">/// Also, since values are not moved, the slab cannot shrink past any stored</span>
-    <span class="doccomment">/// values.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::with_capacity(10);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// for i in 0..3 {</span>
-    <span class="doccomment">///     slab.insert(i);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab.capacity(), 10);</span>
-    <span class="doccomment">/// slab.shrink_to_fit();</span>
-    <span class="doccomment">/// assert!(slab.capacity() &gt;= 3);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// In this case, even though two values are removed, the slab cannot shrink</span>
-    <span class="doccomment">/// past the last value.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::with_capacity(10);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// for i in 0..3 {</span>
-    <span class="doccomment">///     slab.insert(i);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// slab.remove(0);</span>
-    <span class="doccomment">/// slab.remove(1);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab.capacity(), 10);</span>
-    <span class="doccomment">/// slab.shrink_to_fit();</span>
-    <span class="doccomment">/// assert!(slab.capacity() &gt;= 3);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shrink_to_fit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">shrink_to_fit</span>();
-    }
-
-    <span class="doccomment">/// Clear the slab of all values</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// for i in 0..3 {</span>
-    <span class="doccomment">///     slab.insert(i);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// slab.clear();</span>
-    <span class="doccomment">/// assert!(slab.is_empty());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">clear</span>();
-        <span class="self">self</span>.<span class="ident">len</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="number">0</span>;
-    }
-
-    <span class="doccomment">/// Returns the number of stored values</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// for i in 0..3 {</span>
-    <span class="doccomment">///     slab.insert(i);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(3, slab.len());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">len</span>
-    }
-
-    <span class="doccomment">/// Returns `true` if no values are stored in the slab</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// assert!(slab.is_empty());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// slab.insert(1);</span>
-    <span class="doccomment">/// assert!(!slab.is_empty());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">0</span>
-    }
-
-    <span class="doccomment">/// Returns an iterator over the slab</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function should generally be **avoided** as it is not efficient.</span>
-    <span class="doccomment">/// Iterators must iterate over every slot in the slab even if it is</span>
-    <span class="doccomment">/// vaccant. As such, a slab with a capacity of 1 million but only one</span>
-    <span class="doccomment">/// stored value must still iterate the million slots.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// for i in 0..3 {</span>
-    <span class="doccomment">///     slab.insert(i);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut iterator = slab.iter();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(iterator.next(), Some((0, &amp;0)));</span>
-    <span class="doccomment">/// assert_eq!(iterator.next(), Some((1, &amp;1)));</span>
-    <span class="doccomment">/// assert_eq!(iterator.next(), Some((2, &amp;2)));</span>
-    <span class="doccomment">/// assert_eq!(iterator.next(), None);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="ident">Iter</span> {
-            <span class="ident">slab</span>: <span class="self">self</span>,
-            <span class="ident">curr</span>: <span class="number">0</span>,
-        }
-    }
-
-    <span class="doccomment">/// Returns an iterator that allows modifying each value.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function should generally be **avoided** as it is not efficient.</span>
-    <span class="doccomment">/// Iterators must iterate over every slot in the slab even if it is</span>
-    <span class="doccomment">/// vaccant. As such, a slab with a capacity of 1 million but only one</span>
-    <span class="doccomment">/// stored value must still iterate the million slots.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let key1 = slab.insert(0);</span>
-    <span class="doccomment">/// let key2 = slab.insert(1);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// for (key, val) in slab.iter_mut() {</span>
-    <span class="doccomment">///     if key == key1 {</span>
-    <span class="doccomment">///         *val += 2;</span>
-    <span class="doccomment">///     }</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab[key1], 2);</span>
-    <span class="doccomment">/// assert_eq!(slab[key2], 1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="ident">IterMut</span> {
-            <span class="ident">slab</span>: <span class="self">self</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-            <span class="ident">curr</span>: <span class="number">0</span>,
             <span class="ident">_marker</span>: <span class="ident">PhantomData</span>,
         }
     }
 
-    <span class="doccomment">/// Returns a reference to the value associated with the given key</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the given key is not associated with a value, then `None` is</span>
-    <span class="doccomment">/// returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// let key = slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab.get(key), Some(&amp;&quot;hello&quot;));</span>
-    <span class="doccomment">/// assert_eq!(slab.get(123), None);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get</span>(<span class="ident">key</span>) {
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="ident">val</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>),
+    <span class="doccomment">/// Returns the number of values stored by the `Slab`</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">len</span>
+    }
+
+    <span class="doccomment">/// Returns the total capacity of the `Slab`</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>()
+    }
+
+    <span class="doccomment">/// Returns true if the `Slab` is storing no values</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">0</span>
+    }
+
+    <span class="doccomment">/// Returns the number of available slots remaining in the `Slab`</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">available</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">len</span>
+    }
+
+    <span class="doccomment">/// Returns true if the `Slab` has available slots</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_available</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">available</span>() <span class="op">&gt;</span> <span class="number">0</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Returns true if the `Slab` contains a value for the given token</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">idx</span>).<span class="ident">is_some</span>()
+    }
+
+    <span class="doccomment">/// Get a reference to the value associated with the given token</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="macro">some</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">local_index</span>(<span class="ident">idx</span>));
+
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">idx</span>] {
+            <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="kw-2">ref</span> <span class="ident">val</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>),
+            <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">Slot</span>::<span class="ident">Invalid</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>),
+        }
+    }
+
+    <span class="doccomment">/// Get a mutable reference to the value associated with the given token</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="macro">some</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">local_index</span>(<span class="ident">idx</span>));
+
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">idx</span>] {
+            <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>),
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="doccomment">/// Returns a mutable reference to the value associated with the given key</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the given key is not associated with a value, then `None` is</span>
-    <span class="doccomment">/// returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// let key = slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// *slab.get_mut(key).unwrap() = &quot;world&quot;;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab[key], &quot;world&quot;);</span>
-    <span class="doccomment">/// assert_eq!(slab.get_mut(123), None);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get_mut</span>(<span class="ident">key</span>) {
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">val</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+    <span class="doccomment">/// Insert a value into the slab, returning the associated token</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">vacant_entry</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">entry</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">entry</span>.<span class="ident">insert</span>(<span class="ident">val</span>).<span class="ident">index</span>()),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">val</span>),
         }
     }
 
-    <span class="doccomment">/// Returns a reference to the value associated with the given key without</span>
-    <span class="doccomment">/// performing bounds checking.</span>
+    <span class="doccomment">/// Returns a handle to an entry.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This function should be used with care.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// let key = slab.insert(2);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// unsafe {</span>
-    <span class="doccomment">///     assert_eq!(slab.get_unchecked(key), &amp;2);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_unchecked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get_unchecked</span>(<span class="ident">key</span>) {
-            <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+    <span class="doccomment">/// This allows more advanced manipulation of the value stored at the given</span>
+    <span class="doccomment">/// index.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="macro">some</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">local_index</span>(<span class="ident">idx</span>));
+
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">idx</span>] {
+            <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">Entry</span> {
+                    <span class="ident">slab</span>: <span class="self">self</span>,
+                    <span class="ident">idx</span>: <span class="ident">idx</span>,
+                })
+            }
+            <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">Slot</span>::<span class="ident">Invalid</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>),
         }
     }
 
-    <span class="doccomment">/// Returns a mutable reference to the value associated with the given key</span>
-    <span class="doccomment">/// without performing bounds checking.</span>
+    <span class="doccomment">/// Returns a handle to a vacant entry.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This function should be used with care.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// let key = slab.insert(2);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// unsafe {</span>
-    <span class="doccomment">///     let val = slab.get_unchecked_mut(key);</span>
-    <span class="doccomment">///     *val = 13;</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab[key], 13);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_unchecked_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span> {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get_unchecked_mut</span>(<span class="ident">key</span>) {
-            <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+    <span class="doccomment">/// This allows optionally inserting a value that is constructed with the</span>
+    <span class="doccomment">/// index.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vacant_entry</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next</span>;
+
+        <span class="kw">if</span> <span class="ident">idx</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
         }
-    }
 
-    <span class="doccomment">/// Insert a value in the slab, returning key assigned to the value</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The returned key can later be used to retrieve or remove the value using indexed</span>
-    <span class="doccomment">/// lookup and `remove`. Additional capacity is allocated if needed. See</span>
-    <span class="doccomment">/// [Capacity and reallocation](index.html#capacity-and-reallocation).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the number of elements in the vector overflows a `usize`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">/// let key = slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">/// assert_eq!(slab[key], &quot;hello&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next</span>;
-
-        <span class="self">self</span>.<span class="ident">insert_at</span>(<span class="ident">key</span>, <span class="ident">val</span>);
-
-        <span class="ident">key</span>
-    }
-
-    <span class="doccomment">/// Returns a handle to a vacant entry allowing for further manipulation.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function is useful when creating values that must contain their</span>
-    <span class="doccomment">/// slab key. The returned `VaccantEntry` reserves a slot in the slab and is</span>
-    <span class="doccomment">/// able to query the associated key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let hello = {</span>
-    <span class="doccomment">///     let entry = slab.vacant_entry();</span>
-    <span class="doccomment">///     let key = entry.key();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///     entry.insert((key, &quot;hello&quot;));</span>
-    <span class="doccomment">///     key</span>
-    <span class="doccomment">/// };</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(hello, slab[hello].0);</span>
-    <span class="doccomment">/// assert_eq!(&quot;hello&quot;, slab[hello].1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vacant_entry</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="ident">VacantEntry</span> {
-            <span class="ident">key</span>: <span class="self">self</span>.<span class="ident">next</span>,
+        <span class="prelude-val">Some</span>(<span class="ident">VacantEntry</span> {
             <span class="ident">slab</span>: <span class="self">self</span>,
-        }
+            <span class="ident">idx</span>: <span class="ident">idx</span>,
+        })
     }
 
-    <span class="kw">fn</span> <span class="ident">insert_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>, <span class="ident">val</span>: <span class="ident">T</span>) {
-        <span class="self">self</span>.<span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
-
-        <span class="kw">if</span> <span class="ident">key</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">push</span>(<span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="ident">val</span>));
-            <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="ident">key</span> <span class="op">+</span> <span class="number">1</span>;
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">prev</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">replace</span>(
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">key</span>],
-                <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="ident">val</span>));
-
-            <span class="kw">match</span> <span class="ident">prev</span> {
-                <span class="ident">Entry</span>::<span class="ident">Vacant</span>(<span class="ident">next</span>) <span class="op">=&gt;</span> {
-                    <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="ident">next</span>;
-                }
-                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
-            }
-        }
-    }
-
-    <span class="doccomment">/// Removes and returns the value associated with the given key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key is then released and may be associated with future stored</span>
-    <span class="doccomment">/// values.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if `key` is not associated with a value.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let hello = slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(slab.remove(hello), &quot;hello&quot;);</span>
-    <span class="doccomment">/// assert!(!slab.contains(hello));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
-        <span class="comment">// Swap the entry at the provided value</span>
-        <span class="kw">let</span> <span class="ident">prev</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">replace</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">key</span>],
-            <span class="ident">Entry</span>::<span class="ident">Vacant</span>(<span class="self">self</span>.<span class="ident">next</span>));
-
-        <span class="kw">match</span> <span class="ident">prev</span> {
-            <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> {
-                <span class="self">self</span>.<span class="ident">len</span> <span class="op">-=</span> <span class="number">1</span>;
-                <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="ident">key</span>;
-                <span class="ident">val</span>
-            }
-            <span class="kw">_</span> <span class="op">=&gt;</span> {
-                <span class="comment">// Woops, the entry is actually vacant, restore the state</span>
-                <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">key</span>] <span class="op">=</span> <span class="ident">prev</span>;
-                <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;invalid key&quot;</span>);
-            }
-        }
-    }
-
-    <span class="doccomment">/// Returns `true` if a value is associated with the given key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let hello = slab.insert(&quot;hello&quot;);</span>
-    <span class="doccomment">/// assert!(slab.contains(hello));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// slab.remove(hello);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert!(!slab.contains(hello));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get</span>(<span class="ident">key</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">e</span> {
-                    <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-                }
-            })
-            .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
+    <span class="doccomment">/// Releases the given slot</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">entry</span>(<span class="ident">idx</span>).<span class="ident">map</span>(<span class="ident">Entry</span>::<span class="ident">remove</span>)
     }
 
     <span class="doccomment">/// Retain only the elements specified by the predicate.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// In other words, remove all elements `e` such that `f(usize, &amp;mut e)`</span>
-    <span class="doccomment">/// returns false. This method operates in place and preserves the key</span>
-    <span class="doccomment">/// associated with the retained values.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let k1 = slab.insert(0);</span>
-    <span class="doccomment">/// let k2 = slab.insert(1);</span>
-    <span class="doccomment">/// let k3 = slab.insert(2);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// slab.retain(|key, val| key == k1 || *val == 1);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert!(slab.contains(k1));</span>
-    <span class="doccomment">/// assert!(slab.contains(k2));</span>
-    <span class="doccomment">/// assert!(!slab.contains(k3));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(2, slab.len());</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// In other words, remove all elements `e` such that `f(&amp;e)` returns false.</span>
+    <span class="doccomment">/// This method operates in place and preserves the order of the retained</span>
+    <span class="doccomment">/// elements.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">retain</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>
     {
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">keep</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">i</span>] {
-                <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">f</span>(<span class="ident">i</span>, <span class="ident">v</span>),
-                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            };
-
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">keep</span> {
-                <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">i</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">entry</span>(<span class="ident">I</span>::<span class="ident">from</span>(<span class="ident">i</span>)) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">f</span>(<span class="ident">e</span>.<span class="ident">get</span>()) {
+                    <span class="ident">e</span>.<span class="ident">remove</span>();
+                }
             }
         }
     }
+
+    <span class="doccomment">/// An iterator for visiting all elements stored in the `Slab`</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="ident">Iter</span> {
+            <span class="ident">slab</span>: <span class="self">self</span>,
+            <span class="ident">cur_idx</span>: <span class="number">0</span>,
+            <span class="ident">yielded</span>: <span class="number">0</span>,
+        }
+    }
+
+    <span class="doccomment">/// A mutable iterator for visiting all elements stored in the `Slab`</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="ident">IterMut</span> {
+            <span class="ident">slab</span>: <span class="self">self</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>,
+            <span class="ident">cur_idx</span>: <span class="number">0</span>,
+            <span class="ident">yielded</span>: <span class="number">0</span>,
+            <span class="ident">_marker</span>: <span class="ident">PhantomData</span>,
+        }
+    }
+
+    <span class="doccomment">/// Empty the slab, by freeing all entries</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">e</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">iter_mut</span>().<span class="ident">enumerate</span>() {
+            <span class="kw-2">*</span><span class="ident">e</span> <span class="op">=</span> <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)
+        }
+        <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="self">self</span>.<span class="ident">len</span> <span class="op">=</span> <span class="number">0</span>;
+    }
+
+    <span class="doccomment">/// Reserves the minimum capacity for exactly `additional` more elements to</span>
+    <span class="doccomment">/// be inserted in the given `Slab`. Does nothing if the capacity is</span>
+    <span class="doccomment">/// already sufficient.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reserve_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">additional</span>: <span class="ident">usize</span>) {
+        <span class="kw">let</span> <span class="ident">prev_len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>();
+
+        <span class="comment">// Ensure `entries_num` isn&#39;t too big</span>
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">additional</span> <span class="op">&lt;</span> <span class="ident">usize</span>::<span class="ident">MAX</span> <span class="op">-</span> <span class="ident">prev_len</span>, <span class="string">&quot;capacity too large&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">prev_len_next</span> <span class="op">=</span> <span class="ident">prev_len</span> <span class="op">+</span> <span class="number">1</span>;
+        <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">extend</span>((<span class="ident">prev_len_next</span>..(<span class="ident">prev_len_next</span> <span class="op">+</span> <span class="ident">additional</span>)).<span class="ident">map</span>(<span class="ident">Slot</span>::<span class="ident">Empty</span>));
+
+        <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>(), <span class="ident">prev_len</span> <span class="op">+</span> <span class="ident">additional</span>);
+    }
+
+    <span class="kw">fn</span> <span class="ident">insert_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">I</span> {
+        <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">idx</span>] {
+            <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="ident">next</span>) <span class="op">=&gt;</span> <span class="ident">next</span>,
+            <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Index already contains value&quot;</span>),
+            <span class="ident">Slot</span>::<span class="ident">Invalid</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>),
+        };
+
+        <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">idx</span>] <span class="op">=</span> <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="ident">value</span>);
+        <span class="self">self</span>.<span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
+
+        <span class="ident">I</span>::<span class="ident">from</span>(<span class="ident">idx</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>, <span class="ident">e</span>: <span class="ident">Slot</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">idx</span>], <span class="ident">e</span>) {
+            <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="ident">idx</span>;
+            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>);
+        }
+
+        <span class="prelude-val">None</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">local_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">idx</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">idx</span>.<span class="ident">into</span>();
+
+        <span class="kw">if</span> <span class="ident">idx</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">len</span>() {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        }
+
+        <span class="prelude-val">Some</span>(<span class="ident">idx</span>)
+    }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">ops</span>::<span class="ident">Index</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">ops</span>::<span class="ident">Index</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span>;
 
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">key</span>] {
-            <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;invalid key&quot;</span>),
-        }
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
+        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">index</span>).<span class="ident">expect</span>(<span class="string">&quot;invalid index&quot;</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">ops</span>::<span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>[<span class="ident">key</span>] {
-            <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;invalid key&quot;</span>),
-        }
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">ops</span>::<span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span> {
+        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="ident">index</span>).<span class="ident">expect</span>(<span class="string">&quot;invalid index&quot;</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>);
-    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">iter</span>()
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>);
-    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">iter_mut</span>()
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">fmt</span>::<span class="ident">Debug</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">fmt</span>::<span class="ident">Debug</span>,
+          <span class="ident">I</span>: <span class="ident">fmt</span>::<span class="ident">Debug</span>,
+{
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="macro">write</span><span class="macro">!</span>(<span class="ident">fmt</span>,
                <span class="string">&quot;Slab {{ len: {}, cap: {} }}&quot;</span>,
@@ -1703,87 +1134,144 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">fmt</span>::<span class="ident">Debug</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="ident">fmt</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;IterMut&quot;</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;slab&quot;</span>, <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">slab</span> })
-            .<span class="ident">field</span>(<span class="string">&quot;curr&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">curr</span>)
-            .<span class="ident">finish</span>()
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>;
+    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>;
+
+    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">iter</span>()
     }
 }
 
-<span class="comment">// ===== VacantEntry =====</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>;
+    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span>;
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Insert a value in the entry, returning a mutable reference to the value.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// To get the key associated with the value, use `key` prior to calling</span>
-    <span class="doccomment">/// `insert`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let hello = {</span>
-    <span class="doccomment">///     let entry = slab.vacant_entry();</span>
-    <span class="doccomment">///     let key = entry.key();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///     entry.insert((key, &quot;hello&quot;));</span>
-    <span class="doccomment">///     key</span>
-    <span class="doccomment">/// };</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(hello, slab[hello].0);</span>
-    <span class="doccomment">/// assert_eq!(&quot;hello&quot;, slab[hello].1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span> {
-        <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">insert_at</span>(<span class="self">self</span>.<span class="ident">key</span>, <span class="ident">val</span>);
+    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">iter_mut</span>()
+    }
+}
 
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>[<span class="self">self</span>.<span class="ident">key</span>] {
-            <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+<span class="comment">/*
+ *
+ * ===== Entry =====
+ *
+ */</span>
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+
+    <span class="doccomment">/// Replace the value stored in the entry</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+        <span class="kw">match</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>[<span class="self">self</span>.<span class="ident">idx</span>], <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="ident">val</span>)) {
+            <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>,
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>),
         }
     }
 
-    <span class="doccomment">/// Return the key associated with this entry.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A value stored in this entry will be associated with this key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use slab::*;</span>
-    <span class="doccomment">/// let mut slab = Slab::new();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let hello = {</span>
-    <span class="doccomment">///     let entry = slab.vacant_entry();</span>
-    <span class="doccomment">///     let key = entry.key();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///     entry.insert((key, &quot;hello&quot;));</span>
-    <span class="doccomment">///     key</span>
-    <span class="doccomment">/// };</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(hello, slab[hello].0);</span>
-    <span class="doccomment">/// assert_eq!(&quot;hello&quot;, slab[hello].1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">key</span>
+    <span class="doccomment">/// Apply the function to the current value, replacing it with the result</span>
+    <span class="doccomment">/// of the function.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_with</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>)
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+    {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">idx</span>;
+
+        <span class="comment">// Take the value out of the entry, temporarily setting it to Invalid</span>
+        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>[<span class="ident">idx</span>], <span class="ident">Slot</span>::<span class="ident">Invalid</span>) {
+            <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">f</span>(<span class="ident">v</span>),
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>),
+        };
+
+        <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>[<span class="ident">idx</span>] <span class="op">=</span> <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="ident">val</span>);
+    }
+
+    <span class="doccomment">/// Remove and return the value stored in the entry</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+        <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">next</span>;
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">replace</span>(<span class="self">self</span>.<span class="ident">idx</span>, <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="ident">next</span>)) {
+            <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">len</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="ident">v</span>
+        } <span class="kw">else</span> {
+            <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>);
+        }
+    }
+
+    <span class="doccomment">/// Get a reference to the value stored in the entry</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>();
+        <span class="self">self</span>.<span class="ident">slab</span>
+            .<span class="ident">get</span>(<span class="ident">idx</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;Filled slot in Entry&quot;</span>)
+    }
+
+    <span class="doccomment">/// Get a mutable reference to the value stored in the entry</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">T</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>();
+        <span class="self">self</span>.<span class="ident">slab</span>
+            .<span class="ident">get_mut</span>(<span class="ident">idx</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;Filled slot in Entry&quot;</span>)
+    }
+
+    <span class="doccomment">/// Convert the entry handle to a mutable reference</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_mut</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span> {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>();
+        <span class="self">self</span>.<span class="ident">slab</span>
+            .<span class="ident">get_mut</span>(<span class="ident">idx</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;Filled slot in Entry&quot;</span>)
+    }
+
+    <span class="doccomment">/// Return the entry index</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">I</span> {
+        <span class="ident">I</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">idx</span>)
     }
 }
 
-<span class="comment">// ===== Iter =====</span>
+<span class="comment">/*
+ *
+ * ===== VacantEntry =====
+ *
+ */</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Insert a value into the entry</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">insert_at</span>(<span class="self">self</span>.<span class="ident">idx</span>, <span class="ident">val</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>)<span class="op">&gt;</span> {
-        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">curr</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">curr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">curr</span>;
-            <span class="self">self</span>.<span class="ident">curr</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">Entry</span> {
+            <span class="ident">slab</span>: <span class="self">self</span>.<span class="ident">slab</span>,
+            <span class="ident">idx</span>: <span class="self">self</span>.<span class="ident">idx</span>,
+        }
+    }
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>[<span class="ident">curr</span>] {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">curr</span>, <span class="ident">v</span>));
+    <span class="doccomment">/// Returns the entry index</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">I</span> {
+        <span class="ident">I</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">idx</span>)
+    }
+}
+
+<span class="comment">/*
+ *
+ * ===== Iter =====
+ *
+ */</span>
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>;
+
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">yielded</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">len</span> {
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">entries</span>[<span class="self">self</span>.<span class="ident">cur_idx</span>] {
+                <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> {
+                    <span class="self">self</span>.<span class="ident">cur_idx</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="self">self</span>.<span class="ident">yielded</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>);
+                }
+                <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
+                    <span class="self">self</span>.<span class="ident">cur_idx</span> <span class="op">+=</span> <span class="number">1</span>;
+                }
+                <span class="ident">Slot</span>::<span class="ident">Invalid</span> <span class="op">=&gt;</span> {
+                    <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>);
+                }
             }
         }
 
@@ -1791,24 +1279,398 @@
     }
 }
 
-<span class="comment">// ===== IterMut =====</span>
+<span class="comment">/*
+ *
+ * ===== IterMut =====
+ *
+ */</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
-            <span class="kw">while</span> <span class="self">self</span>.<span class="ident">curr</span> <span class="op">&lt;</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">slab</span>).<span class="ident">entries</span>.<span class="ident">len</span>() {
-                <span class="kw">let</span> <span class="ident">curr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">curr</span>;
-                <span class="self">self</span>.<span class="ident">curr</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="kw">while</span> <span class="self">self</span>.<span class="ident">yielded</span> <span class="op">&lt;</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">slab</span>).<span class="ident">len</span> {
+                <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cur_idx</span>;
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Entry</span>::<span class="ident">Occupied</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>) <span class="op">=</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">slab</span>).<span class="ident">entries</span>[<span class="ident">curr</span>] {
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">curr</span>, <span class="ident">v</span>));
+                <span class="kw">match</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">slab</span>).<span class="ident">entries</span>[<span class="ident">idx</span>] {
+                    <span class="ident">Slot</span>::<span class="ident">Filled</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>) <span class="op">=&gt;</span> {
+                        <span class="self">self</span>.<span class="ident">cur_idx</span> <span class="op">+=</span> <span class="number">1</span>;
+                        <span class="self">self</span>.<span class="ident">yielded</span> <span class="op">+=</span> <span class="number">1</span>;
+                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>);
+                    }
+                    <span class="ident">Slot</span>::<span class="ident">Empty</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
+                        <span class="self">self</span>.<span class="ident">cur_idx</span> <span class="op">+=</span> <span class="number">1</span>;
+                    }
+                    <span class="ident">Slot</span>::<span class="ident">Invalid</span> <span class="op">=&gt;</span> {
+                        <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Slab corrupt&quot;</span>);
+                    }
                 }
             }
 
             <span class="prelude-val">None</span>
         }
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MyIndex</span>(<span class="kw">pub</span> <span class="ident">usize</span>);
+
+    <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MyIndex</span> {
+        <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">MyIndex</span> {
+            <span class="ident">MyIndex</span>(<span class="ident">i</span>)
+        }
+    }
+
+    <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MyIndex</span> {
+        <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+            <span class="self">self</span>.<span class="number">0</span>
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_index_trait</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">MyIndex</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">10</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">idx</span>, <span class="ident">MyIndex</span>(<span class="number">0</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">idx</span>], <span class="number">10</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_insertion</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">is_empty</span>(), <span class="bool-val">true</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">has_available</span>(), <span class="bool-val">true</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">available</span>(), <span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">10</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">idx</span>], <span class="number">10</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">is_empty</span>(), <span class="bool-val">false</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">has_available</span>(), <span class="bool-val">false</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">available</span>(), <span class="number">0</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_insert_with</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+
+        {
+            <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">vacant_entry</span>().<span class="ident">unwrap</span>();
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">e</span>.<span class="ident">index</span>(), <span class="number">0</span>);
+            <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">insert</span>(<span class="number">5</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">5</span>, <span class="kw-2">*</span><span class="ident">e</span>.<span class="ident">get</span>());
+        }
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">5</span>), <span class="ident">slab</span>.<span class="ident">get</span>(<span class="number">0</span>));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_repeated_insertion</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">10</span>);
+
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
+            <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">10</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">idx</span>], <span class="ident">i</span> <span class="op">+</span> <span class="number">10</span>);
+        }
+
+        <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">20</span>).<span class="ident">err</span>().<span class="ident">expect</span>(<span class="string">&quot;Inserted when full&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_repeated_insertion_and_removal</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">10</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">indices</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
+            <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">10</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+            <span class="ident">indices</span>.<span class="ident">push</span>(<span class="ident">idx</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">idx</span>], <span class="ident">i</span> <span class="op">+</span> <span class="number">10</span>);
+        }
+
+        <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">i</span> <span class="kw">in</span> <span class="ident">indices</span>.<span class="ident">iter</span>() {
+            <span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">i</span>);
+        }
+
+        <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">20</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert in newly empty slab&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_insertion_when_full</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+        <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">10</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+        <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">10</span>).<span class="ident">err</span>().<span class="ident">expect</span>(<span class="string">&quot;Inserted into a full slab&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_removal_at_boundries</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">remove</span>(<span class="number">0</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">remove</span>(<span class="number">1</span>), <span class="prelude-val">None</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_removal_is_successful</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">10</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+        <span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">t1</span>);
+        <span class="kw">let</span> <span class="ident">t2</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">20</span>).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">t2</span>], <span class="number">20</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_remove_empty_entry</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span>(), <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">3</span>);
+        <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">insert</span>(()).<span class="ident">unwrap</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">s</span>.<span class="ident">remove</span>(<span class="ident">t1</span>).<span class="ident">is_some</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">s</span>.<span class="ident">remove</span>(<span class="ident">t1</span>).<span class="ident">is_none</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">s</span>.<span class="ident">insert</span>(()).<span class="ident">is_ok</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">s</span>.<span class="ident">insert</span>(()).<span class="ident">is_ok</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_mut_retrieval</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="string">&quot;foo&quot;</span>.<span class="ident">to_string</span>()).<span class="ident">ok</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to insert&quot;</span>);
+
+        <span class="ident">slab</span>[<span class="ident">t1</span>].<span class="ident">push_str</span>(<span class="string">&quot;bar&quot;</span>);
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="ident">slab</span>[<span class="ident">t1</span>][..], <span class="string">&quot;foobar&quot;</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_reusing_slots_1</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+
+        <span class="kw">let</span> <span class="ident">t0</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">123</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">456</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">available</span>() <span class="op">==</span> <span class="number">14</span>);
+
+        <span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">t0</span>);
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>, <span class="string">&quot;actual={}&quot;</span>, <span class="ident">slab</span>.<span class="ident">len</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">available</span>() <span class="op">==</span> <span class="number">15</span>);
+
+        <span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">t1</span>);
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">available</span>() <span class="op">==</span> <span class="number">16</span>);
+
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">slab</span>[<span class="ident">t1</span>];
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_reusing_slots_2</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+
+        <span class="kw">let</span> <span class="ident">t0</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">123</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">t0</span>] <span class="op">==</span> <span class="number">123</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">t0</span>) <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="number">123</span>));
+
+        <span class="kw">let</span> <span class="ident">t0</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">456</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">t0</span>] <span class="op">==</span> <span class="number">456</span>);
+
+        <span class="kw">let</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">789</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">t0</span>] <span class="op">==</span> <span class="number">456</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">t1</span>] <span class="op">==</span> <span class="number">789</span>);
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">t0</span>).<span class="ident">unwrap</span>() <span class="op">==</span> <span class="number">456</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">remove</span>(<span class="ident">t1</span>).<span class="ident">unwrap</span>() <span class="op">==</span> <span class="number">789</span>);
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_accessing_out_of_bounds</span>() {
+        <span class="kw">let</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="ident">slab</span>[<span class="number">0</span>];
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_capacity_too_large1</span>() {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">usize</span>;
+        <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="ident">usize</span>::<span class="ident">MAX</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_capacity_too_large_in_reserve_exact</span>() {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">usize</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">100</span>);
+        <span class="ident">slab</span>.<span class="ident">reserve_exact</span>(<span class="ident">usize</span>::<span class="ident">MAX</span> <span class="op">-</span> <span class="number">100</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_contains</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">slab</span>.<span class="ident">contains</span>(<span class="number">0</span>));
+
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">111</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">contains</span>(<span class="ident">idx</span>));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_get</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="kw">let</span> <span class="ident">tok</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">5</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="ident">tok</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">5</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="number">1</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="number">23</span>), <span class="prelude-val">None</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_get_mut</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="kw">let</span> <span class="ident">tok</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">5u32</span>).<span class="ident">unwrap</span>();
+        {
+            <span class="kw">let</span> <span class="ident">mut_ref</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">get_mut</span>(<span class="ident">tok</span>).<span class="ident">unwrap</span>();
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">mut_ref</span>, <span class="number">5</span>);
+            <span class="kw-2">*</span><span class="ident">mut_ref</span> <span class="op">=</span> <span class="number">12</span>;
+        }
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">tok</span>], <span class="number">12</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">get_mut</span>(<span class="number">1</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">get_mut</span>(<span class="number">23</span>), <span class="prelude-val">None</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_replace</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="kw">let</span> <span class="ident">tok</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">5</span>).<span class="ident">unwrap</span>();
+
+        <span class="ident">slab</span>.<span class="ident">entry</span>(<span class="ident">tok</span>).<span class="ident">unwrap</span>().<span class="ident">replace</span>(<span class="number">6</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">entry</span>(<span class="ident">tok</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">is_none</span>());
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">tok</span>], <span class="number">6</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_replace_again</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="kw">let</span> <span class="ident">tok</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">5</span>).<span class="ident">unwrap</span>();
+
+        <span class="ident">slab</span>.<span class="ident">entry</span>(<span class="ident">tok</span>).<span class="ident">unwrap</span>().<span class="ident">replace</span>(<span class="number">6</span>);
+        <span class="ident">slab</span>.<span class="ident">entry</span>(<span class="ident">tok</span>).<span class="ident">unwrap</span>().<span class="ident">replace</span>(<span class="number">7</span>);
+        <span class="ident">slab</span>.<span class="ident">entry</span>(<span class="ident">tok</span>).<span class="ident">unwrap</span>().<span class="ident">replace</span>(<span class="number">8</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">tok</span>], <span class="number">8</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_replace_with</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">16</span>);
+        <span class="kw">let</span> <span class="ident">tok</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">5u32</span>).<span class="ident">unwrap</span>();
+        <span class="ident">slab</span>.<span class="ident">entry</span>(<span class="ident">tok</span>).<span class="ident">unwrap</span>().<span class="ident">replace_with</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">+</span> <span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">tok</span>], <span class="number">6</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_retain</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">tok1</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">tok2</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">1</span>).<span class="ident">unwrap</span>();
+        <span class="ident">slab</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">%</span> <span class="number">2</span> <span class="op">==</span> <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>[<span class="ident">tok1</span>], <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">contains</span>(<span class="ident">tok2</span>), <span class="bool-val">false</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_iter</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">4</span>);
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">4</span> {
+            <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+        }
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);
+
+        <span class="ident">slab</span>.<span class="ident">remove</span>(<span class="number">1</span>);
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>]);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_iter_mut</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">4</span>);
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">4</span> {
+            <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+        }
+        <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="ident">slab</span>.<span class="ident">iter_mut</span>() {
+            <span class="kw-2">*</span><span class="ident">e</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">e</span> <span class="op">+</span> <span class="number">1</span>;
+        }
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);
+
+        <span class="ident">slab</span>.<span class="ident">remove</span>(<span class="number">2</span>);
+        <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="ident">slab</span>.<span class="ident">iter_mut</span>() {
+            <span class="kw-2">*</span><span class="ident">e</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">e</span> <span class="op">+</span> <span class="number">1</span>;
+        }
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>]);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_reserve_exact</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">4</span>);
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">4</span> {
+            <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+        }
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">0</span>).<span class="ident">is_err</span>());
+
+        <span class="ident">slab</span>.<span class="ident">reserve_exact</span>(<span class="number">3</span>);
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);
+
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">3</span> {
+            <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+        }
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">slab</span>.<span class="ident">insert</span>(<span class="number">0</span>).<span class="ident">is_err</span>());
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>]);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_clear</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">usize</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="number">4</span>);
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">4</span> {
+            <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+        }
+
+        <span class="comment">// clear full</span>
+        <span class="ident">slab</span>.<span class="ident">clear</span>();
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[]);
+
+        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
+            <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+        }
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>]);
+
+
+        <span class="comment">// clear half-filled</span>
+        <span class="ident">slab</span>.<span class="ident">clear</span>();
+
+        <span class="kw">let</span> <span class="ident">vals</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">collect</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vals</span>, <span class="macro">vec</span><span class="macro">!</span>[]);
     }
 }
 </pre>

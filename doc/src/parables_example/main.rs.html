@@ -182,8 +182,8 @@
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">runner</span> <span class="op">=</span> <span class="ident">TestRunner</span>::<span class="ident">new</span>();
 
-    <span class="ident">runner</span>.<span class="ident">test</span>(<span class="string">&quot;any set value&quot;</span>, <span class="op">||</span> {
-        <span class="macro">proptest</span><span class="macro">!</span>(<span class="op">|</span>(<span class="ident">x</span> <span class="kw">in</span> <span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>())<span class="op">|</span> {
+    <span class="ident">runner</span>.<span class="ident">test</span>(<span class="string">&quot;any set value&quot;</span>, <span class="macro">pt</span><span class="macro">!</span>{
+        <span class="op">|</span>(<span class="ident">x</span> <span class="kw">in</span> <span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>())<span class="op">|</span> {
             <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">events</span> <span class="kw">as</span> <span class="ident">ev</span>;
             <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">functions</span> <span class="kw">as</span> <span class="ident">f</span>;
 
@@ -204,7 +204,7 @@
             <span class="kw">for</span> <span class="ident">_log</span> <span class="kw">in</span> <span class="ident">evm</span>.<span class="ident">drain_logs</span>(<span class="ident">filter</span>) {
                 <span class="comment">// println!(&quot;log: {:?}&quot;, log);</span>
             }
-        });
+        }
     });
 
     <span class="ident">runner</span>.<span class="ident">test</span>(<span class="string">&quot;decrement step by step&quot;</span>, <span class="op">||</span> {

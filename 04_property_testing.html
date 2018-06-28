@@ -141,8 +141,8 @@ well-defined numeric values, we test a wide range of values.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-tests.test(&quot;get and increment value randomly&quot;, || {
-    proptest!(|(x in any::&lt;u64&gt;())| {
+tests.test(&quot;get and increment value randomly&quot;, pt!{
+    |(x in any::&lt;u64&gt;())| {
         use simple_contract::functions as f;
 
         let x = U256::from(x);
@@ -155,7 +155,7 @@ tests.test(&quot;get and increment value randomly&quot;, || {
         evm.call(simple, f::set_value(x), call)?;
         let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(x, out);
-    });
+    }
 });
 #}</code></pre></pre>
 <p>For the heck of it, let's introduce a require that will prevent us from setting the field to

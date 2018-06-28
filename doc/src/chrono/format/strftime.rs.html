@@ -1,61 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/chrono-0.4.3/src/format/strftime.rs`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang">
-
-    <title>strftime.rs.html -- source</title>
-
-    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css"
-          id="mainThemeStyle">
-    
-    <link rel="stylesheet" type="text/css" href="../../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle">
-    <script src="../../../storage.js"></script>
-    
-
-    
-    
-</head>
-<body class="rustdoc source">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        <div class="sidebar-menu">&#9776;</div>
-        
-        
-    </nav>
-
-    <div class="theme-picker">
-        <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../../../brush.svg" width="18" alt="Pick another theme!">
-        </button>
-        <div id="theme-choices"></div>
-    </div>
-    <script src="../../../theme.js"></script>
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/chrono-0.4.4/src/format/strftime.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>strftime.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -510,6 +453,34 @@
 <span id="453">453</span>
 <span id="454">454</span>
 <span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
 </pre><pre class="rust ">
 <span class="comment">// This is a part of Chrono.</span>
 <span class="comment">// See README.md and LICENSE.txt for details.</span>
@@ -571,6 +542,9 @@ The following specifiers are available both to formatting and parsing.
 | `%.3f`| `.026`        | Similar to `.%f` but left-aligned but fixed to a length of 3. [8]     |
 | `%.6f`| `.026490`     | Similar to `.%f` but left-aligned but fixed to a length of 6. [8]     |
 | `%.9f`| `.026490000`  | Similar to `.%f` but left-aligned but fixed to a length of 9. [8]     |
+| `%3f` | `026`         | Similar to `%.3f` but without the leading dot. [8]                    |
+| `%6f` | `026490`      | Similar to `%.6f` but without the leading dot. [8]                    |
+| `%9f` | `026490000`   | Similar to `%.9f` but without the leading dot. [8]                    |
 |       |               |                                                                       |
 | `%R`  | `00:34`       | Hour-minute format. Same to `%H:%M`.                                  |
 | `%T`  | `00:34:60`    | Hour-minute-second format. Same to `%H:%M:%S`.                        |
@@ -636,7 +610,7 @@ Notes:
    For the purpose of Chrono, it only accounts for non-leap seconds
    so it slightly differs from ISO C `strftime` behavior.
 
-8. `%f`, `%.f`, `%.3f`, `%.6f`, `%.9f`:
+8. `%f`, `%.f`, `%.3f`, `%.6f`, `%.9f`, `%3f`, `%6f`, `%9f`:
 
    The default `%f` is right-aligned and always zero-padded to 9 digits
    for the compatibility with glibc and others,
@@ -657,6 +631,12 @@ Notes:
    and parsing `.07`, `.070000` etc. will yield the same.
    Note that they can read nothing if the fractional part is zero or
    the next character is not `.` however will print with the specified length.
+
+   The variant `%3f`, `%6f` and `%9f` are left-aligned and print 3, 6 or 9 fractional digits
+   according to the number preceding `f`, but without the leading dot.
+   E.g. 70ms after the last second under `%3f` will print `070` (note: not `07`),
+   and parsing `07`, `070000` etc. will yield the same.
+   Note that they can read nothing if the fractional part is zero.
 
 */</span>
 
@@ -808,6 +788,18 @@ Notes:
                         <span class="string">&#39;f&#39;</span> <span class="op">=&gt;</span> <span class="macro">fix</span><span class="macro">!</span>(<span class="ident">Nanosecond</span>),
                         <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">Item</span>::<span class="ident">Error</span>,
                     },
+                    <span class="string">&#39;3&#39;</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="macro">next</span><span class="macro">!</span>() {
+                        <span class="string">&#39;f&#39;</span> <span class="op">=&gt;</span> <span class="macro">internal_fix</span><span class="macro">!</span>(<span class="ident">Nanosecond3NoDot</span>),
+                        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">Item</span>::<span class="ident">Error</span>,
+                    },
+                    <span class="string">&#39;6&#39;</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="macro">next</span><span class="macro">!</span>() {
+                        <span class="string">&#39;f&#39;</span> <span class="op">=&gt;</span> <span class="macro">internal_fix</span><span class="macro">!</span>(<span class="ident">Nanosecond6NoDot</span>),
+                        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">Item</span>::<span class="ident">Error</span>,
+                    },
+                    <span class="string">&#39;9&#39;</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="macro">next</span><span class="macro">!</span>() {
+                        <span class="string">&#39;f&#39;</span> <span class="op">=&gt;</span> <span class="macro">internal_fix</span><span class="macro">!</span>(<span class="ident">Nanosecond9NoDot</span>),
+                        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">Item</span>::<span class="ident">Error</span>,
+                    },
                     <span class="string">&#39;%&#39;</span> <span class="op">=&gt;</span> <span class="macro">lit</span><span class="macro">!</span>(<span class="string">&quot;%&quot;</span>),
                     <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">Item</span>::<span class="ident">Error</span>, <span class="comment">// no such specifier</span>
                 };
@@ -900,9 +892,9 @@ Notes:
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">test_strftime_docs</span>() {
-    <span class="kw">use</span> {<span class="ident">FixedOffset</span>, <span class="ident">TimeZone</span>};
+    <span class="kw">use</span> {<span class="ident">FixedOffset</span>, <span class="ident">TimeZone</span>, <span class="ident">Timelike</span>};
 
-    <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">FixedOffset</span>::<span class="ident">east</span>(<span class="number">34200</span>).<span class="ident">ymd</span>(<span class="number">2001</span>, <span class="number">7</span>, <span class="number">8</span>).<span class="ident">and_hms_nano</span>(<span class="number">0</span>, <span class="number">34</span>, <span class="number">59</span>, <span class="number">1_026_490_000</span>);
+    <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">FixedOffset</span>::<span class="ident">east</span>(<span class="number">34200</span>).<span class="ident">ymd</span>(<span class="number">2001</span>, <span class="number">7</span>, <span class="number">8</span>).<span class="ident">and_hms_nano</span>(<span class="number">0</span>, <span class="number">34</span>, <span class="number">59</span>, <span class="number">1_026_490_708</span>);
 
     <span class="comment">// date specifiers</span>
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%Y&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;2001&quot;</span>);
@@ -941,11 +933,16 @@ Notes:
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%p&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;AM&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%M&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;34&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%S&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;60&quot;</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;026490000&quot;</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%.f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;.026490&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;026490708&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%.f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;.026490708&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">with_nanosecond</span>(<span class="number">1_026_490_000</span>).<span class="ident">unwrap</span>().<span class="ident">format</span>(<span class="string">&quot;%.f&quot;</span>).<span class="ident">to_string</span>(),
+               <span class="string">&quot;.026490&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%.3f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;.026&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%.6f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;.026490&quot;</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%.9f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;.026490000&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%.9f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;.026490708&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%3f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;026&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%6f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;026490&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%9f&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;026490708&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%R&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;00:34&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%T&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;00:34:60&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%X&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;00:34:60&quot;</span>);
@@ -958,7 +955,9 @@ Notes:
 
     <span class="comment">// date &amp; time specifiers</span>
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%c&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;Sun Jul  8 00:34:60 2001&quot;</span>);
-    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%+&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;2001-07-08T00:34:60.026490+09:30&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%+&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;2001-07-08T00:34:60.026490708+09:30&quot;</span>);
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">with_nanosecond</span>(<span class="number">1_026_490_000</span>).<span class="ident">unwrap</span>().<span class="ident">format</span>(<span class="string">&quot;%+&quot;</span>).<span class="ident">to_string</span>(),
+               <span class="string">&quot;2001-07-08T00:34:60.026490+09:30&quot;</span>);
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%s&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;994518299&quot;</span>);
 
     <span class="comment">// special specifiers</span>
@@ -967,68 +966,4 @@ Notes:
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">dt</span>.<span class="ident">format</span>(<span class="string">&quot;%%&quot;</span>).<span class="ident">to_string</span>(), <span class="string">&quot;%&quot;</span>);
 }
 </pre>
-</section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt><kbd>?</kbd></dt>
-                    <dd>Show this help dialog</dd>
-                    <dt><kbd>S</kbd></dt>
-                    <dd>Focus the search field</dd>
-                    <dt><kbd>↑</kbd></dt>
-                    <dd>Move up in search results</dd>
-                    <dt><kbd>↓</kbd></dt>
-                    <dd>Move down in search results</dd>
-                    <dt><kbd>↹</kbd></dt>
-                    <dd>Switch tab</dd>
-                    <dt><kbd>&#9166;</kbd></dt>
-                    <dd>Go to active search result</dd>
-                    <dt><kbd>+</kbd></dt>
-                    <dd>Expand all sections</dd>
-                    <dt><kbd>-</kbd></dt>
-                    <dd>Collapse all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../../";
-        window.currentCrate = "chrono";
-    </script>
-    <script src="../../../main.js"></script>
-    <script defer src="../../../search-index.js"></script>
-</body>
-</html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../";window.currentCrate = "chrono";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

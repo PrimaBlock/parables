@@ -1,65 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `TestBlockChainClient` struct in crate `ethcore`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, TestBlockChainClient">
-
-    <title>ethcore::client::TestBlockChainClient - Rust</title>
-
-    <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
-          id="mainThemeStyle">
-    
-    <link rel="stylesheet" type="text/css" href="../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle">
-    <script src="../../storage.js"></script>
-    
-
-    
-    
-</head>
-<body class="rustdoc struct">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        <div class="sidebar-menu">&#9776;</div>
-        
-        <p class='location'>Struct TestBlockChainClient</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.blocks">blocks</a><a href="#structfield.numbers">numbers</a><a href="#structfield.genesis_hash">genesis_hash</a><a href="#structfield.last_hash">last_hash</a><a href="#structfield.extra_data">extra_data</a><a href="#structfield.difficulty">difficulty</a><a href="#structfield.balances">balances</a><a href="#structfield.nonces">nonces</a><a href="#structfield.storage">storage</a><a href="#structfield.code">code</a><a href="#structfield.execution_result">execution_result</a><a href="#structfield.receipts">receipts</a><a href="#structfield.logs">logs</a><a href="#structfield.queue_size">queue_size</a><a href="#structfield.miner">miner</a><a href="#structfield.spec">spec</a><a href="#structfield.latest_block_timestamp">latest_block_timestamp</a><a href="#structfield.ancient_block">ancient_block</a><a href="#structfield.first_block">first_block</a><a href="#structfield.traces">traces</a><a href="#structfield.history">history</a><a href="#structfield.disabled">disabled</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.new_with_extra_data">new_with_extra_data</a><a href="#method.new_with_spec">new_with_spec</a><a href="#method.new_with_spec_and_extra">new_with_spec_and_extra</a><a href="#method.set_transaction_receipt">set_transaction_receipt</a><a href="#method.set_execution_result">set_execution_result</a><a href="#method.set_balance">set_balance</a><a href="#method.set_nonce">set_nonce</a><a href="#method.set_code">set_code</a><a href="#method.set_storage">set_storage</a><a href="#method.set_queue_size">set_queue_size</a><a href="#method.set_latest_block_timestamp">set_latest_block_timestamp</a><a href="#method.set_logs">set_logs</a><a href="#method.add_blocks">add_blocks</a><a href="#method.corrupt_block">corrupt_block</a><a href="#method.corrupt_block_parent">corrupt_block_parent</a><a href="#method.block_hash_delta_minus">block_hash_delta_minus</a><a href="#method.insert_transaction_with_gas_price_to_queue">insert_transaction_with_gas_price_to_queue</a><a href="#method.insert_transaction_to_queue">insert_transaction_to_queue</a><a href="#method.set_history">set_history</a><a href="#method.is_disabled">is_disabled</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Default">Default</a><a href="#impl-ReopenBlock">ReopenBlock</a><a href="#impl-PrepareOpenBlock">PrepareOpenBlock</a><a href="#impl-ScheduleInfo">ScheduleInfo</a><a href="#impl-ImportSealedBlock">ImportSealedBlock</a><a href="#impl-BlockProducer">BlockProducer</a><a href="#impl-BroadcastProposalBlock">BroadcastProposalBlock</a><a href="#impl-SealedBlockImporter">SealedBlockImporter</a><a href="#impl-TransactionVerifierClient">TransactionVerifierClient</a><a href="#impl-BlockChainClient">BlockChainClient</a><a href="#impl-Nonce">Nonce</a><a href="#impl-Balance">Balance</a><a href="#impl-AccountData">AccountData</a><a href="#impl-ChainInfo">ChainInfo</a><a href="#impl-BlockInfo">BlockInfo</a><a href="#impl-CallContract">CallContract</a><a href="#impl-TransactionInfo">TransactionInfo</a><a href="#impl-BlockChain">BlockChain</a><a href="#impl-RegistryInfo">RegistryInfo</a><a href="#impl-ImportBlock">ImportBlock</a><a href="#impl-Call">Call</a><a href="#impl-StateClient">StateClient</a><a href="#impl-EngineInfo">EngineInfo</a><a href="#impl-IoClient">IoClient</a><a href="#impl-ProvingBlockChainClient">ProvingBlockChainClient</a><a href="#impl-EngineClient">EngineClient</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>client</a></p><script>window.sidebarCurrent = {name: 'TestBlockChainClient', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
-    </nav>
-
-    <div class="theme-picker">
-        <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../../brush.svg" width="18" alt="Pick another theme!">
-        </button>
-        <div id="theme-choices"></div>
-    </div>
-    <script src="../../theme.js"></script>
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>client</a>::<wbr><a class="struct" href=''>TestBlockChainClient</a></span><span class='out-of-band'><span id='render-detail'>
-                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                       [<span class='inner'>&#x2212;</span>]
-                   </a>
-               </span><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#70-115' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct TestBlockChainClient {
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `TestBlockChainClient` struct in crate `ethcore`."><meta name="keywords" content="rust, rustlang, rust-lang, TestBlockChainClient"><title>ethcore::client::TestBlockChainClient - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc struct"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Struct TestBlockChainClient</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.blocks">blocks</a><a href="#structfield.numbers">numbers</a><a href="#structfield.genesis_hash">genesis_hash</a><a href="#structfield.last_hash">last_hash</a><a href="#structfield.extra_data">extra_data</a><a href="#structfield.difficulty">difficulty</a><a href="#structfield.balances">balances</a><a href="#structfield.nonces">nonces</a><a href="#structfield.storage">storage</a><a href="#structfield.code">code</a><a href="#structfield.execution_result">execution_result</a><a href="#structfield.receipts">receipts</a><a href="#structfield.logs">logs</a><a href="#structfield.queue_size">queue_size</a><a href="#structfield.miner">miner</a><a href="#structfield.spec">spec</a><a href="#structfield.latest_block_timestamp">latest_block_timestamp</a><a href="#structfield.ancient_block">ancient_block</a><a href="#structfield.first_block">first_block</a><a href="#structfield.traces">traces</a><a href="#structfield.history">history</a><a href="#structfield.disabled">disabled</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.new_with_extra_data">new_with_extra_data</a><a href="#method.new_with_spec">new_with_spec</a><a href="#method.new_with_spec_and_extra">new_with_spec_and_extra</a><a href="#method.set_transaction_receipt">set_transaction_receipt</a><a href="#method.set_execution_result">set_execution_result</a><a href="#method.set_balance">set_balance</a><a href="#method.set_nonce">set_nonce</a><a href="#method.set_code">set_code</a><a href="#method.set_storage">set_storage</a><a href="#method.set_queue_size">set_queue_size</a><a href="#method.set_latest_block_timestamp">set_latest_block_timestamp</a><a href="#method.set_logs">set_logs</a><a href="#method.add_blocks">add_blocks</a><a href="#method.corrupt_block">corrupt_block</a><a href="#method.corrupt_block_parent">corrupt_block_parent</a><a href="#method.block_hash_delta_minus">block_hash_delta_minus</a><a href="#method.insert_transaction_with_gas_price_to_queue">insert_transaction_with_gas_price_to_queue</a><a href="#method.insert_transaction_to_queue">insert_transaction_to_queue</a><a href="#method.set_history">set_history</a><a href="#method.is_disabled">is_disabled</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Default">Default</a><a href="#impl-ReopenBlock">ReopenBlock</a><a href="#impl-PrepareOpenBlock">PrepareOpenBlock</a><a href="#impl-ScheduleInfo">ScheduleInfo</a><a href="#impl-ImportSealedBlock">ImportSealedBlock</a><a href="#impl-BlockProducer">BlockProducer</a><a href="#impl-BroadcastProposalBlock">BroadcastProposalBlock</a><a href="#impl-SealedBlockImporter">SealedBlockImporter</a><a href="#impl-TransactionVerifierClient">TransactionVerifierClient</a><a href="#impl-BlockChainClient">BlockChainClient</a><a href="#impl-Nonce">Nonce</a><a href="#impl-Balance">Balance</a><a href="#impl-AccountData">AccountData</a><a href="#impl-ChainInfo">ChainInfo</a><a href="#impl-BlockInfo">BlockInfo</a><a href="#impl-CallContract">CallContract</a><a href="#impl-TransactionInfo">TransactionInfo</a><a href="#impl-BlockChain">BlockChain</a><a href="#impl-RegistryInfo">RegistryInfo</a><a href="#impl-ImportBlock">ImportBlock</a><a href="#impl-Call">Call</a><a href="#impl-StateClient">StateClient</a><a href="#impl-EngineInfo">EngineInfo</a><a href="#impl-IoClient">IoClient</a><a href="#impl-ProvingBlockChainClient">ProvingBlockChainClient</a><a href="#impl-EngineClient">EngineClient</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>client</a></p><script>window.sidebarCurrent = {name: 'TestBlockChainClient', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>ethcore</a>::<wbr><a href='index.html'>client</a>::<wbr><a class="struct" href=''>TestBlockChainClient</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#70-115' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct TestBlockChainClient {
     pub blocks: <a class="struct" href="../../parking_lot/rwlock/struct.RwLock.html" title="struct parking_lot::rwlock::RwLock">RwLock</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>, <a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;&gt;,
     pub numbers: <a class="struct" href="../../parking_lot/rwlock/struct.RwLock.html" title="struct parking_lot::rwlock::RwLock">RwLock</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html" title="struct std::collections::hash::map::HashMap">HashMap</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>&gt;&gt;,
     pub genesis_hash: <a class="struct" href="../../ethereum_types/hash/struct.H256.html" title="struct ethereum_types::hash::H256">H256</a>,
@@ -220,11 +159,10 @@
 </div><h4 id='method.set_history' class="method"><span id='set_history.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.set_history' class='fnname'>set_history</a>(&amp;self, h: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>&gt;)</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#354-356' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Set reported history size.</p>
 </div><h4 id='method.is_disabled' class="method"><span id='is_disabled.v' class='invisible'><table class='table-display'><tbody><tr><td><code>pub fn <a href='#method.is_disabled' class='fnname'>is_disabled</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#359-361' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns true if the client has been disabled.</p>
 </div></div>
-            <h2 id='implementations' class='small-section-header'>
-              Trait Implementations<a href='#implementations' class='anchor'></a>
-            </h2>
-            <div id='implementations-list'>
-        <h3 id='impl-Default' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-Default' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#130-134' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.default' class="method"><span id='default.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#131-133' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+                <h2 id='implementations' class='small-section-header'>
+                  Trait Implementations<a href='#implementations' class='anchor'></a>
+                </h2>
+                <div id='implementations-list'><h3 id='impl-Default' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-Default' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#130-134' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.default' class="method"><span id='default.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; Self</code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#131-133' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
 </div></div><h3 id='impl-ReopenBlock' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../ethcore/client/trait.ReopenBlock.html" title="trait ethcore::client::ReopenBlock">ReopenBlock</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-ReopenBlock' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#370-374' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.reopen_block' class="method"><span id='reopen_block.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../ethcore/client/trait.ReopenBlock.html#tymethod.reopen_block' class='fnname'>reopen_block</a>(&amp;self, block: <a class="struct" href="../../ethcore/block/struct.ClosedBlock.html" title="struct ethcore::block::ClosedBlock">ClosedBlock</a>) -&gt; <a class="struct" href="../../ethcore/block/struct.OpenBlock.html" title="struct ethcore::block::OpenBlock">OpenBlock</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#371-373' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Reopens an OpenBlock and updates uncles.</p>
 </div></div><h3 id='impl-PrepareOpenBlock' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../ethcore/client/trait.PrepareOpenBlock.html" title="trait ethcore::client::PrepareOpenBlock">PrepareOpenBlock</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-PrepareOpenBlock' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#376-400' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.prepare_open_block' class="method"><span id='prepare_open_block.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../ethcore/client/trait.PrepareOpenBlock.html#tymethod.prepare_open_block' class='fnname'>prepare_open_block</a>(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;author: <a class="type" href="../../ethereum_types/type.Address.html" title="type ethereum_types::Address">Address</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;gas_range_target: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>, <a class="struct" href="../../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;extra_data: <a class="type" href="../../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a><br>) -&gt; <a class="struct" href="../../ethcore/block/struct.OpenBlock.html" title="struct ethcore::block::OpenBlock">OpenBlock</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#377-399' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns OpenBlock prepared for closing.</p>
 </div></div><h3 id='impl-ScheduleInfo' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="../../ethcore/client/trait.ScheduleInfo.html" title="trait ethcore::client::ScheduleInfo">ScheduleInfo</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-ScheduleInfo' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#402-406' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.latest_schedule' class="method"><span id='latest_schedule.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='../../ethcore/client/trait.ScheduleInfo.html#tymethod.latest_schedule' class='fnname'>latest_schedule</a>(&amp;self) -&gt; <a class="struct" href="../../vm/schedule/struct.Schedule.html" title="struct vm::schedule::Schedule">Schedule</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/ethcore/client/test_client.rs.html#403-405' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Returns latest schedule.</p>
@@ -316,68 +254,4 @@
                   Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>
                 </h2>
                 <div id='synthetic-implementations-list'>
-            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt><kbd>?</kbd></dt>
-                    <dd>Show this help dialog</dd>
-                    <dt><kbd>S</kbd></dt>
-                    <dd>Focus the search field</dd>
-                    <dt><kbd>↑</kbd></dt>
-                    <dd>Move up in search results</dd>
-                    <dt><kbd>↓</kbd></dt>
-                    <dd>Move down in search results</dd>
-                    <dt><kbd>↹</kbd></dt>
-                    <dd>Switch tab</dd>
-                    <dt><kbd>&#9166;</kbd></dt>
-                    <dd>Go to active search result</dd>
-                    <dt><kbd>+</kbd></dt>
-                    <dd>Expand all sections</dd>
-                    <dt><kbd>-</kbd></dt>
-                    <dd>Collapse all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../";
-        window.currentCrate = "ethcore";
-    </script>
-    <script src="../../main.js"></script>
-    <script defer src="../../search-index.js"></script>
-</body>
-</html>
+            <h3 id='impl-Send' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-Send' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div><h3 id='impl-Sync' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="../../ethcore/client/struct.TestBlockChainClient.html" title="struct ethcore::client::TestBlockChainClient">TestBlockChainClient</a></code><a href='#impl-Sync' class='anchor'></a></span></td><td><span class='out-of-band'></span></td></tr></tbody></table></h3><div class='impl-items'></div></div></section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "ethcore";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>
