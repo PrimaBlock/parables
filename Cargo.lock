@@ -1408,17 +1408,12 @@ dependencies = [
 [[package]]
 name = "parables-build"
 version = "0.1.0"
-source = "git+https://github.com/primablock/parables#f987af54b70a39ad19e5299af6b93992dece32cd"
-
-[[package]]
-name = "parables-build"
-version = "0.1.0"
 
 [[package]]
 name = "parables-example"
 version = "0.1.0"
 dependencies = [
- "parables-build 0.1.0 (git+https://github.com/primablock/parables)",
+ "parables-build 0.1.0",
  "parables-testing 0.1.0",
 ]
 
@@ -2798,7 +2793,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum num_cpus 1.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c51a3322e4bca9d212ad9a158a02abc6934d005490c054a2778df73a70aa0a30"
 "checksum ole32-sys 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5d2c49021782e5233cd243168edfa8037574afed4eba4bbaf538b3d8d1789d8c"
 "checksum owning_ref 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "cdf84f41639e037b484f93433aa3897863b561ed65c6e59c7073d7c561710f37"
-"checksum parables-build 0.1.0 (git+https://github.com/primablock/parables)" = "<none>"
 "checksum parity-machine 0.1.0 (git+https://github.com/paritytech/parity.git?rev=ac3a706f)" = "<none>"
 "checksum parity-reactor 0.1.0 (git+https://github.com/paritytech/parity.git?rev=ac3a706f)" = "<none>"
 "checksum parity-wasm 0.27.6 (registry+https://github.com/rust-lang/crates.io-index)" = "bd4dc02a80a0315b109e48992c46942c79bcdb8fac416dd575d330ed9ced6cbd"

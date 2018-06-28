@@ -38,8 +38,8 @@ fn main() -> Result<()> {
 
     let mut runner = TestRunner::new();
 
-    runner.test("any set value", || {
-        proptest!(|(x in any::<u64>())| {
+    runner.test("any set value", pt!{
+        |(x in any::<u64>())| {
             use simple_contract::events as ev;
             use simple_contract::functions as f;
 
@@ -60,7 +60,7 @@ fn main() -> Result<()> {
             for _log in evm.drain_logs(filter) {
                 // println!("log: {:?}", log);
             }
-        });
+        }
     });
 
     runner.test("decrement step by step", || {

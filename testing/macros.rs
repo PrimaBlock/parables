@@ -48,3 +48,9 @@ macro_rules! contracts {
         }
     };
 }
+
+/// Helper macro for proptest! to build a closure suitable for passing in to `TestRunner::run`.
+#[macro_export]
+macro_rules! pt {
+  ($($t:tt)*) => { || proptest!($($t)*) };
+}

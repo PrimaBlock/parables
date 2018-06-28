@@ -15,8 +15,8 @@ function setValue(uint update) public ownerOnly() {
 We do that by changing the test case to this:
 
 ```rust
-tests.test("get and increment value randomly within constraints", || {
-    proptest!(|(x in any::<u64>())| {
+tests.test("get and increment value randomly within constraints", pt!{
+    |(x in any::<u64>())| {
         use simple_contract::functions as f;
 
         let x = U256::from(x);
@@ -40,7 +40,7 @@ tests.test("get and increment value randomly within constraints", || {
 
         let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(expected, out);
-    });
+    }
 });
 ```
 

@@ -8,8 +8,8 @@ Let's rewrite our example from the last chapter to instead of testing that we ca
 well-defined numeric values, we test a wide range of values.
 
 ```rust
-tests.test("get and increment value randomly", || {
-    proptest!(|(x in any::<u64>())| {
+tests.test("get and increment value randomly", pt!{
+    |(x in any::<u64>())| {
         use simple_contract::functions as f;
 
         let x = U256::from(x);
@@ -22,7 +22,7 @@ tests.test("get and increment value randomly", || {
         evm.call(simple, f::set_value(x), call)?;
         let out = evm.call(simple, f::get_value(), call)?.output;
         assert_eq!(x, out);
-    });
+    }
 });
 ```
 
