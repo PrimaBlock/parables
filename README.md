@@ -9,7 +9,7 @@ are still changing rapidly. We will release new versions once parity has settled
 
 See our [user guide](https://primablock.github.io/parables/).
 
-You can also use our [exampe project](example) as a reference.
+You can also use our [example project](example) as a reference.
 
 ## comparison to sol-rs
 
