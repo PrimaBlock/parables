@@ -27,6 +27,8 @@ pub struct CallResult {
     pub gas_used: U256,
     /// The price payed for each gas.
     pub gas_price: U256,
+    /// The sender of the transaction.
+    pub sender: Address,
 }
 
 impl CallResult {
@@ -41,6 +43,7 @@ impl fmt::Display for CallResult {
         fmt.debug_struct("CallResult")
             .field("gas_used", &self.gas_used)
             .field("gas_price", &self.gas_price)
+            .field("sender", &self.sender)
             .finish()
     }
 }
@@ -54,6 +57,8 @@ pub struct CreateResult {
     pub gas_used: U256,
     /// The price payed for each gas.
     pub gas_price: U256,
+    /// The sender of the transaction.
+    pub sender: Address,
 }
 
 impl CreateResult {
@@ -69,6 +74,7 @@ impl fmt::Display for CreateResult {
             .field("address", &self.address)
             .field("gas_used", &self.gas_used)
             .field("gas_price", &self.gas_price)
+            .field("sender", &self.sender)
             .finish()
     }
 }
@@ -389,13 +395,18 @@ impl Evm {
         self.run_transaction(tx, map)
     }
 
-    fn call_result(_: &mut Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
+    fn call_result(
+        _: &mut Evm,
+        tx: &SignedTransaction,
+        receipt: &receipt::Receipt,
+    ) -> CallResult {
         let gas_used = receipt.gas_used;
         let gas_price = tx.gas_price;
 
         CallResult {
             gas_used,
             gas_price,
+            sender: tx.sender(),
         }
     }
 
@@ -416,6 +427,7 @@ impl Evm {
             address,
             gas_used,
             gas_price,
+            sender: tx.sender(),
         }
     }
 
