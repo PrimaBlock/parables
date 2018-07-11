@@ -11,16 +11,16 @@ path = "lib.rs"
 ethereum-types = "0.3"
 ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
 ethabi-derive = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
-ethash = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-ethcore = { git = "https://github.com/paritytech/parity.git", features = ["test-helpers"], rev = "ac3a706f" }
-ethcore-bytes = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-ethcore-transaction = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-journaldb = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-kvdb = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-kvdb-memorydb = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-evm = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
-vm = { git = "https://github.com/paritytech/parity.git", rev = "ac3a706f" }
+ethash = { git = "https://github.com/paritytech/parity.git", rev = "796637b3" }
+ethcore = { git = "https://github.com/paritytech/parity.git", rev = "796637b3", features = ["test-helpers"] }
+ethcore-transaction = { git = "https://github.com/paritytech/parity.git", rev = "796637b3" }
+evm = { git = "https://github.com/paritytech/parity.git", rev = "796637b3" }
+journaldb = { git = "https://github.com/paritytech/parity.git", rev = "796637b3" }
+kvdb = { git = "https://github.com/paritytech/parity-common.git", rev = "a72c34f8" }
+kvdb-memorydb = { git = "https://github.com/paritytech/parity-common.git", rev = "a72c34f8" }
+parity-bytes = { git = "https://github.com/paritytech/parity-common.git", rev = "a72c34f8" }
 proptest = { version = "0.8" }
+vm = { git = "https://github.com/paritytech/parity.git", rev = "796637b3" }
 
 failure = "0.1"
 

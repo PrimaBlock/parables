@@ -521,7 +521,7 @@ impl<P> Filter<P> {
     where
         P: ethabi::LogFilter,
     {
-        let filter = parse_log.match_any();
+        let filter = parse_log.wildcard_filter();
         let topic = extract_this_topic(&filter.topic0)?;
 
         Ok(Self {
@@ -585,8 +585,8 @@ impl<P> ethabi::LogFilter for Filter<P>
 where
     P: ethabi::LogFilter,
 {
-    fn match_any(&self) -> ethabi::TopicFilter {
-        self.parse_log.match_any()
+    fn wildcard_filter(&self) -> ethabi::TopicFilter {
+        self.parse_log.wildcard_filter()
     }
 }
 

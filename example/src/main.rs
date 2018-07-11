@@ -54,7 +54,7 @@ fn main() -> Result<()> {
             assert_eq!(out, x.into());
 
             let filter = Filter::new(ev::value_updated())?
-                .with_filter(|e| e.create_filter(Some(100.into())));
+                .with_filter(|e| e.filter(Some(100.into())));
 
             // check logs.
             for _log in evm.drain_logs(filter) {
@@ -94,7 +94,7 @@ fn main() -> Result<()> {
         assert!(non_owned_res.is_reverted());
 
         let filter =
-            Filter::new(ev::value_updated())?.with_filter(|e| e.create_filter(Some(100.into())));
+            Filter::new(ev::value_updated())?.with_filter(|e| e.filter(Some(100.into())));
 
         // check logs.
         for _log in evm.drain_logs(filter) {

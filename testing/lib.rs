@@ -1,6 +1,6 @@
 pub extern crate ethabi;
 pub extern crate ethcore;
-pub extern crate ethcore_bytes;
+pub extern crate parity_bytes;
 extern crate ethcore_transaction;
 pub extern crate ethereum_types;
 extern crate evm as parity_evm;
