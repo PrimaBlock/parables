@@ -1,9 +1,9 @@
 pub extern crate ethabi;
 pub extern crate ethcore;
-pub extern crate parity_bytes;
 extern crate ethcore_transaction;
 pub extern crate ethereum_types;
 extern crate evm as parity_evm;
+pub extern crate parity_bytes;
 extern crate vm as parity_vm;
 #[macro_use]
 extern crate failure;
@@ -22,6 +22,7 @@ extern crate proptest;
 pub use ethabi_derive::*;
 pub use proptest::*;
 
+pub mod call;
 pub mod error;
 pub mod evm;
 pub mod linker;

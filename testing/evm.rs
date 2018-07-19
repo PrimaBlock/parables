@@ -18,7 +18,7 @@ use std::fmt;
 use std::mem;
 use std::sync::Arc;
 use trace;
-use {journaldb, kvdb, kvdb_memorydb};
+use {call, journaldb, kvdb, kvdb_memorydb};
 
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,11 +40,7 @@ impl CallResult {
 
 impl fmt::Display for CallResult {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct("CallResult")
-            .field("gas_used", &self.gas_used)
-            .field("gas_price", &self.gas_price)
-            .field("sender", &self.sender)
-            .finish()
+        fmt::Debug::fmt(self, fmt)
     }
 }
 
@@ -70,12 +66,7 @@ impl CreateResult {
 
 impl fmt::Display for CreateResult {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt.debug_struct("CreateResult")
-            .field("address", &self.address)
-            .field("gas_used", &self.gas_used)
-            .field("gas_price", &self.gas_price)
-            .field("sender", &self.sender)
-            .finish()
+        fmt::Debug::fmt(self, fmt)
     }
 }
 
@@ -84,62 +75,6 @@ impl fmt::Display for CreateResult {
 pub struct CallOutput<T> {
     pub output: T,
     pub result: CallResult,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Call {
-    /// The sender of the call.
-    sender: Address,
-    /// The amount of gas to include in the call.
-    gas: U256,
-    /// The price willing to pay for gas during the call (in WEI).
-    gas_price: U256,
-    /// The amount of ethereum attached to the call (in WEI).
-    value: U256,
-}
-
-impl Call {
-    /// Build a new call with the given sender.
-    pub fn new(sender: Address) -> Self {
-        Self {
-            sender,
-            gas: 0.into(),
-            gas_price: 0.into(),
-            value: 0.into(),
-        }
-    }
-
-    /// Modify sender of call.
-    pub fn sender<S: Into<Address>>(self, sender: S) -> Self {
-        Self {
-            sender: sender.into(),
-            ..self
-        }
-    }
-
-    /// Set the call to have the specified amount of gas.
-    pub fn gas<E: Into<U256>>(self, gas: E) -> Self {
-        Self {
-            gas: gas.into(),
-            ..self
-        }
-    }
-
-    /// Set the call to have the specified gas price.
-    pub fn gas_price<E: Into<U256>>(self, gas_price: E) -> Self {
-        Self {
-            gas_price: gas_price.into(),
-            ..self
-        }
-    }
-
-    /// Set the call to have the specified value.
-    pub fn value<E: Into<U256>>(self, value: E) -> Self {
-        Self {
-            value: value.into(),
-            ..self
-        }
-    }
 }
 
 #[derive(Clone)]
@@ -172,6 +107,16 @@ impl Evm {
         };
 
         Ok(evm)
+    }
+
+    /// Get the current block number.
+    pub fn get_block_number(&self) -> u64 {
+        self.env_info.number
+    }
+
+    /// Set the current block number.
+    pub fn set_block_number(&mut self, number: u64) {
+        self.env_info.number = number;
     }
 
     /// Convert the spec into a state.
@@ -230,7 +175,11 @@ impl Evm {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy<F>(&mut self, f: F, call: Call) -> Result<CreateResult, CallError<CreateResult>>
+    pub fn deploy<F>(
+        &mut self,
+        f: F,
+        call: call::Call,
+    ) -> Result<CreateResult, CallError<CreateResult>>
     where
         F: ethabi::ContractFunction<Output = Address>,
     {
@@ -241,7 +190,7 @@ impl Evm {
     pub fn deploy_code(
         &mut self,
         code: Vec<u8>,
-        call: Call,
+        call: call::Call,
     ) -> Result<CreateResult, CallError<CreateResult>> {
         self.action(Action::Create, code, call, Self::create_result)
             .map(|(_, result)| result)
@@ -252,7 +201,7 @@ impl Evm {
         &mut self,
         address: Address,
         f: F,
-        call: Call,
+        call: call::Call,
     ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
     where
         F: ethabi::ContractFunction,
@@ -272,7 +221,7 @@ impl Evm {
     pub fn call_default(
         &mut self,
         address: Address,
-        call: Call,
+        call: call::Call,
     ) -> Result<CallResult, CallError<CallResult>> {
         self.action(Action::Call(address), Vec::new(), call, Self::call_result)
             .map(|(_, result)| result)
@@ -374,32 +323,30 @@ impl Evm {
         &mut self,
         action: Action,
         data: Vec<u8>,
-        call: Call,
+        call: call::Call,
         map: F,
     ) -> Result<(Vec<u8>, E), CallError<E>>
     where
         F: FnOnce(&mut Evm, &SignedTransaction, &receipt::Receipt) -> E,
     {
-        let nonce = self.state.nonce(&call.sender).map_err(|_| NonceError)?;
+        let nonce = self.state
+            .nonce(&call.get_sender())
+            .map_err(|_| NonceError)?;
 
         let tx = Transaction {
             nonce,
-            gas_price: call.gas_price,
-            gas: call.gas,
+            gas_price: call.get_gas_price(),
+            gas: call.get_gas(),
             action: action,
-            value: call.value,
+            value: call.get_value(),
             data: data,
         };
 
-        let tx = tx.fake_sign(call.sender.into());
+        let tx = tx.fake_sign(call.get_sender().into());
         self.run_transaction(tx, map)
     }
 
-    fn call_result(
-        _: &mut Evm,
-        tx: &SignedTransaction,
-        receipt: &receipt::Receipt,
-    ) -> CallResult {
+    fn call_result(_: &mut Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
         let gas_used = receipt.gas_used;
         let gas_price = tx.gas_price;
 

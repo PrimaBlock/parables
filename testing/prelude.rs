@@ -1,8 +1,9 @@
+pub use call::Call;
 pub use error::{CallError, Error, ResultCallErrorExt, ResultExt};
 pub use ethabi;
 pub use ethcore::spec::Spec;
 pub use ethereum_types::*;
-pub use evm::{Call, Evm, Filter};
+pub use evm::{Evm, Filter};
 pub use linker::Linker;
 #[cfg(feature = "test-runner")]
 pub use reporter::{Reporter, StdoutReporter};
