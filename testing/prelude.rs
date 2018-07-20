@@ -1,3 +1,5 @@
+#[cfg(feature = "account")]
+pub use account::{Account, Crypto};
 pub use call::Call;
 pub use error::{CallError, Error, ResultCallErrorExt, ResultExt};
 pub use ethabi;

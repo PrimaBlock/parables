@@ -25,9 +25,14 @@ proptest = { version = "0.8" }
 failure = "0.1"
 rayon = {version = "1.0", optional = true}
 
+eth-secp256k1 = {git = "https://github.com/paritytech/rust-secp256k1", optional = true}
+rand = {version = "0.4", optional = true}
+rust-crypto = {version = "0.2", optional = true}
+
 [dev-dependencies]
 hex = "0.3"
 
 [features]
-default = ["test-runner"]
+default = ["test-runner", "account"]
 test-runner = ["rayon"]
+account = ["eth-secp256k1", "rand", "rust-crypto"]

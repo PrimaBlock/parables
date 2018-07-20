@@ -18,10 +18,18 @@ extern crate rayon;
 #[allow(unused_imports)]
 #[macro_use]
 extern crate proptest;
+#[cfg(feature = "account")]
+extern crate rand;
+#[cfg(feature = "account")]
+extern crate secp256k1;
+#[cfg(feature = "account")]
+extern crate crypto;
 
 pub use ethabi_derive::*;
 pub use proptest::*;
 
+#[cfg(feature = "account")]
+pub mod account;
 pub mod call;
 pub mod error;
 pub mod evm;
