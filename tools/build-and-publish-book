@@ -46,4 +46,4 @@ rsync -rav $target_doc/ $checkout_doc/
 
 git_do add -A
 git_do commit -m "Release $(date)"
-git_do push origin HEAD
+git_do push origin HEAD:gh-pages
