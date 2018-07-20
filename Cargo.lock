@@ -1096,6 +1096,15 @@ dependencies = [
 [[package]]
 name = "parables-build"
 version = "0.1.0"
+dependencies = [
+ "ethabi 6.0.0 (git+https://github.com/primablock/ethabi.git?branch=next)",
+ "heck 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.13.11 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "parables-example"

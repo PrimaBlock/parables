@@ -3,16 +3,7 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts! {
-    simple_contract {
-        "contracts/SimpleContract_sol_SimpleContract.abi",
-        "contracts/SimpleContract_sol_SimpleContract.bin"
-    },
-    simple_lib {
-        "contracts/SimpleLib_sol_SimpleLib.abi",
-        "contracts/SimpleLib_sol_SimpleLib.bin"
-    },
-}
+contracts!();
 
 fn main() -> Result<()> {
     let owner = Address::random();

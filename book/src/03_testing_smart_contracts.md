@@ -22,12 +22,7 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts! {
-    simple_contract {
-        "contracts/SimpleContract_sol_SimpleContract.abi",
-        "contracts/SimpleContract_sol_SimpleContract.bin"
-    },
-}
+contracts!();
 
 fn main() -> Result<()> {
     // Set up a template call with a default amount of gas.
@@ -90,12 +85,7 @@ This imports everything necessary to write parables test into the current scope.
 Check out the [prelude documentation] as a reference for what is imported.
 
 ```rust
-contracts! {
-    simple_contract {
-        "contracts/SimpleContract_sol_SimpleContract.abi",
-        "contracts/SimpleContract_sol_SimpleContract.bin"
-    },
-}
+contracts!();
 ```
 
 This makes use of ethabi's derive module to build a type-safe model for the contract that we can

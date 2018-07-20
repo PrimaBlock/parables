@@ -119,12 +119,7 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts! {
-    simple_contract {
-        "contracts/SimpleContract_sol_SimpleContract.abi",
-        "contracts/SimpleContract_sol_SimpleContract.bin"
-    },
-}
+contracts!();
 
 fn main() -> Result<()> {
     let mut tests = TestRunner::new();
