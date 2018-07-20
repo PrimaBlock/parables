@@ -38,30 +38,32 @@ fn main() -> Result<()> {
 
     let mut runner = TestRunner::new();
 
-    runner.test("any set value", pt!{
-        |(x in any::<u64>())| {
-            use simple_contract::events as ev;
-            use simple_contract::functions as f;
+    runner.test(
+        "any set value",
+        pt!{
+            |(x in any::<u64>())| {
+                use simple_contract::events as ev;
+                use simple_contract::functions as f;
 
-            let mut evm = evm.get()?;
+                let mut evm = evm.get()?;
 
-            let out = evm.call(simple, f::get_value(), call)?.output;
-            assert_eq!(out, 42.into());
+                let out = evm.call(simple, f::get_value(), call)?.output;
+                assert_eq!(out, 42.into());
 
-            evm.call(simple, f::set_value(x), call)?;
+                evm.call(simple, f::set_value(x), call)?;
 
-            let out = evm.call(simple, f::get_value(), call)?.output;
-            assert_eq!(out, x.into());
+                let out = evm.call(simple, f::get_value(), call)?.output;
+                assert_eq!(out, x.into());
 
-            let filter = Filter::new(ev::value_updated())?
-                .with_filter(|e| e.filter(Some(100.into())));
+                for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
+                    assert_eq!(U256::from(100), e.value);
+                }
 
-            // check logs.
-            for _log in evm.drain_logs(filter) {
-                // println!("log: {:?}", log);
+                assert_eq!(1, evm.logs(ev::value_updated()).iter()?.count());
+                assert!(!evm.has_logs(), "there were unprocessed logs");
             }
-        }
-    });
+        },
+    );
 
     runner.test("decrement step by step", || {
         use simple_contract::events as ev;
@@ -93,20 +95,19 @@ fn main() -> Result<()> {
         let non_owned_res = evm.call(simple, f::set_value(0), call.sender(not_owner));
         assert!(non_owned_res.is_reverted());
 
-        let filter =
-            Filter::new(ev::value_updated())?.with_filter(|e| e.filter(Some(100.into())));
-
-        // check logs.
-        for _log in evm.drain_logs(filter) {
-            // println!("log: {:?}", log);
-        }
-
         let balance = evm.balance(owner)?;
         assert_eq!(U256::from(0), balance);
 
         // all money should have flowed into the simple contract.
         let contract_balance = evm.balance(simple)?;
         assert_eq!(wei::from_ether(1000), contract_balance);
+
+        evm.logs(ev::value_updated())
+            .filter(|e| e.filter(Some(100.into())))
+            .drop()?;
+
+        assert_eq!(999, evm.logs(ev::value_updated()).iter()?.count());
+        assert!(!evm.has_logs(), "there were unprocessed logs");
 
         Ok(())
     });

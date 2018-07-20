@@ -227,35 +227,22 @@ impl Evm {
             .map(|(_, result)| result)
     }
 
-    /// Access all logs.
-    pub fn logs(&self) -> &HashMap<ethabi::Hash, Vec<LogEntry>> {
+    /// Setup a log drainer that drains the specified logs.
+    pub fn logs<'a, P>(&'a mut self, log: P) -> LogDrainer<'a, P>
+    where
+        P: ethabi::ParseLog + ethabi::LogFilter,
+    {
+        LogDrainer::new(self, log)
+    }
+
+    /// Access all raw logs.
+    pub fn raw_logs(&self) -> &HashMap<ethabi::Hash, Vec<LogEntry>> {
         &self.logs
     }
 
     /// Check if we still have unclaimed logs.
     pub fn has_logs(&self) -> bool {
         self.logs.values().any(|v| !v.is_empty())
-    }
-
-    /// Drain logs matching the given filter that has been registered so far.
-    pub fn drain_logs<P>(&mut self, filter: Filter<P>) -> Result<Vec<P::Log>, Error>
-    where
-        P: ethabi::ParseLog,
-    {
-        self.drain_logs_with(filter, |_, log| log)
-    }
-
-    /// Drain logs matching the given filter that has been registered so far.
-    ///
-    /// Include who sent the logs in the result.
-    pub fn drain_logs_with_sender<P>(
-        &mut self,
-        filter: Filter<P>,
-    ) -> Result<Vec<(Address, P::Log)>, Error>
-    where
-        P: ethabi::ParseLog,
-    {
-        self.drain_logs_with(filter, |sender, log| (sender, log))
     }
 
     /// Query the balance of the given account.
@@ -268,54 +255,6 @@ impl Evm {
         Ok(self.state
             .add_balance(&address, &wei.into(), state::CleanupMode::ForceCreate)
             .map_err(|_| BalanceError)?)
-    }
-
-    /// Drain logs matching the given filter that has been registered so far.
-    fn drain_logs_with<P, M, O>(&mut self, filter: Filter<P>, map: M) -> Result<Vec<O>, Error>
-    where
-        P: ethabi::ParseLog,
-        M: Fn(Address, P::Log) -> O,
-    {
-        let mut out = Vec::new();
-
-        match self.logs.entry(filter.topic) {
-            hash_map::Entry::Vacant(_) => return Ok(out),
-            hash_map::Entry::Occupied(mut e) => {
-                let remove = {
-                    let mut keep = Vec::new();
-                    let logs = e.get_mut();
-
-                    for log in logs.drain(..) {
-                        if !filter.matches(&log) {
-                            keep.push(log);
-                            continue;
-                        }
-
-                        let sender = log.address;
-
-                        let log = filter
-                            .parse_log
-                            .parse_log((log.topics, log.data).into())
-                            .map_err(|e| format!("failed to pase log: {}", e))?;
-
-                        out.push(map(sender, log));
-                    }
-
-                    if !keep.is_empty() {
-                        mem::replace(logs, keep);
-                        false
-                    } else {
-                        true
-                    }
-                };
-
-                if remove {
-                    e.remove_entry();
-                }
-            }
-        }
-
-        Ok(out)
     }
 
     /// Execute the given action.
@@ -457,103 +396,147 @@ impl Evm {
 }
 
 #[derive(Debug)]
-pub struct Filter<P> {
-    parse_log: P,
-    topic: ethabi::Hash,
+pub struct LogDrainer<'a, P> {
+    evm: &'a mut Evm,
+    log: P,
     filter: ethabi::TopicFilter,
 }
 
-impl<P> Filter<P> {
-    pub fn new(parse_log: P) -> Result<Self, Error>
-    where
-        P: ethabi::LogFilter,
-    {
-        let filter = parse_log.wildcard_filter();
-        let topic = extract_this_topic(&filter.topic0)?;
+impl<'a, P> LogDrainer<'a, P>
+where
+    P: ethabi::ParseLog + ethabi::LogFilter,
+{
+    pub fn new(evm: &'a mut Evm, log: P) -> Self {
+        let filter = log.wildcard_filter();
 
-        Ok(Self {
-            parse_log,
-            topic,
-            filter,
-        })
+        Self { evm, log, filter }
     }
 
-    /// Build a new filter, which has a custom filter enabled.
-    pub fn with_filter<M>(self, map: M) -> Self
+    /// Modify the current drainer with a new filter.
+    pub fn filter<M>(self, map: M) -> Self
     where
         M: FnOnce(&P) -> ethabi::TopicFilter,
     {
         Self {
-            filter: map(&self.parse_log),
+            filter: map(&self.log),
             ..self
         }
     }
 
-    pub fn matches(&self, log: &LogEntry) -> bool {
-        let mut top = log.topics.iter();
+    /// Consumer the drainer and build an interator out of it.
+    pub fn iter(self) -> Result<impl Iterator<Item = P::Log>, Error>
+    where
+        P: ethabi::ParseLog,
+    {
+        Ok(self.drain()?.into_iter())
+    }
 
-        // topics to match in order.
-        let mut mat = vec![
-            &self.filter.topic0,
-            &self.filter.topic1,
-            &self.filter.topic2,
-            &self.filter.topic3,
-        ].into_iter();
+    /// Consumer the drainer without processing elements.
+    pub fn drop(self) -> Result<(), Error> {
+        let _ = self.drain()?;
+        Ok(())
+    }
 
-        while let Some(t) = top.next() {
-            let m = match mat.next() {
-                Some(m) => m,
-                None => return false,
-            };
+    /// Drain logs matching the given filter that has been registered so far.
+    pub fn drain(self) -> Result<Vec<P::Log>, Error>
+    where
+        P: ethabi::ParseLog,
+    {
+        self.drain_with(|_, log| log)
+    }
 
-            match m {
-                ethabi::Topic::Any => continue,
-                ethabi::Topic::OneOf(ids) => {
-                    if ids.contains(t) {
-                        continue;
+    /// Drain logs matching the given filter that has been registered so far.
+    ///
+    /// Include who sent the logs in the result.
+    pub fn drain_with_sender(self) -> Result<Vec<(Address, P::Log)>, Error> {
+        self.drain_with(|sender, log| (sender, log))
+    }
+
+    /// Drain logs matching the given filter that has been registered so far.
+    fn drain_with<M, O>(self, map: M) -> Result<Vec<O>, Error>
+    where
+        M: Fn(Address, P::Log) -> O,
+    {
+        let mut out = Vec::new();
+
+        let LogDrainer { evm, log, filter } = self;
+
+        let topic = extract_this_topic(&filter.topic0)?;
+
+        let matches = move |log: &LogEntry| {
+            let mut top = log.topics.iter();
+
+            // topics to match in order.
+            let mut mat = vec![
+                &filter.topic0,
+                &filter.topic1,
+                &filter.topic2,
+                &filter.topic3,
+            ].into_iter();
+
+            while let Some(t) = top.next() {
+                let m = match mat.next() {
+                    Some(m) => m,
+                    None => return false,
+                };
+
+                match m {
+                    ethabi::Topic::Any => continue,
+                    ethabi::Topic::OneOf(ids) => {
+                        if ids.contains(t) {
+                            continue;
+                        }
+                    }
+                    ethabi::Topic::This(id) => {
+                        if id == t {
+                            continue;
+                        }
                     }
                 }
-                ethabi::Topic::This(id) => {
-                    if id == t {
-                        continue;
-                    }
-                }
+
+                return false;
             }
 
-            return false;
+            // rest must match any
+            mat.all(|m| *m == ethabi::Topic::Any)
+        };
+
+        match evm.logs.entry(topic) {
+            hash_map::Entry::Vacant(_) => return Ok(out),
+            hash_map::Entry::Occupied(mut e) => {
+                let remove = {
+                    let mut keep = Vec::new();
+                    let logs = e.get_mut();
+
+                    for entry in logs.drain(..) {
+                        if !matches(&entry) {
+                            keep.push(entry);
+                            continue;
+                        }
+
+                        let sender = entry.address;
+
+                        let entry = log.parse_log((entry.topics, entry.data).into())
+                            .map_err(|e| format!("failed to parse log entry: {}", e))?;
+
+                        out.push(map(sender, entry));
+                    }
+
+                    if !keep.is_empty() {
+                        mem::replace(logs, keep);
+                        false
+                    } else {
+                        true
+                    }
+                };
+
+                if remove {
+                    e.remove_entry();
+                }
+            }
         }
 
-        // rest must match any
-        mat.all(|m| *m == ethabi::Topic::Any)
-    }
-}
-
-impl<P> ethabi::LogFilter for Filter<P>
-where
-    P: ethabi::LogFilter,
-{
-    fn wildcard_filter(&self) -> ethabi::TopicFilter {
-        self.parse_log.wildcard_filter()
-    }
-}
-
-pub trait InternalTryFrom<T>: Sized {
-    type Error;
-
-    /// TryFrom until std::convert::TryFrom is stable.
-    fn internal_try_from(value: T) -> Result<Self, Self::Error>;
-}
-
-/// Blanket conversion trait so that we don't have to create a Filter instance of anything
-/// implementing LogFilter.
-impl<P> InternalTryFrom<P> for Filter<P>
-where
-    P: ethabi::LogFilter,
-{
-    type Error = Error;
-
-    fn internal_try_from(value: P) -> Result<Filter<P>, Error> {
-        Filter::new(value)
+        Ok(out)
     }
 }
 
