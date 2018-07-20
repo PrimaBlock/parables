@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/parity-wasm-0.27.6/src/elements/primitives.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>primitives.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/parity-wasm-0.31.1/src/elements/primitives.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>primitives.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -906,21 +906,16 @@
 <span id="906">906</span>
 <span id="907">907</span>
 <span id="908">908</span>
-<span id="909">909</span>
-<span id="910">910</span>
-<span id="911">911</span>
-<span id="912">912</span>
-<span id="913">913</span>
-<span id="914">914</span>
-<span id="915">915</span>
 </pre><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+<span class="kw">use</span> <span class="ident">io</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>;
 <span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ByteOrder</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Error</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
 <span class="doccomment">/// Unsigned variable-length integer, limited to 32 bits,</span>
 <span class="doccomment">/// represented by at most 5 bytes that may contain padding 0x80 bytes.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarUint32</span>(<span class="ident">u32</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarUint32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">usize</span> {
@@ -958,7 +953,7 @@
 		<span class="kw">loop</span> {
 			<span class="kw">if</span> <span class="ident">shift</span> <span class="op">&gt;</span> <span class="number">31</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarUint32</span>); }
 
-			<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+			<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 			<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">u8buf</span>[<span class="number">0</span>] <span class="kw">as</span> <span class="ident">u32</span>;
 			<span class="ident">res</span> <span class="op">|=</span> (<span class="ident">b</span> <span class="op">&amp;</span> <span class="number">0x7f</span>).<span class="ident">checked_shl</span>(<span class="ident">shift</span>).<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarUint32</span>)<span class="question-mark">?</span>;
 			<span class="ident">shift</span> <span class="op">+=</span> <span class="number">7</span>;
@@ -985,7 +980,7 @@
 			<span class="kw">if</span> <span class="ident">v</span> <span class="op">&gt;</span> <span class="number">0</span> {
 				<span class="ident">buf</span>[<span class="number">0</span>] <span class="op">|=</span> <span class="number">0b1000_0000</span>;
 			}
-			<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
+			<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
 			<span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="number">0</span> { <span class="kw">break</span>; }
 		}
 
@@ -995,7 +990,7 @@
 
 <span class="doccomment">/// Unsigned variable-length integer, limited to 64 bits,</span>
 <span class="doccomment">/// represented by at most 9 bytes that may contain padding 0x80 bytes.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarUint64</span>(<span class="ident">u64</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarUint64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u64</span> {
@@ -1014,7 +1009,7 @@
 		<span class="kw">loop</span> {
 			<span class="kw">if</span> <span class="ident">shift</span> <span class="op">&gt;</span> <span class="number">63</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarUint64</span>); }
 
-			<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+			<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 			<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">u8buf</span>[<span class="number">0</span>] <span class="kw">as</span> <span class="ident">u64</span>;
 			<span class="ident">res</span> <span class="op">|=</span> (<span class="ident">b</span> <span class="op">&amp;</span> <span class="number">0x7f</span>).<span class="ident">checked_shl</span>(<span class="ident">shift</span>).<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarUint64</span>)<span class="question-mark">?</span>;
 			<span class="ident">shift</span> <span class="op">+=</span> <span class="number">7</span>;
@@ -1041,7 +1036,7 @@
 			<span class="kw">if</span> <span class="ident">v</span> <span class="op">&gt;</span> <span class="number">0</span> {
 				<span class="ident">buf</span>[<span class="number">0</span>] <span class="op">|=</span> <span class="number">0b1000_0000</span>;
 			}
-			<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
+			<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
 			<span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="number">0</span> { <span class="kw">break</span>; }
 		}
 
@@ -1056,7 +1051,7 @@
 }
 
 <span class="doccomment">/// 7-bit unsigned integer, encoded in LEB128 (always 1 byte length)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarUint7</span>(<span class="ident">u8</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarUint7</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u8</span> {
@@ -1076,7 +1071,7 @@
 
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u8buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1</span>];
-		<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(<span class="ident">VarUint7</span>(<span class="ident">u8buf</span>[<span class="number">0</span>]))
 	}
 }
@@ -1086,13 +1081,13 @@
 
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="comment">// todo check range?</span>
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="self">self</span>.<span class="number">0</span>])<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span>[<span class="self">self</span>.<span class="number">0</span>])<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
 
 <span class="doccomment">/// 7-bit signed integer, encoded in LEB128 (always 1 byte length)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarInt7</span>(<span class="ident">i8</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarInt7</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i8</span> {
@@ -1112,7 +1107,7 @@
 
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u8buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1</span>];
-		<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 
 		<span class="comment">// check if number is not continued!</span>
 		<span class="kw">if</span> <span class="ident">u8buf</span>[<span class="number">0</span>] <span class="op">&amp;</span> <span class="number">0b1000_0000</span> <span class="op">!=</span> <span class="number">0</span> {
@@ -1133,14 +1128,14 @@
 		<span class="comment">// todo check range?</span>
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">u8</span>;
 		<span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span> <span class="op">&lt;</span> <span class="number">0</span> { <span class="ident">b</span> <span class="op">|=</span> <span class="number">0b0100_0000</span>; <span class="ident">b</span> <span class="op">&amp;=</span> <span class="number">0b0111_1111</span>; }
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">b</span>])<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span>[<span class="ident">b</span>])<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
 
 <span class="doccomment">/// 8-bit unsigned integer, NOT encoded in LEB128;</span>
 <span class="doccomment">/// it&#39;s just a single byte.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Uint8</span>(<span class="ident">u8</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Uint8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u8</span> {
@@ -1160,7 +1155,7 @@
 
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u8buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1</span>];
-		<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(<span class="ident">Uint8</span>(<span class="ident">u8buf</span>[<span class="number">0</span>]))
 	}
 }
@@ -1169,14 +1164,14 @@
 	<span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="self">self</span>.<span class="number">0</span>])<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span>[<span class="self">self</span>.<span class="number">0</span>])<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
 
 
 <span class="doccomment">/// 32-bit signed integer, encoded in LEB128 (can be 1-5 bytes length)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarInt32</span>(<span class="ident">i32</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarInt32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i32</span> {
@@ -1200,7 +1195,7 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u8buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1</span>];
 		<span class="kw">loop</span> {
 			<span class="kw">if</span> <span class="ident">shift</span> <span class="op">&gt;</span> <span class="number">31</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarInt32</span>); }
-			<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+			<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 			<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">u8buf</span>[<span class="number">0</span>];
 
 			<span class="ident">res</span> <span class="op">|=</span> ((<span class="ident">b</span> <span class="op">&amp;</span> <span class="number">0x7f</span>) <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">checked_shl</span>(<span class="ident">shift</span>).<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarInt32</span>)<span class="question-mark">?</span>;
@@ -1241,7 +1236,7 @@
 				<span class="ident">buf</span>[<span class="number">0</span>] <span class="op">|=</span> <span class="number">0b1000_0000</span>
 			}
 
-			<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
+			<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
 		}
 
 		<span class="prelude-val">Ok</span>(())
@@ -1249,7 +1244,7 @@
 }
 
 <span class="doccomment">/// 64-bit signed integer, encoded in LEB128 (can be 1-9 bytes length)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarInt64</span>(<span class="ident">i64</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarInt64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i64</span> {
@@ -1274,7 +1269,7 @@
 
 		<span class="kw">loop</span> {
 			<span class="kw">if</span> <span class="ident">shift</span> <span class="op">&gt;</span> <span class="number">63</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarInt64</span>); }
-			<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+			<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 			<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">u8buf</span>[<span class="number">0</span>];
 
 			<span class="ident">res</span> <span class="op">|=</span> ((<span class="ident">b</span> <span class="op">&amp;</span> <span class="number">0x7f</span>) <span class="kw">as</span> <span class="ident">i64</span>).<span class="ident">checked_shl</span>(<span class="ident">shift</span>).<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">InvalidVarInt64</span>)<span class="question-mark">?</span>;
@@ -1313,7 +1308,7 @@
 				<span class="ident">buf</span>[<span class="number">0</span>] <span class="op">|=</span> <span class="number">0b1000_0000</span>
 			}
 
-			<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
+			<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..])<span class="question-mark">?</span>;
 		}
 
 		<span class="prelude-val">Ok</span>(())
@@ -1321,7 +1316,7 @@
 }
 
 <span class="doccomment">/// 32-bit unsigned integer, encoded in little endian</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Uint32</span>(<span class="ident">u32</span>);
 
 <span class="kw">impl</span> <span class="ident">Deserialize</span> <span class="kw">for</span> <span class="ident">Uint32</span> {
@@ -1329,7 +1324,7 @@
 
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">4</span>];
-		<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
 		<span class="comment">// todo check range</span>
 		<span class="prelude-val">Ok</span>(<span class="ident">Uint32</span>(<span class="ident">LittleEndian</span>::<span class="ident">read_u32</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)))
 	}
@@ -1347,7 +1342,7 @@
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">4</span>];
 		<span class="ident">LittleEndian</span>::<span class="ident">write_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>, <span class="self">self</span>.<span class="number">0</span>);
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
@@ -1357,7 +1352,7 @@
 }
 
 <span class="doccomment">/// 64-bit unsigned integer, encoded in little endian</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Uint64</span>(<span class="ident">u64</span>);
 
 <span class="kw">impl</span> <span class="ident">Deserialize</span> <span class="kw">for</span> <span class="ident">Uint64</span> {
@@ -1365,7 +1360,7 @@
 
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">8</span>];
-		<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
 		<span class="comment">// todo check range</span>
 		<span class="prelude-val">Ok</span>(<span class="ident">Uint64</span>(<span class="ident">LittleEndian</span>::<span class="ident">read_u64</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)))
 	}
@@ -1377,7 +1372,7 @@
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">8</span>];
 		<span class="ident">LittleEndian</span>::<span class="ident">write_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>, <span class="self">self</span>.<span class="number">0</span>);
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>)<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
@@ -1394,7 +1389,7 @@
 
 
 <span class="doccomment">/// VarUint1, 1-bit value (0/1)</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VarUint1</span>(<span class="ident">bool</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">VarUint1</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">bool</span> {
@@ -1414,7 +1409,7 @@
 
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u8buf</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1</span>];
-		<span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
+		<span class="ident">reader</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u8buf</span>)<span class="question-mark">?</span>;
 		<span class="kw">match</span> <span class="ident">u8buf</span>[<span class="number">0</span>] {
 			<span class="number">0</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">VarUint1</span>(<span class="bool-val">false</span>)),
 			<span class="number">1</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">VarUint1</span>(<span class="bool-val">true</span>)),
@@ -1427,7 +1422,7 @@
 	<span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span>[
 			<span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span> { <span class="number">1u8</span> } <span class="kw">else</span> { <span class="number">0u8</span> }
 		])<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
@@ -1453,7 +1448,7 @@
 
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="ident">VarUint32</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">len</span>()).<span class="ident">serialize</span>(<span class="ident">writer</span>)<span class="question-mark">?</span>;
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">into_bytes</span>()[..])<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">into_bytes</span>()[..])<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
@@ -1503,24 +1498,15 @@
 		<span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>;
 		<span class="ident">VarUint32</span>::<span class="ident">from</span>(<span class="ident">data</span>.<span class="ident">len</span>())
 			.<span class="ident">serialize</span>(<span class="ident">writer</span>)
-			.<span class="ident">map_err</span>(
-				<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(
-					<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Other</span>,
-					<span class="string">&quot;Length serialization error&quot;</span>,
-				)
-			)<span class="question-mark">?</span>;
-		<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>[..])<span class="question-mark">?</span>;
+			.<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">InvalidData</span>)<span class="question-mark">?</span>;
+		<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>[..])<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span> <span class="ident">io</span>::<span class="ident">Write</span> <span class="kw">for</span> <span class="ident">CountedWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> {
-	<span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">data</span>.<span class="ident">extend</span>(<span class="ident">buf</span>.<span class="ident">to_vec</span>());
-		<span class="prelude-val">Ok</span>(<span class="ident">buf</span>.<span class="ident">len</span>())
-	}
-
-	<span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="prelude-val">Ok</span>(())
 	}
 }

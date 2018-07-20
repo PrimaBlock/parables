@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/block.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>block.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/block.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>block.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -835,6 +835,13 @@
 <span id="835">835</span>
 <span id="836">836</span>
 <span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -852,31 +859,45 @@
 <span class="comment">// You should have received a copy of the GNU General Public License</span>
 <span class="comment">// along with Parity.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="doccomment">//! Blockchain block.</span>
+<span class="doccomment">//! Base data structure of this module is `Block`.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Blocks can be produced by a local node or they may be received from the network.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! To create a block locally, we start with an `OpenBlock`. This block is mutable</span>
+<span class="doccomment">//! and can be appended to with transactions and uncles.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! When ready, `OpenBlock` can be closed and turned into a `ClosedBlock`. A `ClosedBlock` can</span>
+<span class="doccomment">//! be reopend again by a miner under certain circumstances. On block close, state commit is</span>
+<span class="doccomment">//! performed.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! `LockedBlock` is a version of a `ClosedBlock` that cannot be reopened. It can be sealed</span>
+<span class="doccomment">//! using an engine.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! `ExecutedBlock` is an underlaying data structure used by all structs above to store block</span>
+<span class="doccomment">//! related info.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashSet</span>;
-<span class="kw">use</span> <span class="ident">hash</span>::{<span class="ident">keccak</span>, <span class="ident">KECCAK_NULL_RLP</span>, <span class="ident">KECCAK_EMPTY_LIST_RLP</span>};
-<span class="kw">use</span> <span class="ident">triehash</span>::<span class="ident">ordered_trie_root</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
 
-<span class="kw">use</span> <span class="ident">rlp</span>::{<span class="ident">Rlp</span>, <span class="ident">RlpStream</span>, <span class="ident">Encodable</span>, <span class="ident">Decodable</span>, <span class="ident">DecoderError</span>, <span class="ident">encode_list</span>};
-<span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">U256</span>, <span class="ident">Address</span>, <span class="ident">Bloom</span>};
 <span class="kw">use</span> <span class="ident">bytes</span>::<span class="ident">Bytes</span>;
-<span class="kw">use</span> <span class="ident">unexpected</span>::{<span class="ident">Mismatch</span>, <span class="ident">OutOfBounds</span>};
-
-<span class="kw">use</span> <span class="ident">vm</span>::{<span class="ident">EnvInfo</span>, <span class="ident">LastHashes</span>};
 <span class="kw">use</span> <span class="ident">engines</span>::<span class="ident">EthEngine</span>;
 <span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">Error</span>, <span class="ident">BlockError</span>};
+<span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">U256</span>, <span class="ident">Address</span>, <span class="ident">Bloom</span>};
 <span class="kw">use</span> <span class="ident">factory</span>::<span class="ident">Factories</span>;
+<span class="kw">use</span> <span class="ident">hash</span>::{<span class="ident">keccak</span>, <span class="ident">KECCAK_NULL_RLP</span>, <span class="ident">KECCAK_EMPTY_LIST_RLP</span>};
 <span class="kw">use</span> <span class="ident">header</span>::{<span class="ident">Header</span>, <span class="ident">ExtendedHeader</span>};
 <span class="kw">use</span> <span class="ident">receipt</span>::{<span class="ident">Receipt</span>, <span class="ident">TransactionOutcome</span>};
-<span class="kw">use</span> <span class="ident">state</span>::<span class="ident">State</span>;
+<span class="kw">use</span> <span class="ident">rlp</span>::{<span class="ident">Rlp</span>, <span class="ident">RlpStream</span>, <span class="ident">Encodable</span>, <span class="ident">Decodable</span>, <span class="ident">DecoderError</span>, <span class="ident">encode_list</span>};
 <span class="kw">use</span> <span class="ident">state_db</span>::<span class="ident">StateDB</span>;
+<span class="kw">use</span> <span class="ident">state</span>::<span class="ident">State</span>;
 <span class="kw">use</span> <span class="ident">trace</span>::<span class="ident">Tracing</span>;
 <span class="kw">use</span> <span class="ident">transaction</span>::{<span class="ident">UnverifiedTransaction</span>, <span class="ident">SignedTransaction</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">TransactionError</span>};
+<span class="kw">use</span> <span class="ident">triehash</span>::<span class="ident">ordered_trie_root</span>;
+<span class="kw">use</span> <span class="ident">unexpected</span>::{<span class="ident">Mismatch</span>, <span class="ident">OutOfBounds</span>};
 <span class="kw">use</span> <span class="ident">verification</span>::<span class="ident">PreverifiedBlock</span>;
 <span class="kw">use</span> <span class="ident">views</span>::<span class="ident">BlockView</span>;
+<span class="kw">use</span> <span class="ident">vm</span>::{<span class="ident">EnvInfo</span>, <span class="ident">LastHashes</span>};
 
 <span class="doccomment">/// A block, encoded as it is on the block chain.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
@@ -924,16 +945,26 @@
 <span class="doccomment">/// An internal type for a block&#39;s common elements.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExecutedBlock</span> {
-	<span class="ident">header</span>: <span class="ident">Header</span>,
-	<span class="ident">transactions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SignedTransaction</span><span class="op">&gt;</span>,
-	<span class="ident">uncles</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Header</span><span class="op">&gt;</span>,
-	<span class="ident">receipts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Receipt</span><span class="op">&gt;</span>,
-	<span class="ident">transactions_set</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span>,
-	<span class="ident">state</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">StateDB</span><span class="op">&gt;</span>,
-	<span class="ident">traces</span>: <span class="ident">Tracing</span>,
-	<span class="ident">last_hashes</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">LastHashes</span><span class="op">&gt;</span>,
-	<span class="ident">is_finalized</span>: <span class="ident">bool</span>,
-	<span class="ident">metadata</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span>,
+	<span class="doccomment">/// Executed block header.</span>
+	<span class="kw">pub</span> <span class="ident">header</span>: <span class="ident">Header</span>,
+	<span class="doccomment">/// Executed transactions.</span>
+	<span class="kw">pub</span> <span class="ident">transactions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SignedTransaction</span><span class="op">&gt;</span>,
+	<span class="doccomment">/// Uncles.</span>
+	<span class="kw">pub</span> <span class="ident">uncles</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Header</span><span class="op">&gt;</span>,
+	<span class="doccomment">/// Transaction receipts.</span>
+	<span class="kw">pub</span> <span class="ident">receipts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Receipt</span><span class="op">&gt;</span>,
+	<span class="doccomment">/// Hashes of already executed transactions.</span>
+	<span class="kw">pub</span> <span class="ident">transactions_set</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span>,
+	<span class="doccomment">/// Underlaying state.</span>
+	<span class="kw">pub</span> <span class="ident">state</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">StateDB</span><span class="op">&gt;</span>,
+	<span class="doccomment">/// Transaction traces.</span>
+	<span class="kw">pub</span> <span class="ident">traces</span>: <span class="ident">Tracing</span>,
+	<span class="doccomment">/// Hashes of last 256 blocks.</span>
+	<span class="kw">pub</span> <span class="ident">last_hashes</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">LastHashes</span><span class="op">&gt;</span>,
+	<span class="doccomment">/// Finalization flag.</span>
+	<span class="kw">pub</span> <span class="ident">is_finalized</span>: <span class="ident">bool</span>,
+	<span class="doccomment">/// Block metadata.</span>
+	<span class="kw">pub</span> <span class="ident">metadata</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ExecutedBlock</span> {
@@ -1008,20 +1039,14 @@
 	<span class="doccomment">/// Get all information on receipts in this block.</span>
 	<span class="kw">fn</span> <span class="ident">receipts</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Receipt</span>] { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span>().<span class="ident">receipts</span> }
 
-	<span class="doccomment">/// Get all information concerning transaction tracing in this block.</span>
-	<span class="kw">fn</span> <span class="ident">traces</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Tracing</span> { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span>().<span class="ident">traces</span> }
-
 	<span class="doccomment">/// Get all uncles in this block.</span>
 	<span class="kw">fn</span> <span class="ident">uncles</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Header</span>] { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span>().<span class="ident">uncles</span> }
-
-	<span class="doccomment">/// Get tracing enabled flag for this block.</span>
-	<span class="kw">fn</span> <span class="ident">tracing_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="self">self</span>.<span class="ident">block</span>().<span class="ident">traces</span>.<span class="ident">is_enabled</span>() }
 }
 
-<span class="doccomment">/// Trait for a object that has a state database.</span>
+<span class="doccomment">/// Trait for an object that owns an `ExecutedBlock`</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Drain</span> {
-	<span class="doccomment">/// Drop this object and return the underlying database.</span>
-	<span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">StateDB</span>;
+	<span class="doccomment">/// Returns `ExecutedBlock`</span>
+	<span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ExecutedBlock</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">IsBlock</span> <span class="kw">for</span> <span class="ident">ExecutedBlock</span> {
@@ -1248,20 +1273,16 @@
 	}
 
 	<span class="doccomment">/// Turn this into a `ClosedBlock`.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ClosedBlock</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ClosedBlock</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
 
 		<span class="kw">let</span> <span class="ident">unclosed_state</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">clone</span>();
 		<span class="kw">let</span> <span class="ident">unclosed_metadata</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">metadata</span>.<span class="ident">clone</span>();
 		<span class="kw">let</span> <span class="ident">unclosed_finalization_state</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">is_finalized</span>;
 
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">engine</span>.<span class="ident">on_close_block</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>.<span class="ident">block</span>) {
-			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Encountered error on closing the block: {}&quot;</span>, <span class="ident">e</span>);
-		}
+		<span class="ident">s</span>.<span class="ident">engine</span>.<span class="ident">on_close_block</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>.<span class="ident">block</span>)<span class="question-mark">?</span>;
+		<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">commit</span>()<span class="question-mark">?</span>;
 
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">commit</span>() {
-			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Encountered error on state commit: {}&quot;</span>, <span class="ident">e</span>);
-		}
 		<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">set_transactions_root</span>(<span class="ident">ordered_trie_root</span>(<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">transactions</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">rlp_bytes</span>())));
 		<span class="kw">let</span> <span class="ident">uncle_bytes</span> <span class="op">=</span> <span class="ident">encode_list</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">uncles</span>).<span class="ident">into_vec</span>();
 		<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">set_uncles_hash</span>(<span class="ident">keccak</span>(<span class="kw-2">&amp;</span><span class="ident">uncle_bytes</span>));
@@ -1273,26 +1294,21 @@
 		}));
 		<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">set_gas_used</span>(<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">receipts</span>.<span class="ident">last</span>().<span class="ident">map_or_else</span>(<span class="ident">U256</span>::<span class="ident">zero</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">gas_used</span>));
 
-		<span class="ident">ClosedBlock</span> {
+		<span class="prelude-val">Ok</span>(<span class="ident">ClosedBlock</span> {
 			<span class="ident">block</span>: <span class="ident">s</span>.<span class="ident">block</span>,
 			<span class="ident">uncle_bytes</span>,
 			<span class="ident">unclosed_state</span>,
 			<span class="ident">unclosed_metadata</span>,
 			<span class="ident">unclosed_finalization_state</span>,
-		}
+		})
 	}
 
 	<span class="doccomment">/// Turn this into a `LockedBlock`.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close_and_lock</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">LockedBlock</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close_and_lock</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">LockedBlock</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="self">self</span>;
 
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">engine</span>.<span class="ident">on_close_block</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>.<span class="ident">block</span>) {
-			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Encountered error on closing the block: {}&quot;</span>, <span class="ident">e</span>);
-		}
-
-		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">commit</span>() {
-			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Encountered error on state commit: {}&quot;</span>, <span class="ident">e</span>);
-		}
+		<span class="ident">s</span>.<span class="ident">engine</span>.<span class="ident">on_close_block</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>.<span class="ident">block</span>)<span class="question-mark">?</span>;
+		<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">commit</span>()<span class="question-mark">?</span>;
 
 		<span class="kw">if</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">transactions_root</span>().<span class="ident">is_zero</span>() <span class="op">||</span> <span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">transactions_root</span>() <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">KECCAK_NULL_RLP</span> {
 			<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">set_transactions_root</span>(<span class="ident">ordered_trie_root</span>(<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">transactions</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">rlp_bytes</span>())));
@@ -1312,10 +1328,10 @@
 		}));
 		<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">set_gas_used</span>(<span class="ident">s</span>.<span class="ident">block</span>.<span class="ident">receipts</span>.<span class="ident">last</span>().<span class="ident">map_or_else</span>(<span class="ident">U256</span>::<span class="ident">zero</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">gas_used</span>));
 
-		<span class="ident">LockedBlock</span> {
+		<span class="prelude-val">Ok</span>(<span class="ident">LockedBlock</span> {
 			<span class="ident">block</span>: <span class="ident">s</span>.<span class="ident">block</span>,
 			<span class="ident">uncle_bytes</span>,
-		}
+		})
 	}
 
 	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -1327,11 +1343,11 @@
 	<span class="kw">fn</span> <span class="ident">block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">ExecutedBlock</span> { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span> }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span><span class="op">&gt;</span> <span class="ident">IsBlock</span> <span class="kw">for</span> <span class="ident">ClosedBlock</span> {
+<span class="kw">impl</span> <span class="ident">IsBlock</span> <span class="kw">for</span> <span class="ident">ClosedBlock</span> {
 	<span class="kw">fn</span> <span class="ident">block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">ExecutedBlock</span> { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span> }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span><span class="op">&gt;</span> <span class="ident">IsBlock</span> <span class="kw">for</span> <span class="ident">LockedBlock</span> {
+<span class="kw">impl</span> <span class="ident">IsBlock</span> <span class="kw">for</span> <span class="ident">LockedBlock</span> {
 	<span class="kw">fn</span> <span class="ident">block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">ExecutedBlock</span> { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span> }
 }
 
@@ -1419,9 +1435,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Drain</span> <span class="kw">for</span> <span class="ident">LockedBlock</span> {
-	<span class="doccomment">/// Drop this object and return the underlieing database.</span>
-	<span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">StateDB</span> {
-		<span class="self">self</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>
+	<span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ExecutedBlock</span> {
+		<span class="self">self</span>.<span class="ident">block</span>
 	}
 }
 
@@ -1437,9 +1452,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Drain</span> <span class="kw">for</span> <span class="ident">SealedBlock</span> {
-	<span class="doccomment">/// Drop this object and return the underlieing database.</span>
-	<span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">StateDB</span> {
-		<span class="self">self</span>.<span class="ident">block</span>.<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>
+	<span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ExecutedBlock</span> {
+		<span class="self">self</span>.<span class="ident">block</span>
 	}
 }
 
@@ -1490,7 +1504,7 @@
 		<span class="ident">b</span>.<span class="ident">push_uncle</span>(<span class="ident">u</span>)<span class="question-mark">?</span>;
 	}
 
-	<span class="prelude-val">Ok</span>(<span class="ident">b</span>.<span class="ident">close_and_lock</span>())
+	<span class="ident">b</span>.<span class="ident">close_and_lock</span>()
 }
 
 <span class="doccomment">/// Enact the block given by `block_bytes` using `engine` on the database `db` with given `parent` block header</span>
@@ -1586,7 +1600,7 @@
 			<span class="ident">b</span>.<span class="ident">push_uncle</span>(<span class="ident">u</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>;
 		}
 
-		<span class="prelude-val">Ok</span>(<span class="ident">b</span>.<span class="ident">close_and_lock</span>())
+		<span class="ident">b</span>.<span class="ident">close_and_lock</span>()
 	}
 
 	<span class="doccomment">/// Enact the block given by `block_bytes` using `engine` on the database `db` with given `parent` block header. Seal the block aferwards</span>
@@ -1611,7 +1625,7 @@
 		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">ensure_db_good</span>(<span class="ident">get_temp_state_db</span>(), <span class="kw-2">&amp;</span><span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">last_hashes</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">genesis_header</span>.<span class="ident">hash</span>()]);
 		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">OpenBlock</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">spec</span>.<span class="ident">engine</span>, <span class="ident">Default</span>::<span class="ident">default</span>(), <span class="bool-val">false</span>, <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">genesis_header</span>, <span class="ident">last_hashes</span>, <span class="ident">Address</span>::<span class="ident">zero</span>(), (<span class="number">3141562</span>.<span class="ident">into</span>(), <span class="number">31415620</span>.<span class="ident">into</span>()), <span class="macro">vec</span><span class="macro">!</span>[], <span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span>::<span class="ident">new</span>().<span class="ident">into_iter</span>()).<span class="ident">unwrap</span>();
-		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close_and_lock</span>();
+		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close_and_lock</span>().<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">seal</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">spec</span>.<span class="ident">engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]);
 	}
 
@@ -1625,16 +1639,16 @@
 		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">ensure_db_good</span>(<span class="ident">get_temp_state_db</span>(), <span class="kw-2">&amp;</span><span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">last_hashes</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">genesis_header</span>.<span class="ident">hash</span>()]);
 		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">OpenBlock</span>::<span class="ident">new</span>(<span class="ident">engine</span>, <span class="ident">Default</span>::<span class="ident">default</span>(), <span class="bool-val">false</span>, <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">genesis_header</span>, <span class="ident">last_hashes</span>.<span class="ident">clone</span>(), <span class="ident">Address</span>::<span class="ident">zero</span>(), (<span class="number">3141562</span>.<span class="ident">into</span>(), <span class="number">31415620</span>.<span class="ident">into</span>()), <span class="macro">vec</span><span class="macro">!</span>[], <span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span>::<span class="ident">new</span>().<span class="ident">into_iter</span>()).<span class="ident">unwrap</span>()
-			.<span class="ident">close_and_lock</span>().<span class="ident">seal</span>(<span class="ident">engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
+			.<span class="ident">close_and_lock</span>().<span class="ident">unwrap</span>().<span class="ident">seal</span>(<span class="ident">engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">orig_bytes</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">rlp_bytes</span>();
-		<span class="kw">let</span> <span class="ident">orig_db</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">drain</span>();
+		<span class="kw">let</span> <span class="ident">orig_db</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">drain</span>().<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>;
 
 		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">ensure_db_good</span>(<span class="ident">get_temp_state_db</span>(), <span class="kw-2">&amp;</span><span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">enact_and_seal</span>(<span class="kw-2">&amp;</span><span class="ident">orig_bytes</span>, <span class="ident">engine</span>, <span class="bool-val">false</span>, <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">genesis_header</span>, <span class="ident">last_hashes</span>, <span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">e</span>.<span class="ident">rlp_bytes</span>(), <span class="ident">orig_bytes</span>);
 
-		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">drain</span>();
+		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">drain</span>().<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>;
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">orig_db</span>.<span class="ident">journal_db</span>().<span class="ident">keys</span>(), <span class="ident">db</span>.<span class="ident">journal_db</span>().<span class="ident">keys</span>());
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">orig_db</span>.<span class="ident">journal_db</span>().<span class="ident">keys</span>().<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="ident">orig_db</span>.<span class="ident">journal_db</span>().<span class="ident">get</span>(<span class="ident">k</span>.<span class="number">0</span>) <span class="op">!=</span> <span class="ident">db</span>.<span class="ident">journal_db</span>().<span class="ident">get</span>(<span class="ident">k</span>.<span class="number">0</span>)).<span class="ident">next</span>() <span class="op">==</span> <span class="prelude-val">None</span>);
 	}
@@ -1655,10 +1669,10 @@
 		<span class="ident">uncle2_header</span>.<span class="ident">set_extra_data</span>(<span class="string">b&quot;uncle2&quot;</span>.<span class="ident">to_vec</span>());
 		<span class="ident">open_block</span>.<span class="ident">push_uncle</span>(<span class="ident">uncle1_header</span>).<span class="ident">unwrap</span>();
 		<span class="ident">open_block</span>.<span class="ident">push_uncle</span>(<span class="ident">uncle2_header</span>).<span class="ident">unwrap</span>();
-		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">open_block</span>.<span class="ident">close_and_lock</span>().<span class="ident">seal</span>(<span class="ident">engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
+		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">open_block</span>.<span class="ident">close_and_lock</span>().<span class="ident">unwrap</span>().<span class="ident">seal</span>(<span class="ident">engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
 
 		<span class="kw">let</span> <span class="ident">orig_bytes</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">rlp_bytes</span>();
-		<span class="kw">let</span> <span class="ident">orig_db</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">drain</span>();
+		<span class="kw">let</span> <span class="ident">orig_db</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">drain</span>().<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>;
 
 		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">ensure_db_good</span>(<span class="ident">get_temp_state_db</span>(), <span class="kw-2">&amp;</span><span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">enact_and_seal</span>(<span class="kw-2">&amp;</span><span class="ident">orig_bytes</span>, <span class="ident">engine</span>, <span class="bool-val">false</span>, <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">genesis_header</span>, <span class="ident">last_hashes</span>, <span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
@@ -1668,7 +1682,7 @@
 		<span class="kw">let</span> <span class="ident">uncles</span> <span class="op">=</span> <span class="macro">view</span><span class="macro">!</span>(<span class="ident">BlockView</span>, <span class="kw-2">&amp;</span><span class="ident">bytes</span>).<span class="ident">uncles</span>();
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">uncles</span>[<span class="number">1</span>].<span class="ident">extra_data</span>(), <span class="string">b&quot;uncle2&quot;</span>);
 
-		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">drain</span>();
+		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">drain</span>().<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>;
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">orig_db</span>.<span class="ident">journal_db</span>().<span class="ident">keys</span>(), <span class="ident">db</span>.<span class="ident">journal_db</span>().<span class="ident">keys</span>());
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">orig_db</span>.<span class="ident">journal_db</span>().<span class="ident">keys</span>().<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="ident">orig_db</span>.<span class="ident">journal_db</span>().<span class="ident">get</span>(<span class="ident">k</span>.<span class="number">0</span>) <span class="op">!=</span> <span class="ident">db</span>.<span class="ident">journal_db</span>().<span class="ident">get</span>(<span class="ident">k</span>.<span class="number">0</span>)).<span class="ident">next</span>() <span class="op">==</span> <span class="prelude-val">None</span>);
 	}

@@ -69,7 +69,7 @@
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li><li><a href="06_account_balances.html"><strong aria-hidden="true">6.</strong> Account Balances</a></li></ol>
+            <ol class="chapter"><li><a href="01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li><a href="02_getting_started.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><a href="03_testing_smart_contracts.html"><strong aria-hidden="true">3.</strong> Testing Smart Contracts</a></li><li><a href="04_property_testing.html"><strong aria-hidden="true">4.</strong> Property Testing</a></li><li><a href="05_testing_for_reverts.html"><strong aria-hidden="true">5.</strong> Testing for Reverts</a></li><li><a href="06_account_balances.html"><strong aria-hidden="true">6.</strong> Account Balances</a></li><li><a href="07_accounts.html"><strong aria-hidden="true">7.</strong> Accounts</a></li><li><a href="08_events.html"><strong aria-hidden="true">8.</strong> Testing Events</a></li></ol>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -586,6 +586,48 @@ assert_ne!(evm.balance(a), wei::from_ether(90));
 assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_total());
 assert_eq!(evm.balance(b), wei::from_ether(10));
 #}</code></pre></pre>
+<a class="header" href="print.html#accounts" id="accounts"><h1>Accounts</h1></a>
+<p>Parables provides a helper to set up an account.</p>
+<p>Accounts have an <em>address</em>, a <em>private</em>, and a <em>public</em> key.</p>
+<a class="header" href="print.html#signing-payloads" id="signing-payloads"><h2>Signing payloads</h2></a>
+<p>Through the <code>Account</code> structure we can sign payloads according to the <a href="https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/ECRecovery.sol">ECRecovery scheme</a>.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let mut crypto = Crypto::new();
+let account = Account::new(&amp;mut crypto)?;
+
+let mut sig = account.signer(&amp;mut crypto);
+
+// add things to the signature
+sig.input(pool);
+sig.input(scenario.owner);
+sig.input(code);
+sig.input(expiration);
+
+let sig = sig.finish()?;
+#}</code></pre></pre>
+<a class="header" href="print.html#testing-events" id="testing-events"><h1>Testing Events</h1></a>
+<p>Parables capatures all events emitted by your contract, and allows you to easily assert that
+a specific set of events have been emitted.</p>
+<p>A typical test would do something like the following.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let evm = evm.get();
+
+evm.call(simple, f::set_value(100), call)?;
+evm.call(simple, f::set_value(200), call)?;
+
+for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
+    assert_eq!(U256::from(100), e.value);
+}
+
+assert_eq!(1, evm.logs(ev::value_updated()).iter()?.count());
+assert!(!evm.has_logs(), &quot;there were unprocessed logs&quot;);
+#}</code></pre></pre>
+<p>Note that converting the drainer into an iterator through the <code>iter()</code> method is a <em>fallible</em>
+operation since it needs to decode all events.</p>
 
                     </main>
 

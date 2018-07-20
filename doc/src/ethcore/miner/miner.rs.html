@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/miner/miner.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>miner.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/miner/miner.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>miner.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1423,6 +1423,150 @@
 <span id="1423">1423</span>
 <span id="1424">1424</span>
 <span id="1425">1425</span>
+<span id="1426">1426</span>
+<span id="1427">1427</span>
+<span id="1428">1428</span>
+<span id="1429">1429</span>
+<span id="1430">1430</span>
+<span id="1431">1431</span>
+<span id="1432">1432</span>
+<span id="1433">1433</span>
+<span id="1434">1434</span>
+<span id="1435">1435</span>
+<span id="1436">1436</span>
+<span id="1437">1437</span>
+<span id="1438">1438</span>
+<span id="1439">1439</span>
+<span id="1440">1440</span>
+<span id="1441">1441</span>
+<span id="1442">1442</span>
+<span id="1443">1443</span>
+<span id="1444">1444</span>
+<span id="1445">1445</span>
+<span id="1446">1446</span>
+<span id="1447">1447</span>
+<span id="1448">1448</span>
+<span id="1449">1449</span>
+<span id="1450">1450</span>
+<span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
+<span id="1491">1491</span>
+<span id="1492">1492</span>
+<span id="1493">1493</span>
+<span id="1494">1494</span>
+<span id="1495">1495</span>
+<span id="1496">1496</span>
+<span id="1497">1497</span>
+<span id="1498">1498</span>
+<span id="1499">1499</span>
+<span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
+<span id="1504">1504</span>
+<span id="1505">1505</span>
+<span id="1506">1506</span>
+<span id="1507">1507</span>
+<span id="1508">1508</span>
+<span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
+<span id="1529">1529</span>
+<span id="1530">1530</span>
+<span id="1531">1531</span>
+<span id="1532">1532</span>
+<span id="1533">1533</span>
+<span id="1534">1534</span>
+<span id="1535">1535</span>
+<span id="1536">1536</span>
+<span id="1537">1537</span>
+<span id="1538">1538</span>
+<span id="1539">1539</span>
+<span id="1540">1540</span>
+<span id="1541">1541</span>
+<span id="1542">1542</span>
+<span id="1543">1543</span>
+<span id="1544">1544</span>
+<span id="1545">1545</span>
+<span id="1546">1546</span>
+<span id="1547">1547</span>
+<span id="1548">1548</span>
+<span id="1549">1549</span>
+<span id="1550">1550</span>
+<span id="1551">1551</span>
+<span id="1552">1552</span>
+<span id="1553">1553</span>
+<span id="1554">1554</span>
+<span id="1555">1555</span>
+<span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
+<span id="1559">1559</span>
+<span id="1560">1560</span>
+<span id="1561">1561</span>
+<span id="1562">1562</span>
+<span id="1563">1563</span>
+<span id="1564">1564</span>
+<span id="1565">1565</span>
+<span id="1566">1566</span>
+<span id="1567">1567</span>
+<span id="1568">1568</span>
+<span id="1569">1569</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -1440,8 +1584,9 @@
 <span class="comment">// You should have received a copy of the GNU General Public License</span>
 <span class="comment">// along with Parity.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::{<span class="ident">Instant</span>, <span class="ident">Duration</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashSet</span>, <span class="ident">HashMap</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>, <span class="ident">HashSet</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
 
 <span class="kw">use</span> <span class="ident">ansi_term</span>::<span class="ident">Colour</span>;
@@ -1450,8 +1595,10 @@
 <span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="ident">ExecutionError</span>};
 <span class="kw">use</span> <span class="ident">ethcore_miner</span>::<span class="ident">gas_pricer</span>::<span class="ident">GasPricer</span>;
 <span class="kw">use</span> <span class="ident">ethcore_miner</span>::<span class="ident">pool</span>::{<span class="self">self</span>, <span class="ident">TransactionQueue</span>, <span class="ident">VerifiedTransaction</span>, <span class="ident">QueueStatus</span>, <span class="ident">PrioritizationStrategy</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">ethcore_miner</span>::<span class="ident">work_notify</span>::<span class="ident">NotifyWork</span>;
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">U256</span>, <span class="ident">Address</span>};
+<span class="kw">use</span> <span class="ident">io</span>::<span class="ident">IoChannel</span>;
 <span class="kw">use</span> <span class="ident">parking_lot</span>::{<span class="ident">Mutex</span>, <span class="ident">RwLock</span>};
 <span class="kw">use</span> <span class="ident">rayon</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">transaction</span>::{
@@ -1468,11 +1615,11 @@
 <span class="kw">use</span> <span class="ident">client</span>::{
 	<span class="ident">BlockChain</span>, <span class="ident">ChainInfo</span>, <span class="ident">CallContract</span>, <span class="ident">BlockProducer</span>, <span class="ident">SealedBlockImporter</span>, <span class="ident">Nonce</span>
 };
-<span class="kw">use</span> <span class="ident">client</span>::<span class="ident">BlockId</span>;
+<span class="kw">use</span> <span class="ident">client</span>::{<span class="ident">BlockId</span>, <span class="ident">ClientIoMessage</span>};
 <span class="kw">use</span> <span class="ident">executive</span>::<span class="ident">contract_address</span>;
 <span class="kw">use</span> <span class="ident">header</span>::{<span class="ident">Header</span>, <span class="ident">BlockNumber</span>};
 <span class="kw">use</span> <span class="ident">miner</span>;
-<span class="kw">use</span> <span class="ident">miner</span>::<span class="ident">pool_client</span>::{<span class="ident">PoolClient</span>, <span class="ident">CachedNonceClient</span>};
+<span class="kw">use</span> <span class="ident">miner</span>::<span class="ident">pool_client</span>::{<span class="ident">PoolClient</span>, <span class="ident">CachedNonceClient</span>, <span class="ident">NonceCache</span>};
 <span class="kw">use</span> <span class="ident">receipt</span>::{<span class="ident">Receipt</span>, <span class="ident">RichReceipt</span>};
 <span class="kw">use</span> <span class="ident">spec</span>::<span class="ident">Spec</span>;
 <span class="kw">use</span> <span class="ident">state</span>::<span class="ident">State</span>;
@@ -1505,6 +1652,17 @@
 	},
 }
 
+<span class="doccomment">/// Pending block preparation status.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">BlockPreparationStatus</span> {
+	<span class="doccomment">/// We had to prepare new pending block and the preparation succeeded.</span>
+	<span class="ident">Succeeded</span>,
+	<span class="doccomment">/// We had to prepare new pending block but the preparation failed.</span>
+	<span class="ident">Failed</span>,
+	<span class="doccomment">/// We didn&#39;t have to prepare a new block.</span>
+	<span class="ident">NotPrepared</span>,
+}
+
 <span class="doccomment">/// Initial minimal gas price.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Gas price should be later overwritten externally</span>
@@ -1520,7 +1678,7 @@
 <span class="doccomment">/// before stopping attempts to push more transactions to the block.</span>
 <span class="doccomment">/// This is an optimization that prevents traversing the entire pool</span>
 <span class="doccomment">/// in case we have only a fraction of available block gas limit left.</span>
-<span class="kw">const</span> <span class="ident">MAX_SKIPPED_TRANSACTIONS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">8</span>;
+<span class="kw">const</span> <span class="ident">MAX_SKIPPED_TRANSACTIONS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">128</span>;
 
 <span class="doccomment">/// Configures the behaviour of the miner.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
@@ -1626,18 +1784,21 @@
 	<span class="comment">// NOTE [ToDr]  When locking always lock in this order!</span>
 	<span class="ident">sealing</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">SealingWork</span><span class="op">&gt;</span>,
 	<span class="ident">params</span>: <span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">AuthoringParams</span><span class="op">&gt;</span>,
+	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
 	<span class="ident">listeners</span>: <span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">NotifyWork</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
-	<span class="ident">nonce_cache</span>: <span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">U256</span><span class="op">&gt;&gt;</span>,
+	<span class="ident">nonce_cache</span>: <span class="ident">NonceCache</span>,
 	<span class="ident">gas_pricer</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">GasPricer</span><span class="op">&gt;</span>,
 	<span class="ident">options</span>: <span class="ident">MinerOptions</span>,
 	<span class="comment">// TODO [ToDr] Arc is only required because of price updater</span>
 	<span class="ident">transaction_queue</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">TransactionQueue</span><span class="op">&gt;</span>,
 	<span class="ident">engine</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">EthEngine</span><span class="op">&gt;</span>,
 	<span class="ident">accounts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AccountProvider</span><span class="op">&gt;&gt;</span>,
+	<span class="ident">io_channel</span>: <span class="ident">RwLock</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">IoChannel</span><span class="op">&lt;</span><span class="ident">ClientIoMessage</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Miner</span> {
 	<span class="doccomment">/// Push listener that will handle new jobs</span>
+	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
 	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_work_listener</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">notifier</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">NotifyWork</span><span class="op">&gt;</span>) {
 		<span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">write</span>().<span class="ident">push</span>(<span class="ident">notifier</span>);
 		<span class="self">self</span>.<span class="ident">sealing</span>.<span class="ident">lock</span>().<span class="ident">enabled</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -1649,10 +1810,16 @@
 	}
 
 	<span class="doccomment">/// Creates new instance of miner Arc.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">options</span>: <span class="ident">MinerOptions</span>, <span class="ident">gas_pricer</span>: <span class="ident">GasPricer</span>, <span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">Spec</span>, <span class="ident">accounts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AccountProvider</span><span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+		<span class="ident">options</span>: <span class="ident">MinerOptions</span>,
+		<span class="ident">gas_pricer</span>: <span class="ident">GasPricer</span>,
+		<span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">Spec</span>,
+		<span class="ident">accounts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AccountProvider</span><span class="op">&gt;&gt;</span>,
+	) <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="kw">let</span> <span class="ident">limits</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">pool_limits</span>.<span class="ident">clone</span>();
 		<span class="kw">let</span> <span class="ident">verifier_options</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">pool_verification_options</span>.<span class="ident">clone</span>();
 		<span class="kw">let</span> <span class="ident">tx_queue_strategy</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">tx_queue_strategy</span>;
+		<span class="kw">let</span> <span class="ident">nonce_cache_size</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">max</span>(<span class="number">4096</span>, <span class="ident">limits</span>.<span class="ident">max_count</span> <span class="op">/</span> <span class="number">4</span>);
 
 		<span class="ident">Miner</span> {
 			<span class="ident">sealing</span>: <span class="ident">Mutex</span>::<span class="ident">new</span>(<span class="ident">SealingWork</span> {
@@ -1664,13 +1831,15 @@
 				<span class="ident">last_request</span>: <span class="prelude-val">None</span>,
 			}),
 			<span class="ident">params</span>: <span class="ident">RwLock</span>::<span class="ident">new</span>(<span class="ident">AuthoringParams</span>::<span class="ident">default</span>()),
+			<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
 			<span class="ident">listeners</span>: <span class="ident">RwLock</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[]),
 			<span class="ident">gas_pricer</span>: <span class="ident">Mutex</span>::<span class="ident">new</span>(<span class="ident">gas_pricer</span>),
-			<span class="ident">nonce_cache</span>: <span class="ident">RwLock</span>::<span class="ident">new</span>(<span class="ident">HashMap</span>::<span class="ident">with_capacity</span>(<span class="number">1024</span>)),
+			<span class="ident">nonce_cache</span>: <span class="ident">NonceCache</span>::<span class="ident">new</span>(<span class="ident">nonce_cache_size</span>),
 			<span class="ident">options</span>,
 			<span class="ident">transaction_queue</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">TransactionQueue</span>::<span class="ident">new</span>(<span class="ident">limits</span>, <span class="ident">verifier_options</span>, <span class="ident">tx_queue_strategy</span>)),
 			<span class="ident">accounts</span>,
 			<span class="ident">engine</span>: <span class="ident">spec</span>.<span class="ident">engine</span>.<span class="ident">clone</span>(),
+			<span class="ident">io_channel</span>: <span class="ident">RwLock</span>::<span class="ident">new</span>(<span class="prelude-val">None</span>),
 		}
 	}
 
@@ -1688,6 +1857,11 @@
 			<span class="ident">reseal_min_period</span>: <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="number">0</span>),
 			..<span class="ident">Default</span>::<span class="ident">default</span>()
 		}, <span class="ident">GasPricer</span>::<span class="ident">new_fixed</span>(<span class="ident">minimal_gas_price</span>), <span class="ident">spec</span>, <span class="ident">accounts</span>)
+	}
+
+	<span class="doccomment">/// Sets `IoChannel`</span>
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_io_channel</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">io_channel</span>: <span class="ident">IoChannel</span><span class="op">&lt;</span><span class="ident">ClientIoMessage</span><span class="op">&gt;</span>) {
+		<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">io_channel</span>.<span class="ident">write</span>() <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">io_channel</span>);
 	}
 
 	<span class="doccomment">/// Clear all pending block states</span>
@@ -1741,7 +1915,7 @@
 	}
 
 	<span class="doccomment">/// Prepares new block for sealing including top transactions from queue.</span>
-	<span class="kw">fn</span> <span class="ident">prepare_block</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">chain</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>) <span class="op">-&gt;</span> (<span class="ident">ClosedBlock</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span>) <span class="kw">where</span>
+	<span class="kw">fn</span> <span class="ident">prepare_block</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">chain</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">ClosedBlock</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span>)<span class="op">&gt;</span> <span class="kw">where</span>
 		<span class="ident">C</span>: <span class="ident">BlockChain</span> <span class="op">+</span> <span class="ident">CallContract</span> <span class="op">+</span> <span class="ident">BlockProducer</span> <span class="op">+</span> <span class="ident">Nonce</span> <span class="op">+</span> <span class="ident">Sync</span>,
 	{
 		<span class="macro">trace_time</span><span class="macro">!</span>(<span class="string">&quot;prepare_block&quot;</span>);
@@ -1769,11 +1943,18 @@
 					<span class="comment">// block not found - create it.</span>
 					<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;prepare_block: No existing work - making new block&quot;</span>);
 					<span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">read</span>().<span class="ident">clone</span>();
-					<span class="ident">chain</span>.<span class="ident">prepare_open_block</span>(
+
+					<span class="kw">match</span> <span class="ident">chain</span>.<span class="ident">prepare_open_block</span>(
 						<span class="ident">params</span>.<span class="ident">author</span>,
 						<span class="ident">params</span>.<span class="ident">gas_range_target</span>,
 						<span class="ident">params</span>.<span class="ident">extra_data</span>,
-					)
+					) {
+						<span class="prelude-val">Ok</span>(<span class="ident">block</span>) <span class="op">=&gt;</span> <span class="ident">block</span>,
+						<span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> {
+							<span class="macro">warn</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;Open new block failed with error {:?}. This is likely an error in chain specificiations or on-chain consensus smart contracts.&quot;</span>, <span class="ident">err</span>);
+							<span class="kw">return</span> <span class="prelude-val">None</span>;
+						}
+					}
 				}
 			};
 
@@ -1804,7 +1985,7 @@
 		<span class="kw">let</span> <span class="ident">max_transactions</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">min_tx_gas</span>.<span class="ident">is_zero</span>() {
 			<span class="ident">usize</span>::<span class="ident">max_value</span>()
 		} <span class="kw">else</span> {
-			(<span class="kw-2">*</span><span class="ident">open_block</span>.<span class="ident">block</span>().<span class="ident">header</span>().<span class="ident">gas_limit</span>() <span class="op">/</span> <span class="ident">min_tx_gas</span>).<span class="ident">as_u64</span>() <span class="kw">as</span> <span class="ident">usize</span>
+			<span class="ident">MAX_SKIPPED_TRANSACTIONS</span>.<span class="ident">saturating_add</span>((<span class="kw-2">*</span><span class="ident">open_block</span>.<span class="ident">block</span>().<span class="ident">header</span>().<span class="ident">gas_limit</span>() <span class="op">/</span> <span class="ident">min_tx_gas</span>).<span class="ident">as_u64</span>() <span class="kw">as</span> <span class="ident">usize</span>)
 		};
 
 		<span class="kw">let</span> <span class="ident">pending</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">pending</span>(
@@ -1900,7 +2081,13 @@
 		<span class="kw">let</span> <span class="ident">elapsed</span> <span class="op">=</span> <span class="ident">block_start</span>.<span class="ident">elapsed</span>();
 		<span class="macro">debug</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;Pushed {} transactions in {} ms&quot;</span>, <span class="ident">tx_count</span>, <span class="ident">took_ms</span>(<span class="kw-2">&amp;</span><span class="ident">elapsed</span>));
 
-		<span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="ident">open_block</span>.<span class="ident">close</span>();
+		<span class="kw">let</span> <span class="ident">block</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">open_block</span>.<span class="ident">close</span>() {
+			<span class="prelude-val">Ok</span>(<span class="ident">block</span>) <span class="op">=&gt;</span> <span class="ident">block</span>,
+			<span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> {
+				<span class="macro">warn</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;Closing the block failed with error {:?}. This is likely an error in chain specificiations or on-chain consensus smart contracts.&quot;</span>, <span class="ident">err</span>);
+				<span class="kw">return</span> <span class="prelude-val">None</span>;
+			}
+		};
 
 		{
 			<span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">remove</span>(<span class="ident">invalid_transactions</span>.<span class="ident">iter</span>(), <span class="bool-val">true</span>);
@@ -1908,7 +2095,7 @@
 			<span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">penalize</span>(<span class="ident">senders_to_penalize</span>.<span class="ident">iter</span>());
 		}
 
-		(<span class="ident">block</span>, <span class="ident">original_work_hash</span>)
+		<span class="prelude-val">Some</span>((<span class="ident">block</span>, <span class="ident">original_work_hash</span>))
 	}
 
 	<span class="doccomment">/// Returns `true` if we should create pending block even if some other conditions are not met.</span>
@@ -1917,7 +2104,14 @@
 	<span class="doccomment">/// 1. --force-sealing CLI parameter is provided</span>
 	<span class="doccomment">/// 2. There are listeners awaiting new work packages (e.g. remote work notifications or stratum).</span>
 	<span class="kw">fn</span> <span class="ident">forced_sealing</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-		<span class="self">self</span>.<span class="ident">options</span>.<span class="ident">force_sealing</span> <span class="op">||</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">read</span>().<span class="ident">is_empty</span>()
+		<span class="kw">let</span> <span class="ident">listeners_empty</span> <span class="op">=</span> {
+			<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
+			{ <span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">read</span>().<span class="ident">is_empty</span>() }
+			<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>))]</span>
+			{ <span class="bool-val">true</span> }
+		};
+
+		<span class="self">self</span>.<span class="ident">options</span>.<span class="ident">force_sealing</span> <span class="op">||</span> <span class="op">!</span><span class="ident">listeners_empty</span>
 	}
 
 	<span class="doccomment">/// Check is reseal is allowed and necessary.</span>
@@ -2065,9 +2259,13 @@
 				<span class="kw">let</span> <span class="ident">is_new</span> <span class="op">=</span> <span class="ident">original_work_hash</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">h</span><span class="op">|</span> <span class="ident">h</span> <span class="op">!=</span> <span class="ident">block_hash</span>);
 
 				<span class="ident">sealing</span>.<span class="ident">queue</span>.<span class="ident">push</span>(<span class="ident">block</span>);
-				<span class="comment">// If push notifications are enabled we assume all work items are used.</span>
-				<span class="kw">if</span> <span class="ident">is_new</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">read</span>().<span class="ident">is_empty</span>() {
-					<span class="ident">sealing</span>.<span class="ident">queue</span>.<span class="ident">use_last_ref</span>();
+
+				<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
+				{
+					<span class="comment">// If push notifications are enabled we assume all work items are used.</span>
+					<span class="kw">if</span> <span class="ident">is_new</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">read</span>().<span class="ident">is_empty</span>() {
+						<span class="ident">sealing</span>.<span class="ident">queue</span>.<span class="ident">use_last_ref</span>();
+					}
 				}
 
 				(<span class="prelude-val">Some</span>((<span class="ident">block_hash</span>, <span class="kw-2">*</span><span class="ident">block_header</span>.<span class="ident">difficulty</span>(), <span class="ident">block_header</span>.<span class="ident">number</span>())), <span class="ident">is_new</span>)
@@ -2081,17 +2279,28 @@
 			);
 			(<span class="ident">work</span>, <span class="ident">is_new</span>)
 		};
-		<span class="kw">if</span> <span class="ident">is_new</span> {
-			<span class="ident">work</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pow_hash</span>, <span class="ident">difficulty</span>, <span class="ident">number</span>)<span class="op">|</span> {
-				<span class="kw">for</span> <span class="ident">notifier</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">read</span>().<span class="ident">iter</span>() {
-					<span class="ident">notifier</span>.<span class="ident">notify</span>(<span class="ident">pow_hash</span>, <span class="ident">difficulty</span>, <span class="ident">number</span>)
-				}
-			});
+
+		<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
+		{
+			<span class="kw">if</span> <span class="ident">is_new</span> {
+				<span class="ident">work</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pow_hash</span>, <span class="ident">difficulty</span>, <span class="ident">number</span>)<span class="op">|</span> {
+					<span class="kw">for</span> <span class="ident">notifier</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">listeners</span>.<span class="ident">read</span>().<span class="ident">iter</span>() {
+						<span class="ident">notifier</span>.<span class="ident">notify</span>(<span class="ident">pow_hash</span>, <span class="ident">difficulty</span>, <span class="ident">number</span>)
+					}
+				});
+			}
+		}
+
+		<span class="comment">// NB: hack to use variables to avoid warning.</span>
+		<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>))]</span>
+		{
+			<span class="kw">let</span> <span class="ident">_work</span> <span class="op">=</span> <span class="ident">work</span>;
+			<span class="kw">let</span> <span class="ident">_is_new</span> <span class="op">=</span> <span class="ident">is_new</span>;
 		}
 	}
 
-	<span class="doccomment">/// Returns true if we had to prepare new pending block.</span>
-	<span class="kw">fn</span> <span class="ident">prepare_pending_block</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="kw">where</span>
+	<span class="doccomment">/// Prepare a pending block. Returns the preparation status.</span>
+	<span class="kw">fn</span> <span class="ident">prepare_pending_block</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>) <span class="op">-&gt;</span> <span class="ident">BlockPreparationStatus</span> <span class="kw">where</span>
 		<span class="ident">C</span>: <span class="ident">BlockChain</span> <span class="op">+</span> <span class="ident">CallContract</span> <span class="op">+</span> <span class="ident">BlockProducer</span> <span class="op">+</span> <span class="ident">SealedBlockImporter</span> <span class="op">+</span> <span class="ident">Nonce</span> <span class="op">+</span> <span class="ident">Sync</span>,
 	{
 		<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;prepare_pending_block: entering&quot;</span>);
@@ -2107,14 +2316,21 @@
 			}
 		};
 
-		<span class="kw">if</span> <span class="ident">prepare_new</span> {
+		<span class="kw">let</span> <span class="ident">preparation_status</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">prepare_new</span> {
 			<span class="comment">// --------------------------------------------------------------------------</span>
 			<span class="comment">// | NOTE Code below requires sealing locks.                                |</span>
 			<span class="comment">// | Make sure to release the locks before calling that method.             |</span>
 			<span class="comment">// --------------------------------------------------------------------------</span>
-			<span class="kw">let</span> (<span class="ident">block</span>, <span class="ident">original_work_hash</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">prepare_block</span>(<span class="ident">client</span>);
-			<span class="self">self</span>.<span class="ident">prepare_work</span>(<span class="ident">block</span>, <span class="ident">original_work_hash</span>);
-		}
+			<span class="kw">match</span> <span class="self">self</span>.<span class="ident">prepare_block</span>(<span class="ident">client</span>) {
+				<span class="prelude-val">Some</span>((<span class="ident">block</span>, <span class="ident">original_work_hash</span>)) <span class="op">=&gt;</span> {
+					<span class="self">self</span>.<span class="ident">prepare_work</span>(<span class="ident">block</span>, <span class="ident">original_work_hash</span>);
+					<span class="ident">BlockPreparationStatus</span>::<span class="ident">Succeeded</span>
+				},
+				<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">BlockPreparationStatus</span>::<span class="ident">Failed</span>,
+			}
+		} <span class="kw">else</span> {
+			<span class="ident">BlockPreparationStatus</span>::<span class="ident">NotPrepared</span>
+		};
 
 		<span class="kw">let</span> <span class="ident">best_number</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">chain_info</span>().<span class="ident">best_block_number</span>;
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sealing</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">sealing</span>.<span class="ident">lock</span>();
@@ -2127,8 +2343,7 @@
 			<span class="ident">sealing</span>.<span class="ident">last_request</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">best_number</span>);
 		}
 
-		<span class="comment">// Return if we restarted</span>
-		<span class="ident">prepare_new</span>
+		<span class="ident">preparation_status</span>
 	}
 
 	<span class="doccomment">/// Prepare pending block, check whether sealing is needed, and then update sealing.</span>
@@ -2137,7 +2352,7 @@
 
 		<span class="comment">// Make sure to do it after transaction is imported and lock is dropped.</span>
 		<span class="comment">// We need to create pending block and enable sealing.</span>
-		<span class="kw">if</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">seals_internally</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>) <span class="op">||</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">prepare_pending_block</span>(<span class="ident">chain</span>) {
+		<span class="kw">if</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">seals_internally</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>) <span class="op">||</span> <span class="self">self</span>.<span class="ident">prepare_pending_block</span>(<span class="ident">chain</span>) <span class="op">==</span> <span class="ident">BlockPreparationStatus</span>::<span class="ident">NotPrepared</span> {
 			<span class="comment">// If new block has not been prepared (means we already had one)</span>
 			<span class="comment">// or Engine might be able to seal internally,</span>
 			<span class="comment">// we need to update sealing.</span>
@@ -2277,6 +2492,37 @@
 		<span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">all_transactions</span>()
 	}
 
+	<span class="kw">fn</span> <span class="ident">pending_transaction_hashes</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">chain</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>) <span class="op">-&gt;</span> <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span> <span class="kw">where</span>
+		<span class="ident">C</span>: <span class="ident">ChainInfo</span> <span class="op">+</span> <span class="ident">Sync</span>,
+	{
+		<span class="kw">let</span> <span class="ident">chain_info</span> <span class="op">=</span> <span class="ident">chain</span>.<span class="ident">chain_info</span>();
+
+		<span class="kw">let</span> <span class="ident">from_queue</span> <span class="op">=</span> <span class="op">||</span> <span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">pending_hashes</span>(
+			<span class="op">|</span><span class="ident">sender</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">nonce_cache</span>.<span class="ident">get</span>(<span class="ident">sender</span>),
+		);
+
+		<span class="kw">let</span> <span class="ident">from_pending</span> <span class="op">=</span> <span class="op">||</span> {
+			<span class="self">self</span>.<span class="ident">map_existing_pending_block</span>(<span class="op">|</span><span class="ident">sealing</span><span class="op">|</span> {
+				<span class="ident">sealing</span>.<span class="ident">transactions</span>()
+					.<span class="ident">iter</span>()
+					.<span class="ident">map</span>(<span class="op">|</span><span class="ident">signed</span><span class="op">|</span> <span class="ident">signed</span>.<span class="ident">hash</span>())
+					.<span class="ident">collect</span>()
+			}, <span class="ident">chain_info</span>.<span class="ident">best_block_number</span>)
+		};
+
+		<span class="kw">match</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">pending_set</span> {
+			<span class="ident">PendingSet</span>::<span class="ident">AlwaysQueue</span> <span class="op">=&gt;</span> {
+				<span class="ident">from_queue</span>()
+			},
+			<span class="ident">PendingSet</span>::<span class="ident">AlwaysSealing</span> <span class="op">=&gt;</span> {
+				<span class="ident">from_pending</span>().<span class="ident">unwrap_or_default</span>()
+			},
+			<span class="ident">PendingSet</span>::<span class="ident">SealingOrElseQueue</span> <span class="op">=&gt;</span> {
+				<span class="ident">from_pending</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">from_queue</span>)
+			},
+		}
+	}
+
 	<span class="kw">fn</span> <span class="ident">ready_transactions</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">chain</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>, <span class="ident">max_len</span>: <span class="ident">usize</span>, <span class="ident">ordering</span>: <span class="ident">miner</span>::<span class="ident">PendingOrdering</span>)
 		<span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">VerifiedTransaction</span><span class="op">&gt;&gt;</span>
 	<span class="kw">where</span>
@@ -2405,14 +2651,19 @@
 		<span class="comment">// | Make sure to release the locks before calling that method.             |</span>
 		<span class="comment">// --------------------------------------------------------------------------</span>
 		<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;update_sealing: preparing a block&quot;</span>);
-		<span class="kw">let</span> (<span class="ident">block</span>, <span class="ident">original_work_hash</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">prepare_block</span>(<span class="ident">chain</span>);
+		<span class="kw">let</span> (<span class="ident">block</span>, <span class="ident">original_work_hash</span>) <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">prepare_block</span>(<span class="ident">chain</span>) {
+			<span class="prelude-val">Some</span>((<span class="ident">block</span>, <span class="ident">original_work_hash</span>)) <span class="op">=&gt;</span> (<span class="ident">block</span>, <span class="ident">original_work_hash</span>),
+			<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span>,
+		};
 
 		<span class="comment">// refuse to seal the first block of the chain if it contains hard forks</span>
 		<span class="comment">// which should be on by default.</span>
-		<span class="kw">if</span> <span class="ident">block</span>.<span class="ident">block</span>().<span class="ident">header</span>().<span class="ident">number</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">params</span>().<span class="ident">contains_bugfix_hard_fork</span>() {
-			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Your chain specification contains one or more hard forks which are required to be \
-				on by default. Please remove these forks and start your chain again.&quot;</span>);
-			<span class="kw">return</span>;
+		<span class="kw">if</span> <span class="ident">block</span>.<span class="ident">block</span>().<span class="ident">header</span>().<span class="ident">number</span>() <span class="op">==</span> <span class="number">1</span> {
+			<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">params</span>().<span class="ident">nonzero_bugfix_hard_fork</span>() {
+				<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Your chain specification contains one or more hard forks which are required to be \
+					   on by default. Please remove these forks and start your chain again: {}.&quot;</span>, <span class="ident">name</span>);
+				<span class="kw">return</span>;
+			}
 		}
 
 		<span class="kw">match</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">seals_internally</span>() {
@@ -2491,14 +2742,19 @@
 		<span class="comment">// 2. We ignore blocks that are `invalid` because it doesn&#39;t have any meaning in terms of the transactions that</span>
 		<span class="comment">//    are in those blocks</span>
 
-		<span class="comment">// Clear nonce cache</span>
-		<span class="self">self</span>.<span class="ident">nonce_cache</span>.<span class="ident">write</span>().<span class="ident">clear</span>();
+		<span class="kw">let</span> <span class="ident">has_new_best_block</span> <span class="op">=</span> <span class="ident">enacted</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span>;
+
+		<span class="kw">if</span> <span class="ident">has_new_best_block</span> {
+			<span class="comment">// Clear nonce cache</span>
+			<span class="self">self</span>.<span class="ident">nonce_cache</span>.<span class="ident">clear</span>();
+		}
 
 		<span class="comment">// First update gas limit in transaction queue and minimal gas price.</span>
 		<span class="kw">let</span> <span class="ident">gas_limit</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">chain</span>.<span class="ident">best_block_header</span>().<span class="ident">gas_limit</span>();
 		<span class="self">self</span>.<span class="ident">update_transaction_queue_limits</span>(<span class="ident">gas_limit</span>);
 
-		<span class="comment">// Then import all transactions...</span>
+
+		<span class="comment">// Then import all transactions from retracted blocks.</span>
 		<span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pool_client</span>(<span class="ident">chain</span>);
 		{
 			<span class="ident">retracted</span>
@@ -2517,10 +2773,7 @@
 				});
 		}
 
-		<span class="comment">// ...and at the end remove the old ones</span>
-		<span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">cull</span>(<span class="ident">client</span>);
-
-		<span class="kw">if</span> <span class="ident">enacted</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> <span class="op">||</span> (<span class="ident">imported</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">reseal_on_uncle</span>) {
+		<span class="kw">if</span> <span class="ident">has_new_best_block</span> <span class="op">||</span> (<span class="ident">imported</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">reseal_on_uncle</span>) {
 			<span class="comment">// Reset `next_allowed_reseal` in case a block is imported.</span>
 			<span class="comment">// Even if min_period is high, we will always attempt to create</span>
 			<span class="comment">// new pending block.</span>
@@ -2532,6 +2785,40 @@
 				<span class="comment">// | Make sure to release the locks before calling that method.             |</span>
 				<span class="comment">// --------------------------------------------------------------------------</span>
 				<span class="self">self</span>.<span class="ident">update_sealing</span>(<span class="ident">chain</span>);
+			}
+		}
+
+		<span class="kw">if</span> <span class="ident">has_new_best_block</span> {
+			<span class="comment">// Make sure to cull transactions after we update sealing.</span>
+			<span class="comment">// Not culling won&#39;t lead to old transactions being added to the block</span>
+			<span class="comment">// (thanks to Ready), but culling can take significant amount of time,</span>
+			<span class="comment">// so best to leave it after we create some work for miners to prevent increased</span>
+			<span class="comment">// uncle rate.</span>
+			<span class="comment">// If the io_channel is available attempt to offload culling to a separate task</span>
+			<span class="comment">// to avoid blocking chain_new_blocks</span>
+			<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">channel</span>) <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">io_channel</span>.<span class="ident">read</span>() {
+				<span class="kw">let</span> <span class="ident">queue</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">clone</span>();
+				<span class="kw">let</span> <span class="ident">nonce_cache</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nonce_cache</span>.<span class="ident">clone</span>();
+				<span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">clone</span>();
+				<span class="kw">let</span> <span class="ident">accounts</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">accounts</span>.<span class="ident">clone</span>();
+				<span class="kw">let</span> <span class="ident">refuse_service_transactions</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">refuse_service_transactions</span>;
+
+				<span class="kw">let</span> <span class="ident">cull</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">chain</span>: <span class="kw-2">&amp;</span>::<span class="ident">client</span>::<span class="ident">Client</span><span class="op">|</span> {
+					<span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">PoolClient</span>::<span class="ident">new</span>(
+						<span class="ident">chain</span>,
+						<span class="kw-2">&amp;</span><span class="ident">nonce_cache</span>,
+						<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">engine</span>,
+						<span class="ident">accounts</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">x</span>),
+						<span class="ident">refuse_service_transactions</span>,
+					);
+					<span class="ident">queue</span>.<span class="ident">cull</span>(<span class="ident">client</span>);
+				};
+
+				<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">channel</span>.<span class="ident">send</span>(<span class="ident">ClientIoMessage</span>::<span class="ident">execute</span>(<span class="ident">cull</span>)) {
+					<span class="macro">warn</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;miner&quot;</span>, <span class="string">&quot;Error queueing cull: {:?}&quot;</span>, <span class="ident">e</span>);
+				}
+			} <span class="kw">else</span> {
+				<span class="self">self</span>.<span class="ident">transaction_queue</span>.<span class="ident">cull</span>(<span class="ident">client</span>);
 			}
 		}
 	}
@@ -2663,7 +2950,7 @@
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">pending_receipts</span>(<span class="ident">best_block</span>).<span class="ident">unwrap</span>().<span class="ident">len</span>(), <span class="number">1</span>);
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">ready_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="number">10</span>, <span class="ident">PendingOrdering</span>::<span class="ident">Priority</span>).<span class="ident">len</span>(), <span class="number">1</span>);
 		<span class="comment">// This method will let us know if pending block was created (before calling that method)</span>
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>), <span class="ident">BlockPreparationStatus</span>::<span class="ident">NotPrepared</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2701,7 +2988,7 @@
 		<span class="comment">// By default we use PendingSet::AlwaysSealing, so no transactions yet.</span>
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">ready_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="number">10</span>, <span class="ident">PendingOrdering</span>::<span class="ident">Priority</span>).<span class="ident">len</span>(), <span class="number">0</span>);
 		<span class="comment">// This method will let us know if pending block was created (before calling that method)</span>
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>), <span class="ident">BlockPreparationStatus</span>::<span class="ident">Succeeded</span>);
 		<span class="comment">// After pending block is created we should see a transaction.</span>
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">ready_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="number">10</span>, <span class="ident">PendingOrdering</span>::<span class="ident">Priority</span>).<span class="ident">len</span>(), <span class="number">1</span>);
 	}
@@ -2736,7 +3023,7 @@
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">pending_transactions</span>(<span class="ident">best_block</span>), <span class="prelude-val">None</span>);
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">pending_receipts</span>(<span class="ident">best_block</span>), <span class="prelude-val">None</span>);
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">ready_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="number">10</span>, <span class="ident">PendingOrdering</span>::<span class="ident">Priority</span>).<span class="ident">len</span>(), <span class="number">0</span>);
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>), <span class="ident">BlockPreparationStatus</span>::<span class="ident">Succeeded</span>);
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">ready_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="number">10</span>, <span class="ident">PendingOrdering</span>::<span class="ident">Priority</span>).<span class="ident">len</span>(), <span class="number">1</span>);
 
 		<span class="comment">// when - 2nd part: create a local transaction from account_provider.</span>
@@ -2750,7 +3037,7 @@
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">pending_transactions</span>(<span class="ident">best_block</span>).<span class="ident">unwrap</span>().<span class="ident">len</span>(), <span class="number">2</span>);
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">pending_receipts</span>(<span class="ident">best_block</span>).<span class="ident">unwrap</span>().<span class="ident">len</span>(), <span class="number">2</span>);
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">ready_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="number">10</span>, <span class="ident">PendingOrdering</span>::<span class="ident">Priority</span>).<span class="ident">len</span>(), <span class="number">2</span>);
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>), <span class="ident">BlockPreparationStatus</span>::<span class="ident">NotPrepared</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2761,7 +3048,7 @@
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">miner</span>.<span class="ident">requires_reseal</span>(<span class="number">1u8</span>.<span class="ident">into</span>()));
 
 		<span class="ident">miner</span>.<span class="ident">import_external_transactions</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">transaction</span>().<span class="ident">into</span>()]).<span class="ident">pop</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">prepare_pending_block</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>), <span class="ident">BlockPreparationStatus</span>::<span class="ident">Succeeded</span>);
 		<span class="comment">// Unless asked to prepare work.</span>
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">miner</span>.<span class="ident">requires_reseal</span>(<span class="number">1u8</span>.<span class="ident">into</span>()));
 	}
@@ -2831,6 +3118,7 @@
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">miner</span>.<span class="ident">is_currently_sealing</span>());
 	}
 
+	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;work-notify&quot;</span>)]</span>
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">should_mine_if_fetch_work_request</span>() {
 		<span class="kw">struct</span> <span class="ident">DummyNotifyWork</span>;

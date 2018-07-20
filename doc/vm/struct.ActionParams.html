@@ -7,8 +7,8 @@
     pub gas: <a class="struct" href="../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>,
     pub gas_price: <a class="struct" href="../ethereum_types/uint/struct.U256.html" title="struct ethereum_types::uint::U256">U256</a>,
     pub value: <a class="enum" href="../vm/enum.ActionValue.html" title="enum vm::ActionValue">ActionValue</a>,
-    pub code: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;&gt;,
-    pub data: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;,
+    pub code: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../parity_bytes/type.Bytes.html" title="type parity_bytes::Bytes">Bytes</a>&gt;&gt;,
+    pub data: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../parity_bytes/type.Bytes.html" title="type parity_bytes::Bytes">Bytes</a>&gt;,
     pub call_type: <a class="enum" href="../vm/enum.CallType.html" title="enum vm::CallType">CallType</a>,
     pub params_type: <a class="enum" href="../vm/enum.ParamsType.html" title="enum vm::ParamsType">ParamsType</a>,
 }</pre></div><div class='docblock'><p>Action (call/create) input params. Everything else should be specified in Externalities.</p>
@@ -57,12 +57,12 @@ except when called using CALLCODE.</p>
 </div><span id="structfield.code" class="structfield small-section-header">
                            <a href="#structfield.code" class="anchor field"></a>
                            <span id="code.v" class='invisible'>
-                           <code>code: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;&gt;</code>
+                           <code>code: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html" title="struct alloc::arc::Arc">Arc</a>&lt;<a class="type" href="../parity_bytes/type.Bytes.html" title="type parity_bytes::Bytes">Bytes</a>&gt;&gt;</code>
                            </span></span><div class='docblock'><p>Code being executed.</p>
 </div><span id="structfield.data" class="structfield small-section-header">
                            <a href="#structfield.data" class="anchor field"></a>
                            <span id="data.v" class='invisible'>
-                           <code>data: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../ethcore_bytes/type.Bytes.html" title="type ethcore_bytes::Bytes">Bytes</a>&gt;</code>
+                           <code>data: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="../parity_bytes/type.Bytes.html" title="type parity_bytes::Bytes">Bytes</a>&gt;</code>
                            </span></span><div class='docblock'><p>Input data.</p>
 </div><span id="structfield.call_type" class="structfield small-section-header">
                            <a href="#structfield.call_type" class="anchor field"></a>

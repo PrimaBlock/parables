@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/wasmi-0.2.0/src/value.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>value.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/wasmi-0.3.0/src/value.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>value.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -760,10 +760,97 @@
 <span id="760">760</span>
 <span id="761">761</span>
 <span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ReadBytesExt</span>, <span class="ident">WriteBytesExt</span>};
 <span class="kw">use</span> <span class="ident">nan_preserving_float</span>::{<span class="ident">F32</span>, <span class="ident">F64</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">f32</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">u32</span>, <span class="ident">u64</span>};
 <span class="kw">use</span> <span class="ident">TrapKind</span>;
 
@@ -937,6 +1024,18 @@
 	}
 }
 
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
+	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">i8</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i32</span>)
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
+	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">i16</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i32</span>)
+	}
+}
+
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
 	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">i32</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>)
@@ -949,15 +1048,27 @@
 	}
 }
 
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
+	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i32</span>)
+	}
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
+	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i32</span>)
+	}
+}
+
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
 	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i32</span>)
+		<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>.<span class="ident">transmute_into</span>())
 	}
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">RuntimeValue</span> {
 	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-		<span class="ident">RuntimeValue</span>::<span class="ident">I64</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i64</span>)
+		<span class="ident">RuntimeValue</span>::<span class="ident">I64</span>(<span class="ident">val</span>.<span class="ident">transmute_into</span>())
 	}
 }
 
@@ -994,6 +1105,62 @@
 	<span class="kw">fn</span> <span class="ident">from_runtime_value</span>(<span class="ident">val</span>: <span class="ident">RuntimeValue</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="ident">val</span> {
 			<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span> <span class="op">!=</span> <span class="number">0</span>),
+			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+		}
+	}
+}
+
+<span class="doccomment">///  This conversion assumes that `i8` is represented as an [`I32`].</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// [`I32`]: enum.RuntimeValue.html#variant.I32</span>
+<span class="kw">impl</span> <span class="ident">FromRuntimeValue</span> <span class="kw">for</span> <span class="ident">i8</span> {
+	<span class="kw">fn</span> <span class="ident">from_runtime_value</span>(<span class="ident">val</span>: <span class="ident">RuntimeValue</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+		<span class="kw">let</span> <span class="ident">min</span> <span class="op">=</span> <span class="ident">i8</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">i8</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">match</span> <span class="ident">val</span> {
+			<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>) <span class="kw">if</span> <span class="ident">min</span> <span class="op">&lt;=</span> <span class="ident">val</span> <span class="op">&amp;&amp;</span> <span class="ident">val</span> <span class="op">&lt;=</span> <span class="ident">max</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i8</span>),
+			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+		}
+	}
+}
+
+<span class="doccomment">///  This conversion assumes that `i16` is represented as an [`I32`].</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// [`I32`]: enum.RuntimeValue.html#variant.I32</span>
+<span class="kw">impl</span> <span class="ident">FromRuntimeValue</span> <span class="kw">for</span> <span class="ident">i16</span> {
+	<span class="kw">fn</span> <span class="ident">from_runtime_value</span>(<span class="ident">val</span>: <span class="ident">RuntimeValue</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+		<span class="kw">let</span> <span class="ident">min</span> <span class="op">=</span> <span class="ident">i16</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">i16</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">match</span> <span class="ident">val</span> {
+			<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>) <span class="kw">if</span> <span class="ident">min</span> <span class="op">&lt;=</span> <span class="ident">val</span> <span class="op">&amp;&amp;</span> <span class="ident">val</span> <span class="op">&lt;=</span> <span class="ident">max</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">i16</span>),
+			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+		}
+	}
+}
+
+<span class="doccomment">///  This conversion assumes that `u8` is represented as an [`I32`].</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// [`I32`]: enum.RuntimeValue.html#variant.I32</span>
+<span class="kw">impl</span> <span class="ident">FromRuntimeValue</span> <span class="kw">for</span> <span class="ident">u8</span> {
+	<span class="kw">fn</span> <span class="ident">from_runtime_value</span>(<span class="ident">val</span>: <span class="ident">RuntimeValue</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+		<span class="kw">let</span> <span class="ident">min</span> <span class="op">=</span> <span class="ident">u8</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">u8</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">match</span> <span class="ident">val</span> {
+			<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>) <span class="kw">if</span> <span class="ident">min</span> <span class="op">&lt;=</span> <span class="ident">val</span> <span class="op">&amp;&amp;</span> <span class="ident">val</span> <span class="op">&lt;=</span> <span class="ident">max</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">u8</span>),
+			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+		}
+	}
+}
+
+<span class="doccomment">///  This conversion assumes that `u16` is represented as an [`I32`].</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// [`I32`]: enum.RuntimeValue.html#variant.I32</span>
+<span class="kw">impl</span> <span class="ident">FromRuntimeValue</span> <span class="kw">for</span> <span class="ident">u16</span> {
+	<span class="kw">fn</span> <span class="ident">from_runtime_value</span>(<span class="ident">val</span>: <span class="ident">RuntimeValue</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+		<span class="kw">let</span> <span class="ident">min</span> <span class="op">=</span> <span class="ident">u16</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="ident">u16</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+		<span class="kw">match</span> <span class="ident">val</span> {
+			<span class="ident">RuntimeValue</span>::<span class="ident">I32</span>(<span class="ident">val</span>) <span class="kw">if</span> <span class="ident">min</span> <span class="op">&lt;=</span> <span class="ident">val</span> <span class="op">&amp;&amp;</span> <span class="ident">val</span> <span class="op">&lt;=</span> <span class="ident">max</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">val</span> <span class="kw">as</span> <span class="ident">u16</span>),
 			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
 		}
 	}
@@ -1166,11 +1333,8 @@
 }
 
 <span class="macro">impl_transmute_into_as</span><span class="macro">!</span>(<span class="ident">i8</span>, <span class="ident">u8</span>);
-<span class="macro">impl_transmute_into_as</span><span class="macro">!</span>(<span class="ident">u8</span>, <span class="ident">i8</span>);
 <span class="macro">impl_transmute_into_as</span><span class="macro">!</span>(<span class="ident">i32</span>, <span class="ident">u32</span>);
-<span class="macro">impl_transmute_into_as</span><span class="macro">!</span>(<span class="ident">u32</span>, <span class="ident">i32</span>);
 <span class="macro">impl_transmute_into_as</span><span class="macro">!</span>(<span class="ident">i64</span>, <span class="ident">u64</span>);
-<span class="macro">impl_transmute_into_as</span><span class="macro">!</span>(<span class="ident">u64</span>, <span class="ident">i64</span>);
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_transmute_into_npf</span> {
 	(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">npf</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">float</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">signed</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unsigned</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
@@ -1229,6 +1393,14 @@
 
 <span class="kw">impl</span> <span class="ident">TransmuteInto</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i64</span> {
 	<span class="kw">fn</span> <span class="ident">transmute_into</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> { <span class="ident">f64</span>::<span class="ident">from_bits</span>(<span class="self">self</span> <span class="kw">as</span> <span class="ident">u64</span>) }
+}
+
+<span class="kw">impl</span> <span class="ident">TransmuteInto</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u32</span> {
+	<span class="kw">fn</span> <span class="ident">transmute_into</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">i32</span> { <span class="kw">unsafe</span> { <span class="ident">transmute</span>(<span class="self">self</span>) } }
+}
+
+<span class="kw">impl</span> <span class="ident">TransmuteInto</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u64</span> {
+	<span class="kw">fn</span> <span class="ident">transmute_into</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">i64</span> { <span class="kw">unsafe</span> { <span class="ident">transmute</span>(<span class="self">self</span>) } }
 }
 
 <span class="kw">impl</span> <span class="ident">LittleEndianConvert</span> <span class="kw">for</span> <span class="ident">i8</span> {

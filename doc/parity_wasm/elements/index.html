@@ -1,5 +1,13 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `elements` mod in crate `parity_wasm`."><meta name="keywords" content="rust, rustlang, rust-lang, elements"><title>parity_wasm::elements - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module elements</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../index.html'>parity_wasm</a></p><script>window.sidebarCurrent = {name: 'elements', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>parity_wasm</a>::<wbr><a class="mod" href=''>elements</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/parity_wasm/elements/mod.rs.html#1-269' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Elements of the WebAssembly binary format.</p>
-</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `elements` mod in crate `parity_wasm`."><meta name="keywords" content="rust, rustlang, rust-lang, elements"><title>parity_wasm::elements - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Module elements</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../index.html'>parity_wasm</a></p><script>window.sidebarCurrent = {name: 'elements', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>parity_wasm</a>::<wbr><a class="mod" href=''>elements</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/parity_wasm/elements/mod.rs.html#1-277' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Elements of the WebAssembly binary format.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="opcodes/index.html"
+                                  title='mod parity_wasm::elements::opcodes'>opcodes</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.CodeSection.html"
@@ -191,6 +199,14 @@ relative dense maps with occasional &quot;holes&quot;, and stored as an array.</
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Instructions.html"
+                                  title='struct parity_wasm::elements::Instructions'>Instructions</a></td>
+                           <td class='docblock-short'>
+                                <p>List of instructions (usually inside a block section).</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="struct" href="struct.Local.html"
                                   title='struct parity_wasm::elements::Local'>Local</a></td>
                            <td class='docblock-short'>
@@ -235,14 +251,6 @@ relative dense maps with occasional &quot;holes&quot;, and stored as an array.</
                                   title='struct parity_wasm::elements::ModuleNameSection'>ModuleNameSection</a></td>
                            <td class='docblock-short'>
                                 <p>The name of this module.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="struct" href="struct.Opcodes.html"
-                                  title='struct parity_wasm::elements::Opcodes'>Opcodes</a></td>
-                           <td class='docblock-short'>
-                                <p>Collection of opcodes (usually inside a block section).</p>
 
                            </td>
                        </tr>
@@ -411,6 +419,14 @@ represented by at most 9 bytes that may contain padding 0x80 bytes.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Instruction.html"
+                                  title='enum parity_wasm::elements::Instruction'>Instruction</a></td>
+                           <td class='docblock-short'>
+                                <p>Instruction</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="enum" href="enum.Internal.html"
                                   title='enum parity_wasm::elements::Internal'>Internal</a></td>
                            <td class='docblock-short'>
@@ -423,14 +439,6 @@ represented by at most 9 bytes that may contain padding 0x80 bytes.</p>
                                   title='enum parity_wasm::elements::NameSection'>NameSection</a></td>
                            <td class='docblock-short'>
                                 <p>Debug name information.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="enum" href="enum.Opcode.html"
-                                  title='enum parity_wasm::elements::Opcode'>Opcode</a></td>
-                           <td class='docblock-short'>
-                                <p>Opcode</p>
 
                            </td>
                        </tr>
@@ -505,7 +513,7 @@ represented by at most 9 bytes that may contain padding 0x80 bytes.</p>
                            <td><a class="fn" href="fn.deserialize_file.html"
                                   title='fn parity_wasm::elements::deserialize_file'>deserialize_file</a></td>
                            <td class='docblock-short'>
-                                <p>Deserialize module from file.</p>
+                                <p>Deserialize module from the file.</p>
 
                            </td>
                        </tr>

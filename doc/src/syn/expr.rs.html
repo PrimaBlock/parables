@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.2/src/expr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>expr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.4/src/expr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>expr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -3581,6 +3581,13 @@
 <span id="3581">3581</span>
 <span id="3582">3582</span>
 <span id="3583">3583</span>
+<span id="3584">3584</span>
+<span id="3585">3585</span>
+<span id="3586">3586</span>
+<span id="3587">3587</span>
+<span id="3588">3588</span>
+<span id="3589">3589</span>
+<span id="3590">3590</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -3947,7 +3954,7 @@
         <span class="doccomment">/// field (`obj.0`).</span>
         <span class="doccomment">///</span>
         <span class="doccomment">/// *This type is available if Syn is built with the `&quot;full&quot;` feature.*</span>
-        <span class="kw">pub</span> <span class="ident">Field</span>(<span class="ident">ExprField</span> #<span class="ident">full</span> {
+        <span class="kw">pub</span> <span class="ident">Field</span>(<span class="ident">ExprField</span> {
             <span class="kw">pub</span> <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>,
             <span class="kw">pub</span> <span class="ident">base</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>,
             <span class="kw">pub</span> <span class="ident">dot_token</span>: <span class="macro">Token</span><span class="macro">!</span>[.],
@@ -5096,6 +5103,16 @@
                 }.<span class="ident">into</span>();
             })
             <span class="op">|</span>
+            <span class="macro">tap</span><span class="macro">!</span>(<span class="ident">field</span>: <span class="ident">and_field</span> <span class="op">=&gt;</span> {
+                <span class="kw">let</span> (<span class="ident">token</span>, <span class="ident">member</span>) <span class="op">=</span> <span class="ident">field</span>;
+                <span class="ident">e</span> <span class="op">=</span> <span class="ident">ExprField</span> {
+                    <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                    <span class="ident">base</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">e</span>),
+                    <span class="ident">dot_token</span>: <span class="ident">token</span>,
+                    <span class="ident">member</span>: <span class="ident">member</span>,
+                }.<span class="ident">into</span>();
+            })
+            <span class="op">|</span>
             <span class="macro">tap</span><span class="macro">!</span>(<span class="ident">i</span>: <span class="ident">and_index</span> <span class="op">=&gt;</span> {
                 <span class="ident">e</span> <span class="op">=</span> <span class="ident">ExprIndex</span> {
                     <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
@@ -5883,7 +5900,6 @@
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">and_field</span> <span class="op">-&gt;</span> (<span class="macro">Token</span><span class="macro">!</span>[.], <span class="ident">Member</span>), <span class="macro">tuple</span><span class="macro">!</span>(<span class="macro">punct</span><span class="macro">!</span>(.), <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Member</span>)));
 
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">and_index</span> <span class="op">-&gt;</span> (<span class="ident">token</span>::<span class="ident">Bracket</span>, <span class="ident">Expr</span>), <span class="macro">brackets</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>)));
@@ -6191,7 +6207,6 @@
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">Member</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">alt</span><span class="macro">!</span>(
             <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Ident</span>) <span class="op">=&gt;</span> { <span class="ident">Member</span>::<span class="ident">Named</span> }
@@ -6204,7 +6219,6 @@
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">Index</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
             <span class="ident">lit</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">LitInt</span>) <span class="op">&gt;&gt;</span>
@@ -6755,9 +6769,9 @@
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprField</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
             <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
             <span class="self">self</span>.<span class="ident">base</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">dot_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);

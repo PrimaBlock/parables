@@ -141,6 +141,7 @@
 <span id="141">141</span>
 <span id="142">142</span>
 <span id="143">143</span>
+<span id="144">144</span>
 </pre><pre class="rust ">
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">parables_testing</span>;
@@ -182,30 +183,32 @@
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">runner</span> <span class="op">=</span> <span class="ident">TestRunner</span>::<span class="ident">new</span>();
 
-    <span class="ident">runner</span>.<span class="ident">test</span>(<span class="string">&quot;any set value&quot;</span>, <span class="macro">pt</span><span class="macro">!</span>{
-        <span class="op">|</span>(<span class="ident">x</span> <span class="kw">in</span> <span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>())<span class="op">|</span> {
-            <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">events</span> <span class="kw">as</span> <span class="ident">ev</span>;
-            <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">functions</span> <span class="kw">as</span> <span class="ident">f</span>;
+    <span class="ident">runner</span>.<span class="ident">test</span>(
+        <span class="string">&quot;any set value&quot;</span>,
+        <span class="macro">pt</span><span class="macro">!</span>{
+            <span class="op">|</span>(<span class="ident">x</span> <span class="kw">in</span> <span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>())<span class="op">|</span> {
+                <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">events</span> <span class="kw">as</span> <span class="ident">ev</span>;
+                <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">functions</span> <span class="kw">as</span> <span class="ident">f</span>;
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">evm</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">get</span>()<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">evm</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">get</span>()<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">get_value</span>(), <span class="ident">call</span>)<span class="question-mark">?</span>.<span class="ident">output</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">out</span>, <span class="number">42</span>.<span class="ident">into</span>());
+                <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">get_value</span>(), <span class="ident">call</span>)<span class="question-mark">?</span>.<span class="ident">output</span>;
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">out</span>, <span class="number">42</span>.<span class="ident">into</span>());
 
-            <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">set_value</span>(<span class="ident">x</span>), <span class="ident">call</span>)<span class="question-mark">?</span>;
+                <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">set_value</span>(<span class="ident">x</span>), <span class="ident">call</span>)<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">get_value</span>(), <span class="ident">call</span>)<span class="question-mark">?</span>.<span class="ident">output</span>;
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">out</span>, <span class="ident">x</span>.<span class="ident">into</span>());
+                <span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">get_value</span>(), <span class="ident">call</span>)<span class="question-mark">?</span>.<span class="ident">output</span>;
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">out</span>, <span class="ident">x</span>.<span class="ident">into</span>());
 
-            <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">Filter</span>::<span class="ident">new</span>(<span class="ident">ev</span>::<span class="ident">value_updated</span>())<span class="question-mark">?</span>
-                .<span class="ident">with_filter</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">create_filter</span>(<span class="prelude-val">Some</span>(<span class="number">100</span>.<span class="ident">into</span>())));
+                <span class="kw">for</span> <span class="ident">e</span> <span class="kw">in</span> <span class="ident">evm</span>.<span class="ident">logs</span>(<span class="ident">ev</span>::<span class="ident">value_updated</span>()).<span class="ident">filter</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">filter</span>(<span class="prelude-val">Some</span>(<span class="number">100</span>.<span class="ident">into</span>()))).<span class="ident">iter</span>()<span class="question-mark">?</span> {
+                    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">e</span>.<span class="ident">value</span>);
+                }
 
-            <span class="comment">// check logs.</span>
-            <span class="kw">for</span> <span class="ident">_log</span> <span class="kw">in</span> <span class="ident">evm</span>.<span class="ident">drain_logs</span>(<span class="ident">filter</span>) {
-                <span class="comment">// println!(&quot;log: {:?}&quot;, log);</span>
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">1</span>, <span class="ident">evm</span>.<span class="ident">logs</span>(<span class="ident">ev</span>::<span class="ident">value_updated</span>()).<span class="ident">iter</span>()<span class="question-mark">?</span>.<span class="ident">count</span>());
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">evm</span>.<span class="ident">has_logs</span>(), <span class="string">&quot;there were unprocessed logs&quot;</span>);
             }
-        }
-    });
+        },
+    );
 
     <span class="ident">runner</span>.<span class="ident">test</span>(<span class="string">&quot;decrement step by step&quot;</span>, <span class="op">||</span> {
         <span class="kw">use</span> <span class="ident">simple_contract</span>::<span class="ident">events</span> <span class="kw">as</span> <span class="ident">ev</span>;
@@ -237,20 +240,19 @@
         <span class="kw">let</span> <span class="ident">non_owned_res</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">call</span>(<span class="ident">simple</span>, <span class="ident">f</span>::<span class="ident">set_value</span>(<span class="number">0</span>), <span class="ident">call</span>.<span class="ident">sender</span>(<span class="ident">not_owner</span>));
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">non_owned_res</span>.<span class="ident">is_reverted</span>());
 
-        <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span>
-            <span class="ident">Filter</span>::<span class="ident">new</span>(<span class="ident">ev</span>::<span class="ident">value_updated</span>())<span class="question-mark">?</span>.<span class="ident">with_filter</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">create_filter</span>(<span class="prelude-val">Some</span>(<span class="number">100</span>.<span class="ident">into</span>())));
-
-        <span class="comment">// check logs.</span>
-        <span class="kw">for</span> <span class="ident">_log</span> <span class="kw">in</span> <span class="ident">evm</span>.<span class="ident">drain_logs</span>(<span class="ident">filter</span>) {
-            <span class="comment">// println!(&quot;log: {:?}&quot;, log);</span>
-        }
-
         <span class="kw">let</span> <span class="ident">balance</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">balance</span>(<span class="ident">owner</span>)<span class="question-mark">?</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">0</span>), <span class="ident">balance</span>);
 
         <span class="comment">// all money should have flowed into the simple contract.</span>
         <span class="kw">let</span> <span class="ident">contract_balance</span> <span class="op">=</span> <span class="ident">evm</span>.<span class="ident">balance</span>(<span class="ident">simple</span>)<span class="question-mark">?</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wei</span>::<span class="ident">from_ether</span>(<span class="number">1000</span>), <span class="ident">contract_balance</span>);
+
+        <span class="ident">evm</span>.<span class="ident">logs</span>(<span class="ident">ev</span>::<span class="ident">value_updated</span>())
+            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">filter</span>(<span class="prelude-val">Some</span>(<span class="number">100</span>.<span class="ident">into</span>())))
+            .<span class="ident">drop</span>()<span class="question-mark">?</span>;
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">999</span>, <span class="ident">evm</span>.<span class="ident">logs</span>(<span class="ident">ev</span>::<span class="ident">value_updated</span>()).<span class="ident">iter</span>()<span class="question-mark">?</span>.<span class="ident">count</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">evm</span>.<span class="ident">has_logs</span>(), <span class="string">&quot;there were unprocessed logs&quot;</span>);
 
         <span class="prelude-val">Ok</span>(())
     });

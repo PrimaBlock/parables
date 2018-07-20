@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/ethereum/ethash.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ethash.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/ethereum/ethash.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ethash.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -924,6 +924,13 @@
 <span id="924">924</span>
 <span id="925">925</span>
 <span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
+<span id="932">932</span>
+<span id="933">933</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -1207,9 +1214,16 @@
 		<span class="ident">block_reward</span>::<span class="ident">apply_block_rewards</span>(<span class="kw-2">&amp;</span><span class="ident">rewards</span>, <span class="ident">block</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">machine</span>)
 	}
 
+	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;miner-debug&quot;</span>))]</span>
 	<span class="kw">fn</span> <span class="ident">verify_local_seal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">Header</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">verify_block_basic</span>(<span class="ident">header</span>)
 			.<span class="ident">and_then</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">verify_block_unordered</span>(<span class="ident">header</span>))
+	}
+
+	<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;miner-debug&quot;</span>)]</span>
+	<span class="kw">fn</span> <span class="ident">verify_local_seal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_header</span>: <span class="kw-2">&amp;</span><span class="ident">Header</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+		<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Skipping seal verification, running in miner testing mode.&quot;</span>);
+		<span class="prelude-val">Ok</span>(())
 	}
 
 	<span class="kw">fn</span> <span class="ident">verify_block_basic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">Header</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -1462,7 +1476,7 @@
 		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">ensure_db_good</span>(<span class="ident">get_temp_state_db</span>(), <span class="kw-2">&amp;</span><span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">last_hashes</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">genesis_header</span>.<span class="ident">hash</span>()]);
 		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">OpenBlock</span>::<span class="ident">new</span>(<span class="ident">engine</span>, <span class="ident">Default</span>::<span class="ident">default</span>(), <span class="bool-val">false</span>, <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">genesis_header</span>, <span class="ident">last_hashes</span>, <span class="ident">Address</span>::<span class="ident">zero</span>(), (<span class="number">3141562</span>.<span class="ident">into</span>(), <span class="number">31415620</span>.<span class="ident">into</span>()), <span class="macro">vec</span><span class="macro">!</span>[], <span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span>::<span class="ident">new</span>().<span class="ident">into_iter</span>()).<span class="ident">unwrap</span>();
-		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close</span>();
+		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close</span>().<span class="ident">unwrap</span>();
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">b</span>.<span class="ident">state</span>().<span class="ident">balance</span>(<span class="kw-2">&amp;</span><span class="ident">Address</span>::<span class="ident">zero</span>()).<span class="ident">unwrap</span>(), <span class="ident">U256</span>::<span class="ident">from_str</span>(<span class="string">&quot;4563918244f40000&quot;</span>).<span class="ident">unwrap</span>());
 	}
 
@@ -1516,7 +1530,7 @@
 		<span class="ident">uncle</span>.<span class="ident">set_author</span>(<span class="ident">uncle_author</span>);
 		<span class="ident">b</span>.<span class="ident">push_uncle</span>(<span class="ident">uncle</span>).<span class="ident">unwrap</span>();
 
-		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close</span>();
+		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close</span>().<span class="ident">unwrap</span>();
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">b</span>.<span class="ident">state</span>().<span class="ident">balance</span>(<span class="kw-2">&amp;</span><span class="ident">Address</span>::<span class="ident">zero</span>()).<span class="ident">unwrap</span>(), <span class="string">&quot;478eae0e571ba000&quot;</span>.<span class="ident">into</span>());
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">b</span>.<span class="ident">state</span>().<span class="ident">balance</span>(<span class="kw-2">&amp;</span><span class="ident">uncle_author</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;3cb71f51fc558000&quot;</span>.<span class="ident">into</span>());
 	}
@@ -1529,7 +1543,7 @@
 		<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">ensure_db_good</span>(<span class="ident">get_temp_state_db</span>(), <span class="kw-2">&amp;</span><span class="ident">Default</span>::<span class="ident">default</span>()).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">last_hashes</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">genesis_header</span>.<span class="ident">hash</span>()]);
 		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">OpenBlock</span>::<span class="ident">new</span>(<span class="ident">engine</span>, <span class="ident">Default</span>::<span class="ident">default</span>(), <span class="bool-val">false</span>, <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">genesis_header</span>, <span class="ident">last_hashes</span>, <span class="ident">Address</span>::<span class="ident">zero</span>(), (<span class="number">3141562</span>.<span class="ident">into</span>(), <span class="number">31415620</span>.<span class="ident">into</span>()), <span class="macro">vec</span><span class="macro">!</span>[], <span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span>::<span class="ident">new</span>().<span class="ident">into_iter</span>()).<span class="ident">unwrap</span>();
-		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close</span>();
+		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close</span>().<span class="ident">unwrap</span>();
 
 		<span class="kw">let</span> <span class="ident">ubi_contract</span>: <span class="ident">Address</span> <span class="op">=</span> <span class="string">&quot;00efdd5883ec628983e9063c7d969fe268bbf310&quot;</span>.<span class="ident">into</span>();
 		<span class="kw">let</span> <span class="ident">dev_contract</span>: <span class="ident">Address</span> <span class="op">=</span> <span class="string">&quot;00756cf8159095948496617f5fb17ed95059f536&quot;</span>.<span class="ident">into</span>();

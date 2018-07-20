@@ -15,12 +15,18 @@
 <span id="15">15</span>
 <span id="16">16</span>
 <span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
 </pre><pre class="rust ">
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;account&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">account</span>::{<span class="ident">Account</span>, <span class="ident">Crypto</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">call</span>::<span class="ident">Call</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">CallError</span>, <span class="ident">Error</span>, <span class="ident">ResultCallErrorExt</span>, <span class="ident">ResultExt</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ethabi</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ethcore</span>::<span class="ident">spec</span>::<span class="ident">Spec</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="kw-2">*</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">evm</span>::{<span class="ident">Call</span>, <span class="ident">Evm</span>, <span class="ident">Filter</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">evm</span>::<span class="ident">Evm</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">linker</span>::<span class="ident">Linker</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-runner&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">reporter</span>::{<span class="ident">Reporter</span>, <span class="ident">StdoutReporter</span>};

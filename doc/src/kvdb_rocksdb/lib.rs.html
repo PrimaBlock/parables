@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/util/kvdb-rocksdb/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-common-b7e6dd3e48c6ce77/4481687/kvdb-rocksdb/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -853,6 +853,9 @@
 <span id="853">853</span>
 <span id="854">854</span>
 <span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -884,11 +887,10 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethereum_types</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">kvdb</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cmp</span>, <span class="ident">fs</span>, <span class="ident">io</span>, <span class="ident">mem</span>, <span class="ident">result</span>, <span class="ident">error</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fs</span>, <span class="ident">mem</span>, <span class="ident">result</span>};
 
 <span class="kw">use</span> <span class="ident">parking_lot</span>::{<span class="ident">Mutex</span>, <span class="ident">MutexGuard</span>, <span class="ident">RwLock</span>};
 <span class="kw">use</span> <span class="ident">rocksdb</span>::{
@@ -899,7 +901,7 @@
 
 <span class="kw">use</span> <span class="ident">elastic_array</span>::<span class="ident">ElasticArray32</span>;
 <span class="kw">use</span> <span class="ident">fs_swap</span>::{<span class="ident">swap</span>, <span class="ident">swap_nonatomic</span>};
-<span class="kw">use</span> <span class="ident">kvdb</span>::{<span class="ident">KeyValueDB</span>, <span class="ident">DBTransaction</span>, <span class="ident">DBValue</span>, <span class="ident">DBOp</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">kvdb</span>::{<span class="ident">KeyValueDB</span>, <span class="ident">DBTransaction</span>, <span class="ident">DBValue</span>, <span class="ident">DBOp</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">regex</span>::<span class="ident">Regex</span>;
@@ -909,6 +911,10 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
+
+<span class="kw">fn</span> <span class="ident">other_io_err</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="ident">Error</span> <span class="kw">where</span> <span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">error</span>::<span class="ident">Error</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;&gt;</span> {
+	<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Other</span>, <span class="ident">e</span>)
+}
 
 <span class="kw">const</span> <span class="ident">DB_DEFAULT_MEMORY_BUDGET_MB</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">128</span>;
 
@@ -1020,8 +1026,6 @@
 	<span class="kw">pub</span> <span class="ident">compaction</span>: <span class="ident">CompactionProfile</span>,
 	<span class="doccomment">/// Set number of columns</span>
 	<span class="kw">pub</span> <span class="ident">columns</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-	<span class="doccomment">/// Should we keep WAL enabled?</span>
-	<span class="kw">pub</span> <span class="ident">wal</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">DatabaseConfig</span> {
@@ -1049,7 +1053,6 @@
 			<span class="ident">memory_budget</span>: <span class="prelude-val">None</span>,
 			<span class="ident">compaction</span>: <span class="ident">CompactionProfile</span>::<span class="ident">default</span>(),
 			<span class="ident">columns</span>: <span class="prelude-val">None</span>,
-			<span class="ident">wal</span>: <span class="bool-val">true</span>,
 		}
 	}
 }
@@ -1077,22 +1080,22 @@
 }
 
 <span class="comment">// get column family configuration from database config.</span>
-<span class="kw">fn</span> <span class="ident">col_config</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseConfig</span>, <span class="ident">block_opts</span>: <span class="kw-2">&amp;</span><span class="ident">BlockBasedOptions</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Options</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">col_config</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseConfig</span>, <span class="ident">block_opts</span>: <span class="kw-2">&amp;</span><span class="ident">BlockBasedOptions</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Options</span><span class="op">&gt;</span> {
 	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Options</span>::<span class="ident">new</span>();
 
-	<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;level_compaction_dynamic_level_bytes=true&quot;</span>)<span class="question-mark">?</span>;
+	<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;level_compaction_dynamic_level_bytes=true&quot;</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 
 	<span class="ident">opts</span>.<span class="ident">set_block_based_table_factory</span>(<span class="ident">block_opts</span>);
 
 	<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(
 		<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;block_based_table_factory={{{};{}}}&quot;</span>,
 				 <span class="string">&quot;cache_index_and_filter_blocks=true&quot;</span>,
-				 <span class="string">&quot;pin_l0_filter_and_index_blocks_in_cache=true&quot;</span>))<span class="question-mark">?</span>;
+				 <span class="string">&quot;pin_l0_filter_and_index_blocks_in_cache=true&quot;</span>)).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 
 	<span class="ident">opts</span>.<span class="ident">optimize_level_style_compaction</span>(<span class="ident">config</span>.<span class="ident">memory_budget_per_col</span>() <span class="kw">as</span> <span class="ident">i32</span>);
 	<span class="ident">opts</span>.<span class="ident">set_target_file_size_base</span>(<span class="ident">config</span>.<span class="ident">compaction</span>.<span class="ident">initial_file_size</span>);
 
-	<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;compression_per_level=&quot;</span>)<span class="question-mark">?</span>;
+	<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;compression_per_level=&quot;</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 
 	<span class="prelude-val">Ok</span>(<span class="ident">opts</span>)
 }
@@ -1115,7 +1118,7 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">check_for_corruption</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>, <span class="ident">res</span>: <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">check_for_corruption</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>, <span class="ident">res</span>: <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
 	<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span> <span class="ident">res</span> {
 		<span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&quot;Corruption:&quot;</span>) {
 			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;DB corrupted: {}. Repair will be triggered on next restart&quot;</span>, <span class="ident">s</span>);
@@ -1123,7 +1126,7 @@
 		}
 	}
 
-	<span class="ident">res</span>
+	<span class="ident">res</span>.<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">is_corrupted</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
@@ -1134,22 +1137,22 @@
 	<span class="kw">const</span> <span class="ident">CORRUPTION_FILE_NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;CORRUPTED&quot;</span>;
 
 	<span class="doccomment">/// Open database with default settings.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_default</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Database</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_default</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Database</span><span class="op">&gt;</span> {
 		<span class="ident">Database</span>::<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">DatabaseConfig</span>::<span class="ident">default</span>(), <span class="ident">path</span>)
 	}
 
 	<span class="doccomment">/// Open database file. Creates if it does not exist.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseConfig</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Database</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">DatabaseConfig</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Database</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Options</span>::<span class="ident">new</span>();
 
 		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">rate_limit</span>) <span class="op">=</span> <span class="ident">config</span>.<span class="ident">compaction</span>.<span class="ident">write_rate_limit</span> {
-			<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;rate_limiter_bytes_per_sec={}&quot;</span>, <span class="ident">rate_limit</span>))<span class="question-mark">?</span>;
+			<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;rate_limiter_bytes_per_sec={}&quot;</span>, <span class="ident">rate_limit</span>)).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 		}
 		<span class="ident">opts</span>.<span class="ident">set_use_fsync</span>(<span class="bool-val">false</span>);
 		<span class="ident">opts</span>.<span class="ident">create_if_missing</span>(<span class="bool-val">true</span>);
 		<span class="ident">opts</span>.<span class="ident">set_max_open_files</span>(<span class="ident">config</span>.<span class="ident">max_open_files</span>);
-		<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;keep_log_file_num=1&quot;</span>)<span class="question-mark">?</span>;
-		<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;bytes_per_sync=1048576&quot;</span>)<span class="question-mark">?</span>;
+		<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;keep_log_file_num=1&quot;</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
+		<span class="ident">opts</span>.<span class="ident">set_parsed_options</span>(<span class="string">&quot;bytes_per_sync=1048576&quot;</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 		<span class="ident">opts</span>.<span class="ident">set_db_write_buffer_size</span>(<span class="ident">config</span>.<span class="ident">memory_budget_per_col</span>() <span class="op">/</span> <span class="number">2</span>);
 		<span class="ident">opts</span>.<span class="ident">increase_parallelism</span>(<span class="ident">cmp</span>::<span class="ident">max</span>(<span class="number">1</span>, ::<span class="ident">num_cpus</span>::<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">i32</span> <span class="op">/</span> <span class="number">2</span>));
 
@@ -1166,7 +1169,7 @@
 		<span class="kw">let</span> <span class="ident">db_corrupted</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">path</span>).<span class="ident">join</span>(<span class="ident">Database</span>::<span class="ident">CORRUPTION_FILE_NAME</span>);
 		<span class="kw">if</span> <span class="ident">db_corrupted</span>.<span class="ident">exists</span>() {
 			<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;DB has been previously marked as corrupted, attempting repair&quot;</span>);
-			<span class="ident">DB</span>::<span class="ident">repair</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>)<span class="question-mark">?</span>;
+			<span class="ident">DB</span>::<span class="ident">repair</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 			<span class="ident">fs</span>::<span class="ident">remove_file</span>(<span class="ident">db_corrupted</span>)<span class="question-mark">?</span>;
 		}
 
@@ -1180,10 +1183,7 @@
 			<span class="ident">cf_options</span>.<span class="ident">push</span>(<span class="ident">col_config</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">block_opts</span>)<span class="question-mark">?</span>);
 		}
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">write_opts</span> <span class="op">=</span> <span class="ident">WriteOptions</span>::<span class="ident">new</span>();
-		<span class="kw">if</span> <span class="op">!</span><span class="ident">config</span>.<span class="ident">wal</span> {
-			<span class="ident">write_opts</span>.<span class="ident">disable_wal</span>(<span class="bool-val">true</span>);
-		}
+		<span class="kw">let</span> <span class="ident">write_opts</span> <span class="op">=</span> <span class="ident">WriteOptions</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">read_opts</span> <span class="op">=</span> <span class="ident">ReadOptions</span>::<span class="ident">new</span>();
 		<span class="ident">read_opts</span>.<span class="ident">set_verify_checksums</span>(<span class="bool-val">false</span>);
 
@@ -1200,7 +1200,11 @@
 						<span class="comment">// retry and create CFs</span>
 						<span class="kw">match</span> <span class="ident">DB</span>::<span class="ident">open_cf</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>, <span class="kw-2">&amp;</span>[], <span class="kw-2">&amp;</span>[]) {
 							<span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">db</span>) <span class="op">=&gt;</span> {
-								<span class="ident">cfs</span> <span class="op">=</span> <span class="ident">cfnames</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">n</span>)<span class="op">|</span> <span class="ident">db</span>.<span class="ident">create_cf</span>(<span class="ident">n</span>, <span class="kw-2">&amp;</span><span class="ident">cf_options</span>[<span class="ident">i</span>])).<span class="ident">collect</span>::<span class="op">&lt;</span>::<span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>;
+								<span class="ident">cfs</span> <span class="op">=</span> <span class="ident">cfnames</span>.<span class="ident">iter</span>()
+									.<span class="ident">enumerate</span>()
+									.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">n</span>)<span class="op">|</span> <span class="ident">db</span>.<span class="ident">create_cf</span>(<span class="ident">n</span>, <span class="kw-2">&amp;</span><span class="ident">cf_options</span>[<span class="ident">i</span>]))
+									.<span class="ident">collect</span>::<span class="op">&lt;</span>::<span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;&gt;</span>()
+									.<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 								<span class="prelude-val">Ok</span>(<span class="ident">db</span>)
 							},
 							<span class="ident">err</span> <span class="op">=&gt;</span> <span class="ident">err</span>,
@@ -1215,19 +1219,21 @@
 			<span class="prelude-val">Ok</span>(<span class="ident">db</span>) <span class="op">=&gt;</span> <span class="ident">db</span>,
 			<span class="prelude-val">Err</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="kw">if</span> <span class="ident">is_corrupted</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> {
 				<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;DB corrupted: {}, attempting repair&quot;</span>, <span class="ident">s</span>);
-				<span class="ident">DB</span>::<span class="ident">repair</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>)<span class="question-mark">?</span>;
+				<span class="ident">DB</span>::<span class="ident">repair</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 
 				<span class="kw">match</span> <span class="ident">cfnames</span>.<span class="ident">is_empty</span>() {
-					<span class="bool-val">true</span> <span class="op">=&gt;</span> <span class="ident">DB</span>::<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>)<span class="question-mark">?</span>,
+					<span class="bool-val">true</span> <span class="op">=&gt;</span> <span class="ident">DB</span>::<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>,
 					<span class="bool-val">false</span> <span class="op">=&gt;</span> {
-						<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">DB</span>::<span class="ident">open_cf</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">cfnames</span>, <span class="kw-2">&amp;</span><span class="ident">cf_options</span>)<span class="question-mark">?</span>;
+						<span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">DB</span>::<span class="ident">open_cf</span>(<span class="kw-2">&amp;</span><span class="ident">opts</span>, <span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="ident">cfnames</span>, <span class="kw-2">&amp;</span><span class="ident">cf_options</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 						<span class="ident">cfs</span> <span class="op">=</span> <span class="ident">cfnames</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">db</span>.<span class="ident">cf_handle</span>(<span class="ident">n</span>)
 							.<span class="ident">expect</span>(<span class="string">&quot;rocksdb opens a cf_handle for each cfname; qed&quot;</span>)).<span class="ident">collect</span>();
 						<span class="ident">db</span>
 					},
 				}
 			},
-			<span class="prelude-val">Err</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">s</span>.<span class="ident">into</span>()); }
+			<span class="prelude-val">Err</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> {
+				<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">other_io_err</span>(<span class="ident">s</span>))
+			}
 		};
 		<span class="kw">let</span> <span class="ident">num_cols</span> <span class="op">=</span> <span class="ident">cfs</span>.<span class="ident">len</span>();
 		<span class="prelude-val">Ok</span>(<span class="ident">Database</span> {
@@ -1271,27 +1277,27 @@
 	}
 
 	<span class="doccomment">/// Commit buffered changes to database. Must be called under `flush_lock`</span>
-	<span class="kw">fn</span> <span class="ident">write_flushing_with_lock</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_lock</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">MutexGuard</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">write_flushing_with_lock</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_lock</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">MutexGuard</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>.<span class="ident">read</span>() {
 			<span class="prelude-val">Some</span>(<span class="ident">DBAndColumns</span> { <span class="kw-2">ref</span> <span class="ident">db</span>, <span class="kw-2">ref</span> <span class="ident">cfs</span> }) <span class="op">=&gt;</span> {
 				<span class="kw">let</span> <span class="ident">batch</span> <span class="op">=</span> <span class="ident">WriteBatch</span>::<span class="ident">new</span>();
 				<span class="ident">mem</span>::<span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">write</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">flushing</span>.<span class="ident">write</span>());
 				{
 					<span class="kw">for</span> (<span class="ident">c</span>, <span class="ident">column</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">flushing</span>.<span class="ident">read</span>().<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-						<span class="kw">for</span> (<span class="kw-2">ref</span> <span class="ident">key</span>, <span class="kw-2">ref</span> <span class="ident">state</span>) <span class="kw">in</span> <span class="ident">column</span>.<span class="ident">iter</span>() {
-							<span class="kw">match</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">state</span> {
+						<span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">state</span>) <span class="kw">in</span> <span class="ident">column</span>.<span class="ident">iter</span>() {
+							<span class="kw">match</span> <span class="kw-2">*</span><span class="ident">state</span> {
 								<span class="ident">KeyState</span>::<span class="ident">Delete</span> <span class="op">=&gt;</span> {
 									<span class="kw">if</span> <span class="ident">c</span> <span class="op">&gt;</span> <span class="number">0</span> {
-										<span class="ident">batch</span>.<span class="ident">delete_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="op">-</span> <span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">key</span>)<span class="question-mark">?</span>;
+										<span class="ident">batch</span>.<span class="ident">delete_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="op">-</span> <span class="number">1</span>], <span class="ident">key</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 									} <span class="kw">else</span> {
-										<span class="ident">batch</span>.<span class="ident">delete</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>)<span class="question-mark">?</span>;
+										<span class="ident">batch</span>.<span class="ident">delete</span>(<span class="ident">key</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 									}
 								},
 								<span class="ident">KeyState</span>::<span class="ident">Insert</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=&gt;</span> {
 									<span class="kw">if</span> <span class="ident">c</span> <span class="op">&gt;</span> <span class="number">0</span> {
-										<span class="ident">batch</span>.<span class="ident">put_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="op">-</span> <span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">key</span>, <span class="ident">value</span>)<span class="question-mark">?</span>;
+										<span class="ident">batch</span>.<span class="ident">put_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="op">-</span> <span class="number">1</span>], <span class="ident">key</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 									} <span class="kw">else</span> {
-										<span class="ident">batch</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>)<span class="question-mark">?</span>;
+										<span class="ident">batch</span>.<span class="ident">put</span>(<span class="ident">key</span>, <span class="ident">value</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 									}
 								},
 							}
@@ -1309,18 +1315,18 @@
 				}
 				<span class="prelude-val">Ok</span>(())
 			},
-			<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Database is closed&quot;</span>.<span class="ident">into</span>())
+			<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">other_io_err</span>(<span class="string">&quot;Database is closed&quot;</span>))
 		}
 	}
 
 	<span class="doccomment">/// Commit buffered changes to database.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lock</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">flushing_lock</span>.<span class="ident">lock</span>();
 		<span class="comment">// If RocksDB batch allocation fails the thread gets terminated and the lock is released.</span>
 		<span class="comment">// The value inside the lock is used to detect that.</span>
 		<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">lock</span> {
 			<span class="comment">// This can only happen if another flushing thread is terminated unexpectedly.</span>
-			<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Database write failure. Running low on memory perhaps?&quot;</span>.<span class="ident">into</span>());
+			<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">other_io_err</span>(<span class="string">&quot;Database write failure. Running low on memory perhaps?&quot;</span>))
 		}
 		<span class="kw-2">*</span><span class="ident">lock</span> <span class="op">=</span> <span class="bool-val">true</span>;
 		<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">write_flushing_with_lock</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">lock</span>);
@@ -1329,7 +1335,7 @@
 	}
 
 	<span class="doccomment">/// Commit transaction to database.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tr</span>: <span class="ident">DBTransaction</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tr</span>: <span class="ident">DBTransaction</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>.<span class="ident">read</span>() {
 			<span class="prelude-val">Some</span>(<span class="ident">DBAndColumns</span> { <span class="kw-2">ref</span> <span class="ident">db</span>, <span class="kw-2">ref</span> <span class="ident">cfs</span> }) <span class="op">=&gt;</span> {
 				<span class="kw">let</span> <span class="ident">batch</span> <span class="op">=</span> <span class="ident">WriteBatch</span>::<span class="ident">new</span>();
@@ -1339,25 +1345,25 @@
 					<span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">write</span>()[<span class="self">Self</span>::<span class="ident">to_overlay_column</span>(<span class="ident">op</span>.<span class="ident">col</span>())].<span class="ident">remove</span>(<span class="ident">op</span>.<span class="ident">key</span>());
 
 					<span class="kw">match</span> <span class="ident">op</span> {
-						<span class="ident">DBOp</span>::<span class="ident">Insert</span> { <span class="ident">col</span>, <span class="ident">key</span>, <span class="ident">value</span> } <span class="op">=&gt;</span> {
-							<span class="ident">col</span>.<span class="ident">map_or_else</span>(<span class="op">||</span> <span class="ident">batch</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>), <span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">batch</span>.<span class="ident">put_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="kw">as</span> <span class="ident">usize</span>], <span class="kw-2">&amp;</span><span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>))<span class="question-mark">?</span>
+						<span class="ident">DBOp</span>::<span class="ident">Insert</span> { <span class="ident">col</span>, <span class="ident">key</span>, <span class="ident">value</span> } <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">col</span> {
+							<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">batch</span>.<span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>,
+							<span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">batch</span>.<span class="ident">put_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="kw">as</span> <span class="ident">usize</span>], <span class="kw-2">&amp;</span><span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>,
 						},
-						<span class="ident">DBOp</span>::<span class="ident">Delete</span> { <span class="ident">col</span>, <span class="ident">key</span> } <span class="op">=&gt;</span> {
-							<span class="ident">col</span>.<span class="ident">map_or_else</span>(<span class="op">||</span> <span class="ident">batch</span>.<span class="ident">delete</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>), <span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">batch</span>.<span class="ident">delete_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="kw">as</span> <span class="ident">usize</span>], <span class="kw-2">&amp;</span><span class="ident">key</span>))<span class="question-mark">?</span>
-						},
+						<span class="ident">DBOp</span>::<span class="ident">Delete</span> { <span class="ident">col</span>, <span class="ident">key</span> } <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">col</span> {
+							<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">batch</span>.<span class="ident">delete</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>,
+							<span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">batch</span>.<span class="ident">delete_cf</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="kw">as</span> <span class="ident">usize</span>], <span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>,
+						}
 					}
 				}
 
-				<span class="ident">check_for_corruption</span>(
-					<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>,
-					<span class="ident">db</span>.<span class="ident">write_opt</span>(<span class="ident">batch</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">write_opts</span>)).<span class="ident">map_err</span>(<span class="ident">Into</span>::<span class="ident">into</span>)
+				<span class="ident">check_for_corruption</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>, <span class="ident">db</span>.<span class="ident">write_opt</span>(<span class="ident">batch</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">write_opts</span>))
 			},
-			<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Database is closed&quot;</span>.<span class="ident">into</span>())
+			<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">other_io_err</span>(<span class="string">&quot;Database is closed&quot;</span>)),
 		}
 	}
 
 	<span class="doccomment">/// Get value by key.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">col</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">col</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>.<span class="ident">read</span>() {
 			<span class="prelude-val">Some</span>(<span class="ident">DBAndColumns</span> { <span class="kw-2">ref</span> <span class="ident">db</span>, <span class="kw-2">ref</span> <span class="ident">cfs</span> }) <span class="op">=&gt;</span> {
 				<span class="kw">let</span> <span class="ident">overlay</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">overlay</span>.<span class="ident">read</span>()[<span class="self">Self</span>::<span class="ident">to_overlay_column</span>(<span class="ident">col</span>)];
@@ -1373,7 +1379,7 @@
 								<span class="ident">col</span>.<span class="ident">map_or_else</span>(
 									<span class="op">||</span> <span class="ident">db</span>.<span class="ident">get_opt</span>(<span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">read_opts</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>))),
 									<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">db</span>.<span class="ident">get_cf_opt</span>(<span class="ident">cfs</span>[<span class="ident">c</span> <span class="kw">as</span> <span class="ident">usize</span>], <span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">read_opts</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>))))
-									.<span class="ident">map_err</span>(<span class="ident">Into</span>::<span class="ident">into</span>)
+									.<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)
 							},
 						}
 					},
@@ -1447,7 +1453,7 @@
 	}
 
 	<span class="doccomment">/// Restore the database from a copy at given path.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">restore</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">new_db</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">restore</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">new_db</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">close</span>();
 
 		<span class="comment">// swap is guaranteed to be atomic</span>
@@ -1488,13 +1494,13 @@
 	}
 
 	<span class="doccomment">/// Drop a column family.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drop_column</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drop_column</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>.<span class="ident">write</span>() {
 			<span class="prelude-val">Some</span>(<span class="ident">DBAndColumns</span> { <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cfs</span> }) <span class="op">=&gt;</span> {
 				<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">col</span>) <span class="op">=</span> <span class="ident">cfs</span>.<span class="ident">pop</span>() {
 					<span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;col{}&quot;</span>, <span class="ident">cfs</span>.<span class="ident">len</span>());
 					<span class="ident">drop</span>(<span class="ident">col</span>);
-					<span class="ident">db</span>.<span class="ident">drop_cf</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)<span class="question-mark">?</span>;
+					<span class="ident">db</span>.<span class="ident">drop_cf</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>;
 				}
 				<span class="prelude-val">Ok</span>(())
 			},
@@ -1503,12 +1509,12 @@
 	}
 
 	<span class="doccomment">/// Add a column family.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_column</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_column</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>.<span class="ident">write</span>() {
 			<span class="prelude-val">Some</span>(<span class="ident">DBAndColumns</span> { <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cfs</span> }) <span class="op">=&gt;</span> {
 				<span class="kw">let</span> <span class="ident">col</span> <span class="op">=</span> <span class="ident">cfs</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>;
 				<span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;col{}&quot;</span>, <span class="ident">col</span>);
-				<span class="ident">cfs</span>.<span class="ident">push</span>(<span class="ident">db</span>.<span class="ident">create_cf</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="kw-2">&amp;</span><span class="ident">col_config</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block_opts</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>);
+				<span class="ident">cfs</span>.<span class="ident">push</span>(<span class="ident">db</span>.<span class="ident">create_cf</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="kw-2">&amp;</span><span class="ident">col_config</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block_opts</span>)<span class="question-mark">?</span>).<span class="ident">map_err</span>(<span class="ident">other_io_err</span>)<span class="question-mark">?</span>);
 				<span class="prelude-val">Ok</span>(())
 			},
 			<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(()),
@@ -1519,7 +1525,7 @@
 <span class="comment">// duplicate declaration of methods here to avoid trait import in certain existing cases</span>
 <span class="comment">// at time of addition.</span>
 <span class="kw">impl</span> <span class="ident">KeyValueDB</span> <span class="kw">for</span> <span class="ident">Database</span> {
-	<span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">col</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">col</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> {
 		<span class="ident">Database</span>::<span class="ident">get</span>(<span class="self">self</span>, <span class="ident">col</span>, <span class="ident">key</span>)
 	}
 
@@ -1531,11 +1537,11 @@
 		<span class="ident">Database</span>::<span class="ident">write_buffered</span>(<span class="self">self</span>, <span class="ident">transaction</span>)
 	}
 
-	<span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="ident">DBTransaction</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="ident">DBTransaction</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="ident">Database</span>::<span class="ident">write</span>(<span class="self">self</span>, <span class="ident">transaction</span>)
 	}
 
-	<span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="ident">Database</span>::<span class="ident">flush</span>(<span class="self">self</span>)
 	}
 
@@ -1551,7 +1557,7 @@
 		<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">unboxed</span>.<span class="ident">into_iter</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">inner</span><span class="op">|</span> <span class="ident">inner</span>))
 	}
 
-	<span class="kw">fn</span> <span class="ident">restore</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">new_db</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">restore</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">new_db</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="ident">Database</span>::<span class="ident">restore</span>(<span class="self">self</span>, <span class="ident">new_db</span>)
 	}
 }

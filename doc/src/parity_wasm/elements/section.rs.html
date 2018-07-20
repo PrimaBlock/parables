@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/parity-wasm-0.27.6/src/elements/section.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>section.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/parity-wasm-0.31.1/src/elements/section.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>section.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1131,8 +1131,14 @@
 <span id="1131">1131</span>
 <span id="1132">1132</span>
 <span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
 </pre><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+<span class="kw">use</span> <span class="ident">io</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">ToOwned</span>;
 <span class="kw">use</span> <span class="kw">super</span>::{
 	<span class="ident">Serialize</span>,
 	<span class="ident">Deserialize</span>,
@@ -1162,7 +1168,7 @@
 <span class="kw">const</span> <span class="ident">ENTRIES_BUFFER_LENGTH</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">16384</span>;
 
 <span class="doccomment">/// Section in the WebAssembly module.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Section</span> {
 	<span class="doccomment">/// Section is unparsed.</span>
 	<span class="ident">Unparsed</span> {
@@ -1202,9 +1208,8 @@
 	<span class="doccomment">/// Relocation section.</span>
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// Note that initially it is not parsed until `parse_reloc` is called explicitly.</span>
-	<span class="doccomment">/// Also note that currently there are serialization (but not de-serialization) </span>
-	<span class="doccomment">///   issues with this section</span>
-	<span class="doccomment">///   (see https://github.com/paritytech/parity-wasm/issues/198)</span>
+	<span class="doccomment">/// Also note that currently there are serialization (but not de-serialization)</span>
+	<span class="doccomment">///   issues with this section (#198)</span>
 	<span class="ident">Reloc</span>(<span class="ident">RelocSection</span>),
 }
 
@@ -1278,7 +1283,7 @@
 			},
 			<span class="ident">Section</span>::<span class="ident">Unparsed</span> { <span class="ident">id</span>, <span class="ident">payload</span> } <span class="op">=&gt;</span> {
 				<span class="ident">VarUint7</span>::<span class="ident">from</span>(<span class="ident">id</span>).<span class="ident">serialize</span>(<span class="ident">writer</span>)<span class="question-mark">?</span>;
-				<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">payload</span>[..])<span class="question-mark">?</span>;
+				<span class="ident">writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="ident">payload</span>[..])<span class="question-mark">?</span>;
 			},
 			<span class="ident">Section</span>::<span class="ident">Type</span>(<span class="ident">type_section</span>) <span class="op">=&gt;</span> {
 				<span class="ident">VarUint7</span>::<span class="ident">from</span>(<span class="number">0x01</span>).<span class="ident">serialize</span>(<span class="ident">writer</span>)<span class="question-mark">?</span>;
@@ -1383,12 +1388,12 @@
 		})
 	}
 
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ::<span class="ident">elements</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">io</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cursor</span>;
 		<span class="kw">let</span> <span class="ident">buf_length</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">declared_length</span>;
 
-		<span class="kw">if</span> <span class="ident">cursor</span>.<span class="ident">position</span>() <span class="op">!=</span> <span class="ident">buf_length</span> <span class="kw">as</span> <span class="ident">u64</span> {
-			<span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">from</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">InvalidData</span>).<span class="ident">into</span>())
+		<span class="kw">if</span> <span class="ident">cursor</span>.<span class="ident">position</span>() <span class="op">!=</span> <span class="ident">buf_length</span> {
+			<span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">InvalidData</span>)
 		} <span class="kw">else</span> {
 			<span class="prelude-val">Ok</span>(())
 		}
@@ -1396,8 +1401,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">io</span>::<span class="ident">Read</span> <span class="kw">for</span> <span class="ident">SectionReader</span> {
-    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-		<span class="self">self</span>.<span class="ident">cursor</span>.<span class="ident">read</span>(<span class="ident">buf</span>)
+    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+		<span class="self">self</span>.<span class="ident">cursor</span>.<span class="ident">read</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
+		<span class="prelude-val">Ok</span>(())
 	}
 }
 
@@ -1411,7 +1417,7 @@
 }
 
 <span class="doccomment">/// Custom section</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CustomSection</span> {
 	<span class="ident">name</span>: <span class="ident">String</span>,
 	<span class="ident">payload</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
@@ -1446,7 +1452,7 @@
 	<span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="ident">section_length</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">VarUint32</span>::<span class="ident">deserialize</span>(<span class="ident">reader</span>)<span class="question-mark">?</span>) <span class="kw">as</span> <span class="ident">usize</span>;
 		<span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="macro">buffered_read</span><span class="macro">!</span>(<span class="number">16384</span>, <span class="ident">section_length</span>, <span class="ident">reader</span>);
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> ::<span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Cursor</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..]);
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Cursor</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>[..]);
 		<span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cursor</span>)<span class="question-mark">?</span>;
 		<span class="kw">let</span> <span class="ident">payload</span> <span class="op">=</span> <span class="ident">buf</span>[<span class="ident">cursor</span>.<span class="ident">position</span>() <span class="kw">as</span> <span class="ident">usize</span>..].<span class="ident">to_vec</span>();
 		<span class="prelude-val">Ok</span>(<span class="ident">CustomSection</span> { <span class="ident">name</span>: <span class="ident">name</span>, <span class="ident">payload</span>: <span class="ident">payload</span> })
@@ -1457,18 +1463,18 @@
 	<span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
 
 	<span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">io</span>::<span class="ident">Write</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-		<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Write</span>;
+		<span class="kw">use</span> <span class="ident">io</span>::<span class="ident">Write</span>;
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counted_writer</span> <span class="op">=</span> <span class="ident">CountedWriter</span>::<span class="ident">new</span>(<span class="ident">writer</span>);
 		<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counted_writer</span>)<span class="question-mark">?</span>;
-		<span class="ident">counted_writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">payload</span>[..])<span class="question-mark">?</span>;
+		<span class="ident">counted_writer</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">payload</span>[..])<span class="question-mark">?</span>;
 		<span class="ident">counted_writer</span>.<span class="ident">done</span>()<span class="question-mark">?</span>;
 		<span class="prelude-val">Ok</span>(())
 	}
 }
 
 <span class="doccomment">/// Section with type declarations</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TypeSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Type</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">TypeSection</span> {
@@ -1513,7 +1519,7 @@
 }
 
 <span class="doccomment">/// Section of the imports definition.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ImportSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ImportEntry</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">ImportSection</span> {
@@ -1572,7 +1578,7 @@
 }
 
 <span class="doccomment">/// Section with function signatures definition.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FunctionSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Func</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">FunctionSection</span> {
@@ -1617,7 +1623,7 @@
 }
 
 <span class="doccomment">/// Section with table definition (currently only one is allowed).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TableSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TableType</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">TableSection</span> {
@@ -1662,7 +1668,7 @@
 }
 
 <span class="doccomment">/// Section with table definition (currently only one entry is allowed).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MemorySection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MemoryType</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">MemorySection</span> {
@@ -1707,7 +1713,7 @@
 }
 
 <span class="doccomment">/// Globals definition section.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GlobalSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GlobalEntry</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">GlobalSection</span> {
@@ -1752,7 +1758,7 @@
 }
 
 <span class="doccomment">/// List of exports definition.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExportSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ExportEntry</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">ExportSection</span> {
@@ -1797,7 +1803,7 @@
 }
 
 <span class="doccomment">/// Section with function bodies of the module.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CodeSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FuncBody</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">CodeSection</span> {
@@ -1842,7 +1848,7 @@
 }
 
 <span class="doccomment">/// Element entries section.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ElementSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ElementSegment</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">ElementSection</span> {
@@ -1887,7 +1893,7 @@
 }
 
 <span class="doccomment">/// Data entries definitions.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DataSection</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DataSegment</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span> <span class="ident">DataSection</span> {
@@ -1936,7 +1942,7 @@
 
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::{
 		<span class="ident">deserialize_buffer</span>, <span class="ident">deserialize_file</span>, <span class="ident">ValueType</span>, <span class="ident">InitExpr</span>, <span class="ident">DataSegment</span>,
-		<span class="ident">serialize</span>, <span class="ident">ElementSegment</span>, <span class="ident">Opcodes</span>, <span class="ident">BlockType</span>, <span class="ident">Local</span>, <span class="ident">FuncBody</span>,
+		<span class="ident">serialize</span>, <span class="ident">ElementSegment</span>, <span class="ident">Instructions</span>, <span class="ident">BlockType</span>, <span class="ident">Local</span>, <span class="ident">FuncBody</span>,
 	};
 	<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Section</span>, <span class="ident">TypeSection</span>, <span class="ident">Type</span>, <span class="ident">DataSection</span>, <span class="ident">ElementSection</span>, <span class="ident">CodeSection</span>};
 
@@ -2220,13 +2226,13 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">code_section_ser</span>() {
-		<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Opcode</span>::<span class="kw-2">*</span>;
+		<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Instruction</span>::<span class="kw-2">*</span>;
 
 		<span class="kw">let</span> <span class="ident">code_section</span> <span class="op">=</span> <span class="ident">CodeSection</span>::<span class="ident">with_bodies</span>(
 			<span class="macro">vec</span><span class="macro">!</span>[
 				<span class="ident">FuncBody</span>::<span class="ident">new</span>(
 					<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Local</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="ident">ValueType</span>::<span class="ident">I32</span>)],
-					<span class="ident">Opcodes</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[
+					<span class="ident">Instructions</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[
 						<span class="ident">Block</span>(<span class="ident">BlockType</span>::<span class="ident">Value</span>(<span class="ident">ValueType</span>::<span class="ident">I32</span>)),
 						<span class="ident">GetGlobal</span>(<span class="number">0</span>),
 						<span class="ident">End</span>,

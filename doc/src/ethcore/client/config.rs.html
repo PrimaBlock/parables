@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/client/config.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>config.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/client/config.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>config.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -149,6 +149,20 @@
 <span id="149">149</span>
 <span id="150">150</span>
 <span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -222,12 +236,6 @@
 	<span class="ident">Off</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Mode</span> {
-	<span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
-		<span class="ident">Mode</span>::<span class="ident">Active</span>
-	}
-}
-
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Mode</span> {
 	<span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">FmtError</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
@@ -240,7 +248,7 @@
 }
 
 <span class="doccomment">/// Client configuration. Includes configs for all sub-systems.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientConfig</span> {
 	<span class="doccomment">/// Block queue configuration.</span>
 	<span class="kw">pub</span> <span class="ident">queue</span>: <span class="ident">QueueConfig</span>,
@@ -260,8 +268,6 @@
 	<span class="kw">pub</span> <span class="ident">db_cache_size</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
 	<span class="doccomment">/// State db compaction profile</span>
 	<span class="kw">pub</span> <span class="ident">db_compaction</span>: <span class="ident">DatabaseCompactionProfile</span>,
-	<span class="doccomment">/// Should db have WAL enabled?</span>
-	<span class="kw">pub</span> <span class="ident">db_wal</span>: <span class="ident">bool</span>,
 	<span class="doccomment">/// Operating mode</span>
 	<span class="kw">pub</span> <span class="ident">mode</span>: <span class="ident">Mode</span>,
 	<span class="doccomment">/// The chain spec name</span>
@@ -278,11 +284,38 @@
 	<span class="kw">pub</span> <span class="ident">history_mem</span>: <span class="ident">usize</span>,
 	<span class="doccomment">/// Check seal valididity on block import</span>
 	<span class="kw">pub</span> <span class="ident">check_seal</span>: <span class="ident">bool</span>,
+	<span class="doccomment">/// Maximal number of transactions queued for verification in a separate thread.</span>
+	<span class="kw">pub</span> <span class="ident">transaction_verification_queue_size</span>: <span class="ident">usize</span>,
 }
 
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ClientConfig</span> {
+	<span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+		<span class="kw">let</span> <span class="ident">mb</span> <span class="op">=</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>;
+		<span class="ident">ClientConfig</span> {
+			<span class="ident">queue</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+			<span class="ident">blockchain</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+			<span class="ident">tracing</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+			<span class="ident">vm_type</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+			<span class="ident">fat_db</span>: <span class="bool-val">false</span>,
+			<span class="ident">pruning</span>: <span class="ident">journaldb</span>::<span class="ident">Algorithm</span>::<span class="ident">OverlayRecent</span>,
+			<span class="ident">name</span>: <span class="string">&quot;default&quot;</span>.<span class="ident">into</span>(),
+			<span class="ident">db_cache_size</span>: <span class="prelude-val">None</span>,
+			<span class="ident">db_compaction</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
+			<span class="ident">mode</span>: <span class="ident">Mode</span>::<span class="ident">Active</span>,
+			<span class="ident">spec_name</span>: <span class="string">&quot;&quot;</span>.<span class="ident">into</span>(),
+			<span class="ident">verifier_type</span>: <span class="ident">VerifierType</span>::<span class="ident">Canon</span>,
+			<span class="ident">state_cache_size</span>: <span class="number">1</span> <span class="op">*</span> <span class="ident">mb</span>,
+			<span class="ident">jump_table_size</span>: <span class="number">1</span> <span class="op">*</span> <span class="ident">mb</span>,
+			<span class="ident">history</span>: <span class="number">64</span>,
+			<span class="ident">history_mem</span>: <span class="number">32</span> <span class="op">*</span> <span class="ident">mb</span>,
+			<span class="ident">check_seal</span>: <span class="bool-val">true</span>,
+			<span class="ident">transaction_verification_queue_size</span>: <span class="number">8192</span>,
+		}
+	}
+}
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
-	<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">DatabaseCompactionProfile</span>, <span class="ident">Mode</span>};
+	<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">DatabaseCompactionProfile</span>;
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_default_compaction_profile</span>() {
@@ -294,11 +327,6 @@
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">DatabaseCompactionProfile</span>::<span class="ident">Auto</span>, <span class="string">&quot;auto&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">DatabaseCompactionProfile</span>::<span class="ident">SSD</span>, <span class="string">&quot;ssd&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">DatabaseCompactionProfile</span>::<span class="ident">HDD</span>, <span class="string">&quot;hdd&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>());
-	}
-
-	<span class="attribute">#[<span class="ident">test</span>]</span>
-	<span class="kw">fn</span> <span class="ident">test_mode_default</span>() {
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Mode</span>::<span class="ident">default</span>(), <span class="ident">Mode</span>::<span class="ident">Active</span>);
 	}
 }
 </pre>

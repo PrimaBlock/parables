@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/pwasm-utils-0.1.5/src/rules.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rules.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/pwasm-utils-0.2.2/src/rules.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rules.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -309,8 +309,16 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
 </pre><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">features</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">HashMap</span> <span class="kw">as</span> <span class="ident">Map</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">features</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span> <span class="kw">as</span> <span class="ident">Map</span>};
+
 <span class="kw">use</span> <span class="ident">parity_wasm</span>::<span class="ident">elements</span>;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UnknownInstruction</span>;
@@ -322,7 +330,7 @@
     <span class="ident">Fixed</span>(<span class="ident">u32</span>),
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">InstructionType</span> {
     <span class="ident">Bit</span>,
     <span class="ident">Add</span>,
@@ -370,7 +378,7 @@
             <span class="string">&quot;reinterpret&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">InstructionType</span>::<span class="ident">Reinterpretation</span>),
             <span class="string">&quot;unreachable&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">InstructionType</span>::<span class="ident">Unreachable</span>),
             <span class="string">&quot;nop&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">InstructionType</span>::<span class="ident">Nop</span>),
-            <span class="string">&quot;currrent_mem&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">InstructionType</span>::<span class="ident">CurrentMemory</span>),
+            <span class="string">&quot;current_mem&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">InstructionType</span>::<span class="ident">CurrentMemory</span>),
             <span class="string">&quot;grow_mem&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">InstructionType</span>::<span class="ident">GrowMemory</span>),
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">UnknownInstruction</span>),
         }
@@ -378,10 +386,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">InstructionType</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">op</span>(<span class="ident">opcode</span>: <span class="kw-2">&amp;</span><span class="ident">elements</span>::<span class="ident">Opcode</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="kw">use</span> <span class="ident">parity_wasm</span>::<span class="ident">elements</span>::<span class="ident">Opcode</span>::<span class="kw-2">*</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">op</span>(<span class="ident">instruction</span>: <span class="kw-2">&amp;</span><span class="ident">elements</span>::<span class="ident">Instruction</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">use</span> <span class="ident">parity_wasm</span>::<span class="ident">elements</span>::<span class="ident">Instruction</span>::<span class="kw-2">*</span>;
 
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">opcode</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">instruction</span> {
             <span class="ident">Unreachable</span> <span class="op">=&gt;</span> <span class="ident">InstructionType</span>::<span class="ident">Unreachable</span>,
             <span class="ident">Nop</span> <span class="op">=&gt;</span> <span class="ident">InstructionType</span>::<span class="ident">Nop</span>,
             <span class="ident">Block</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">InstructionType</span>::<span class="ident">ControlFlow</span>,
@@ -577,7 +585,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Set</span> {
     <span class="ident">regular</span>: <span class="ident">u32</span>,
-    <span class="ident">entries</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">InstructionType</span>, <span class="ident">Metering</span><span class="op">&gt;</span>,
+    <span class="ident">entries</span>: <span class="ident">Map</span><span class="op">&lt;</span><span class="ident">InstructionType</span>, <span class="ident">Metering</span><span class="op">&gt;</span>,
     <span class="ident">grow</span>: <span class="ident">u32</span>,
 }
 
@@ -585,19 +593,19 @@
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">Set</span> {
             <span class="ident">regular</span>: <span class="number">1</span>,
-            <span class="ident">entries</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
+            <span class="ident">entries</span>: <span class="ident">Map</span>::<span class="ident">new</span>(),
             <span class="ident">grow</span>: <span class="number">0</span>,
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Set</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">regular</span>: <span class="ident">u32</span>, <span class="ident">entries</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">InstructionType</span>, <span class="ident">Metering</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">regular</span>: <span class="ident">u32</span>, <span class="ident">entries</span>: <span class="ident">Map</span><span class="op">&lt;</span><span class="ident">InstructionType</span>, <span class="ident">Metering</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">Set</span> { <span class="ident">regular</span>: <span class="ident">regular</span>, <span class="ident">entries</span>: <span class="ident">entries</span>, <span class="ident">grow</span>: <span class="number">0</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">opcode</span>: <span class="kw-2">&amp;</span><span class="ident">elements</span>::<span class="ident">Opcode</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, ()<span class="op">&gt;</span>  {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">InstructionType</span>::<span class="ident">op</span>(<span class="ident">opcode</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">instruction</span>: <span class="kw-2">&amp;</span><span class="ident">elements</span>::<span class="ident">Instruction</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, ()<span class="op">&gt;</span>  {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">entries</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">InstructionType</span>::<span class="ident">op</span>(<span class="ident">instruction</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span>) {
             <span class="prelude-val">None</span> <span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">Metering</span>::<span class="ident">Regular</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">regular</span>),
             <span class="prelude-val">Some</span>(<span class="ident">Metering</span>::<span class="ident">Forbidden</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(()),
             <span class="prelude-val">Some</span>(<span class="ident">Metering</span>::<span class="ident">Fixed</span>(<span class="ident">val</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">val</span>),

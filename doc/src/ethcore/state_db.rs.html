@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/state_db.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state_db.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/state_db.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state_db.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -571,21 +571,23 @@
 <span class="doccomment">//! State database abstraction. For more info, see the doc for `StateDB`</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">VecDeque</span>, <span class="ident">HashSet</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
-<span class="kw">use</span> <span class="ident">lru_cache</span>::<span class="ident">LruCache</span>;
-<span class="kw">use</span> <span class="ident">memory_cache</span>::<span class="ident">MemoryLruCache</span>;
+
+<span class="kw">use</span> <span class="ident">bloom_journal</span>::{<span class="ident">Bloom</span>, <span class="ident">BloomJournal</span>};
+<span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ByteOrder</span>};
+<span class="kw">use</span> <span class="ident">db</span>::<span class="ident">COL_ACCOUNT_BLOOM</span>;
+<span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">Address</span>};
+<span class="kw">use</span> <span class="ident">hash</span>::<span class="ident">keccak</span>;
+<span class="kw">use</span> <span class="ident">hashdb</span>::<span class="ident">HashDB</span>;
+<span class="kw">use</span> <span class="ident">keccak_hasher</span>::<span class="ident">KeccakHasher</span>;
+<span class="kw">use</span> <span class="ident">header</span>::<span class="ident">BlockNumber</span>;
 <span class="kw">use</span> <span class="ident">journaldb</span>::<span class="ident">JournalDB</span>;
 <span class="kw">use</span> <span class="ident">kvdb</span>::{<span class="ident">KeyValueDB</span>, <span class="ident">DBTransaction</span>};
-<span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">Address</span>};
-<span class="kw">use</span> <span class="ident">hashdb</span>::<span class="ident">HashDB</span>;
-<span class="kw">use</span> <span class="ident">state</span>::{<span class="self">self</span>, <span class="ident">Account</span>};
-<span class="kw">use</span> <span class="ident">header</span>::<span class="ident">BlockNumber</span>;
-<span class="kw">use</span> <span class="ident">hash</span>::<span class="ident">keccak</span>;
+<span class="kw">use</span> <span class="ident">lru_cache</span>::<span class="ident">LruCache</span>;
+<span class="kw">use</span> <span class="ident">memory_cache</span>::<span class="ident">MemoryLruCache</span>;
 <span class="kw">use</span> <span class="ident">parking_lot</span>::<span class="ident">Mutex</span>;
-<span class="kw">use</span> <span class="ident">util_error</span>::<span class="ident">UtilError</span>;
-<span class="kw">use</span> <span class="ident">bloom_journal</span>::{<span class="ident">Bloom</span>, <span class="ident">BloomJournal</span>};
-<span class="kw">use</span> <span class="ident">db</span>::<span class="ident">COL_ACCOUNT_BLOOM</span>;
-<span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ByteOrder</span>};
+<span class="kw">use</span> <span class="ident">state</span>::{<span class="self">self</span>, <span class="ident">Account</span>};
 
 <span class="doccomment">/// Value used to initialize bloom bitmap size.</span>
 <span class="doccomment">///</span>
@@ -734,7 +736,7 @@
 	}
 
 	<span class="doccomment">/// Commit blooms journal to the database transaction</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">commit_bloom</span>(<span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DBTransaction</span>, <span class="ident">journal</span>: <span class="ident">BloomJournal</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">UtilError</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">commit_bloom</span>(<span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DBTransaction</span>, <span class="ident">journal</span>: <span class="ident">BloomJournal</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">journal</span>.<span class="ident">hash_functions</span> <span class="op">&lt;=</span> <span class="number">255</span>);
 		<span class="ident">batch</span>.<span class="ident">put</span>(<span class="ident">COL_ACCOUNT_BLOOM</span>, <span class="ident">ACCOUNT_BLOOM_HASHCOUNT_KEY</span>, <span class="kw-2">&amp;</span>[<span class="ident">journal</span>.<span class="ident">hash_functions</span> <span class="kw">as</span> <span class="ident">u8</span>]);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">key</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">8</span>];
@@ -749,7 +751,7 @@
 	}
 
 	<span class="doccomment">/// Journal all recent operations under the given era and ID.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">journal_under</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DBTransaction</span>, <span class="ident">now</span>: <span class="ident">u64</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">UtilError</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">journal_under</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DBTransaction</span>, <span class="ident">now</span>: <span class="ident">u64</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
 		{
  			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bloom_lock</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">account_bloom</span>.<span class="ident">lock</span>();
  			<span class="self">Self</span>::<span class="ident">commit_bloom</span>(<span class="ident">batch</span>, <span class="ident">bloom_lock</span>.<span class="ident">drain_journal</span>())<span class="question-mark">?</span>;
@@ -762,7 +764,7 @@
 
 	<span class="doccomment">/// Mark a given candidate from an ancient era as canonical, enacting its removals from the</span>
 	<span class="doccomment">/// backing database and reverting any non-canonical historical commit&#39;s insertions.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mark_canonical</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DBTransaction</span>, <span class="ident">end_era</span>: <span class="ident">u64</span>, <span class="ident">canon_id</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">UtilError</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mark_canonical</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DBTransaction</span>, <span class="ident">end_era</span>: <span class="ident">u64</span>, <span class="ident">canon_id</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">db</span>.<span class="ident">mark_canonical</span>(<span class="ident">batch</span>, <span class="ident">end_era</span>, <span class="ident">canon_id</span>)
 	}
 
@@ -864,12 +866,12 @@
 	}
 
 	<span class="doccomment">/// Conversion method to interpret self as `HashDB` reference</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">db</span>.<span class="ident">as_hashdb</span>()
 	}
 
 	<span class="doccomment">/// Conversion method to interpret self as mutable `HashDB` reference</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">db</span>.<span class="ident">as_hashdb_mut</span>()
 	}
 
@@ -964,11 +966,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">state</span>::<span class="ident">Backend</span> <span class="kw">for</span> <span class="ident">StateDB</span> {
-	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span> {
-		<span class="self">self</span>.<span class="ident">db</span>.<span class="ident">as_hashdb</span>()
-	}
+	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span> { <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">as_hashdb</span>() }
 
-	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span> {
+	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">db</span>.<span class="ident">as_hashdb_mut</span>()
 	}
 

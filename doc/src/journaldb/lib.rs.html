@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/util/journaldb/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/util/journaldb/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -233,14 +233,14 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">log</span>;
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethereum_types</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_bytes</span> <span class="kw">as</span> <span class="ident">bytes</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">parity_bytes</span> <span class="kw">as</span> <span class="ident">bytes</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">hashdb</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">keccak_hasher</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">kvdb</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">memorydb</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">parking_lot</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">plain_hasher</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rlp</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">util_error</span> <span class="kw">as</span> <span class="ident">error</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_logger</span>;
@@ -249,7 +249,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">kvdb_memorydb</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">str</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">str</span>, <span class="ident">io</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
 
 <span class="doccomment">/// Export the journaldb module.</span>
@@ -259,6 +259,7 @@
 <span class="kw">mod</span> <span class="ident">overlayrecentdb</span>;
 <span class="kw">mod</span> <span class="ident">refcounteddb</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
+<span class="kw">mod</span> <span class="ident">as_hash_db_impls</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">overlaydb</span>;
 
@@ -290,10 +291,6 @@
 	<span class="doccomment">///</span>
 	<span class="doccomment">/// References are counted in disk-backed DB.</span>
 	<span class="ident">RefCounted</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Algorithm</span> {
-	<span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">Algorithm</span> { <span class="ident">Algorithm</span>::<span class="ident">OverlayRecent</span> }
 }
 
 <span class="kw">impl</span> <span class="ident">str</span>::<span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Algorithm</span> {
@@ -365,6 +362,14 @@
 <span class="kw">const</span> <span class="ident">DB_PREFIX_LEN</span> : <span class="ident">usize</span> <span class="op">=</span> ::<span class="ident">kvdb</span>::<span class="ident">PREFIX_LEN</span>;
 <span class="kw">const</span> <span class="ident">LATEST_ERA_KEY</span> : [<span class="ident">u8</span>; ::<span class="ident">kvdb</span>::<span class="ident">PREFIX_LEN</span>] <span class="op">=</span> [ <span class="string">b&#39;l&#39;</span>, <span class="string">b&#39;a&#39;</span>, <span class="string">b&#39;s&#39;</span>, <span class="string">b&#39;t&#39;</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> ];
 
+<span class="kw">fn</span> <span class="ident">error_key_already_exists</span>(<span class="ident">hash</span>: <span class="kw-2">&amp;</span><span class="ident">ethereum_types</span>::<span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="ident">Error</span> {
+	<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">AlreadyExists</span>, <span class="ident">hash</span>.<span class="ident">to_string</span>())
+}
+
+<span class="kw">fn</span> <span class="ident">error_negatively_reference_hash</span>(<span class="ident">hash</span>: <span class="kw-2">&amp;</span><span class="ident">ethereum_types</span>::<span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="ident">Error</span> {
+	<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Other</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Entry {} removed from database more times than it was added.&quot;</span>, <span class="ident">hash</span>))
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
 	<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Algorithm</span>;
@@ -391,11 +396,6 @@
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">Algorithm</span>::<span class="ident">OverlayRecent</span>.<span class="ident">is_stable</span>());
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">Algorithm</span>::<span class="ident">EarlyMerge</span>.<span class="ident">is_stable</span>());
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">Algorithm</span>::<span class="ident">RefCounted</span>.<span class="ident">is_stable</span>());
-	}
-
-	<span class="attribute">#[<span class="ident">test</span>]</span>
-	<span class="kw">fn</span> <span class="ident">test_journal_algorithm_default</span>() {
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Algorithm</span>::<span class="ident">default</span>(), <span class="ident">Algorithm</span>::<span class="ident">OverlayRecent</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>

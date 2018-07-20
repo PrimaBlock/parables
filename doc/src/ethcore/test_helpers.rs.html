@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/test_helpers.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>test_helpers.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/test_helpers.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>test_helpers.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -496,7 +496,6 @@
 <span id="496">496</span>
 <span id="497">497</span>
 <span id="498">498</span>
-<span id="499">499</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -517,7 +516,8 @@
 <span class="doccomment">//! Set of different helpers for client tests</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fs</span>, <span class="ident">io</span>};
 <span class="kw">use</span> <span class="ident">account_provider</span>::<span class="ident">AccountProvider</span>;
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">U256</span>, <span class="ident">Address</span>};
 <span class="kw">use</span> <span class="ident">block</span>::{<span class="ident">OpenBlock</span>, <span class="ident">Drain</span>};
@@ -525,7 +525,6 @@
 <span class="kw">use</span> <span class="ident">bytes</span>::<span class="ident">Bytes</span>;
 <span class="kw">use</span> <span class="ident">client</span>::{<span class="ident">Client</span>, <span class="ident">ClientConfig</span>, <span class="ident">ChainInfo</span>, <span class="ident">ImportBlock</span>, <span class="ident">ChainNotify</span>, <span class="ident">ChainMessageType</span>, <span class="ident">PrepareOpenBlock</span>};
 <span class="kw">use</span> <span class="ident">ethkey</span>::<span class="ident">KeyPair</span>;
-<span class="kw">use</span> <span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">evm</span>::<span class="ident">Factory</span> <span class="kw">as</span> <span class="ident">EvmFactory</span>;
 <span class="kw">use</span> <span class="ident">factory</span>::<span class="ident">Factories</span>;
 <span class="kw">use</span> <span class="ident">hash</span>::<span class="ident">keccak</span>;
@@ -537,7 +536,6 @@
 <span class="kw">use</span> <span class="ident">spec</span>::<span class="ident">Spec</span>;
 <span class="kw">use</span> <span class="ident">state_db</span>::<span class="ident">StateDB</span>;
 <span class="kw">use</span> <span class="ident">state</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
 <span class="kw">use</span> <span class="ident">transaction</span>::{<span class="ident">Action</span>, <span class="ident">Transaction</span>, <span class="ident">SignedTransaction</span>};
 <span class="kw">use</span> <span class="ident">views</span>::<span class="ident">BlockView</span>;
 <span class="kw">use</span> <span class="ident">blooms_db</span>;
@@ -673,14 +671,14 @@
 			<span class="ident">n</span> <span class="op">+=</span> <span class="number">1</span>;
 		}
 
-		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close_and_lock</span>().<span class="ident">seal</span>(<span class="ident">test_engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
+		<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close_and_lock</span>().<span class="ident">unwrap</span>().<span class="ident">seal</span>(<span class="ident">test_engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
 
 		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">client</span>.<span class="ident">import_block</span>(<span class="ident">b</span>.<span class="ident">rlp_bytes</span>()) {
 			<span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;error importing block which is valid by definition: {:?}&quot;</span>, <span class="ident">e</span>);
 		}
 
 		<span class="ident">last_header</span> <span class="op">=</span> <span class="macro">view</span><span class="macro">!</span>(<span class="ident">BlockView</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">rlp_bytes</span>()).<span class="ident">header</span>();
-		<span class="ident">db</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">drain</span>();
+		<span class="ident">db</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">drain</span>().<span class="ident">state</span>.<span class="ident">drop</span>().<span class="number">1</span>;
 	}
 	<span class="ident">client</span>.<span class="ident">flush_queue</span>();
 	<span class="ident">client</span>.<span class="ident">import_verified_blocks</span>();
@@ -723,13 +721,13 @@
 	<span class="kw">let</span> <span class="ident">test_engine</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">test_spec</span>.<span class="ident">engine</span>;
 	<span class="kw">let</span> <span class="ident">block_number</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">chain_info</span>().<span class="ident">best_block_number</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">+</span> <span class="number">1</span>;
 
-	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">prepare_open_block</span>(<span class="ident">Address</span>::<span class="ident">default</span>(), (<span class="number">0</span>.<span class="ident">into</span>(), <span class="number">5000000</span>.<span class="ident">into</span>()), <span class="ident">Bytes</span>::<span class="ident">new</span>());
+	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">prepare_open_block</span>(<span class="ident">Address</span>::<span class="ident">default</span>(), (<span class="number">0</span>.<span class="ident">into</span>(), <span class="number">5000000</span>.<span class="ident">into</span>()), <span class="ident">Bytes</span>::<span class="ident">new</span>()).<span class="ident">unwrap</span>();
 	<span class="ident">b</span>.<span class="ident">set_timestamp</span>(<span class="ident">block_number</span> <span class="op">*</span> <span class="number">10</span>);
 
 	<span class="kw">for</span> <span class="ident">t</span> <span class="kw">in</span> <span class="ident">transactions</span> {
 		<span class="ident">b</span>.<span class="ident">push_transaction</span>(<span class="ident">t</span>.<span class="ident">clone</span>(), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
 	}
-	<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close_and_lock</span>().<span class="ident">seal</span>(<span class="ident">test_engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
+	<span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">close_and_lock</span>().<span class="ident">unwrap</span>().<span class="ident">seal</span>(<span class="ident">test_engine</span>, <span class="macro">vec</span><span class="macro">!</span>[]).<span class="ident">unwrap</span>();
 
 	<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">client</span>.<span class="ident">import_block</span>(<span class="ident">b</span>.<span class="ident">rlp_bytes</span>()) {
 		<span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;error importing block which is valid by definition: {:?}&quot;</span>, <span class="ident">e</span>);
@@ -827,7 +825,7 @@
 	}
 
 	<span class="kw">impl</span> <span class="ident">BlockChainDBHandler</span> <span class="kw">for</span> <span class="ident">RestorationDBHandler</span> {
-		<span class="kw">fn</span> <span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">db_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">BlockChainDB</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+		<span class="kw">fn</span> <span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">db_path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">BlockChainDB</span><span class="op">&gt;&gt;</span> {
 			<span class="kw">let</span> <span class="ident">key_value</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">kvdb_rocksdb</span>::<span class="ident">Database</span>::<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="ident">db_path</span>.<span class="ident">to_string_lossy</span>())<span class="question-mark">?</span>);
 			<span class="kw">let</span> <span class="ident">blooms_path</span> <span class="op">=</span> <span class="ident">db_path</span>.<span class="ident">join</span>(<span class="string">&quot;blooms&quot;</span>);
 			<span class="kw">let</span> <span class="ident">trace_blooms_path</span> <span class="op">=</span> <span class="ident">db_path</span>.<span class="ident">join</span>(<span class="string">&quot;trace_blooms&quot;</span>);

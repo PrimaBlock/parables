@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Decryptor","AES GCM decryptor."],["Encryptor","AES GCM encryptor."]]});

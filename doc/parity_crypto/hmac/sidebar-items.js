@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["sign","Compute HMAC signature of `data`."],["verify","Verify HMAC signature of `data`."]],"struct":[["SigKey","HMAC signing key."],["Signature","HMAC signature."],["Signer","Stateful HMAC computation."],["VerifyKey","HMAC signature verification key."]]});

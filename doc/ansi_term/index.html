@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `ansi_term` crate."><meta name="keywords" content="rust, rustlang, rust-lang, ansi_term"><title>ansi_term - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate ansi_term</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'ansi_term', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>ansi_term</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/ansi_term/lib.rs.html#1-205' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>This is a library for controlling colours and formatting, such as
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `ansi_term` crate."><meta name="keywords" content="rust, rustlang, rust-lang, ansi_term"><title>ansi_term - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate ansi_term</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'ansi_term', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>ansi_term</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/ansi_term/lib.rs.html#1-202' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>This is a library for controlling colours and formatting, such as
 red bold text or blue underlined text, on ANSI terminals.</p>
 <h2 id="basic-usage" class="section-header"><a href="#basic-usage">Basic usage</a></h2>
 <p>There are two main data structures in this crate that you need to be
@@ -154,9 +154,9 @@ it does provide a method <code>write_to</code> to write the result to any
                            <td><a class="struct" href="struct.ANSIGenericString.html"
                                   title='struct ansi_term::ANSIGenericString'>ANSIGenericString</a></td>
                            <td class='docblock-short'>
-                                <p>An <code>ANSIGenericString</code> includes a generic string type and a <code>Style</code> to
-display that string.  <code>ANSIString</code> and <code>ANSIByteString</code> are aliases for
-this type on <code>str</code> and <code>[u8]</code>, respectively.</p>
+                                <p>An ANSIGenericString includes a generic string type and a Style to
+display that string.  ANSIString and ANSIByteString are aliases for
+this type on str and [u8], respectively.</p>
 
                            </td>
                        </tr>
@@ -227,7 +227,7 @@ to either the foreground or background colour.</p>
                            <td><a class="fn" href="fn.ANSIByteStrings.html"
                                   title='fn ansi_term::ANSIByteStrings'>ANSIByteStrings</a></td>
                            <td class='docblock-short'>
-                                <p>A function to construct an <code>ANSIByteStrings</code> instance.</p>
+                                <p>A function to construct an ANSIByteStrings instance.</p>
 
                            </td>
                        </tr>
@@ -235,7 +235,7 @@ to either the foreground or background colour.</p>
                            <td><a class="fn" href="fn.ANSIStrings.html"
                                   title='fn ansi_term::ANSIStrings'>ANSIStrings</a></td>
                            <td class='docblock-short'>
-                                <p>A function to construct an <code>ANSIStrings</code> instance.</p>
+                                <p>A function to construct an ANSIStrings instance.</p>
 
                            </td>
                        </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
@@ -244,8 +244,8 @@ to either the foreground or background colour.</p>
                            <td><a class="type" href="type.ANSIByteString.html"
                                   title='type ansi_term::ANSIByteString'>ANSIByteString</a></td>
                            <td class='docblock-short'>
-                                <p>An <code>ANSIByteString</code> represents a formatted series of bytes.  Use
-<code>ANSIByteString</code> when styling text with an unknown encoding.</p>
+                                <p>An ANSIByteString represents a formatted series of bytes.  Use
+ANSIByteString when styling text with an unknown encoding.</p>
 
                            </td>
                        </tr>
@@ -262,7 +262,7 @@ written with a minimum of control characters.</p>
                            <td><a class="type" href="type.ANSIString.html"
                                   title='type ansi_term::ANSIString'>ANSIString</a></td>
                            <td class='docblock-short'>
-                                <p>An ANSI String is a string coupled with the <code>Style</code> to display it
+                                <p>An ANSI String is a string coupled with the Style to display it
 in a terminal.</p>
 
                            </td>

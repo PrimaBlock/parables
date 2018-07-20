@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -344,12 +344,6 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -371,12 +365,10 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">error</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">SystemTime</span>;
-<span class="kw">use</span> <span class="ident">kvdb</span>;
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">U256</span>, <span class="ident">Address</span>, <span class="ident">Bloom</span>};
-<span class="kw">use</span> <span class="ident">util_error</span>::{<span class="self">self</span>, <span class="ident">UtilError</span>};
 <span class="kw">use</span> <span class="ident">snappy</span>::<span class="ident">InvalidInput</span>;
 <span class="kw">use</span> <span class="ident">unexpected</span>::{<span class="ident">Mismatch</span>, <span class="ident">OutOfBounds</span>};
-<span class="kw">use</span> <span class="ident">trie</span>::<span class="ident">TrieError</span>;
+<span class="kw">use</span> <span class="ident">ethtrie</span>::<span class="ident">TrieError</span>;
 <span class="kw">use</span> <span class="ident">io</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">header</span>::<span class="ident">BlockNumber</span>;
 <span class="kw">use</span> <span class="ident">client</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ClientError</span>;
@@ -560,7 +552,6 @@
 		<span class="kw">match</span> <span class="ident">e</span> {
 			<span class="ident">Error</span>(<span class="ident">ErrorKind</span>::<span class="ident">Block</span>(<span class="ident">block_error</span>), <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">BlockImportErrorKind</span>::<span class="ident">Block</span>(<span class="ident">block_error</span>).<span class="ident">into</span>(),
 			<span class="ident">Error</span>(<span class="ident">ErrorKind</span>::<span class="ident">Import</span>(<span class="ident">import_error</span>), <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">BlockImportErrorKind</span>::<span class="ident">Import</span>(<span class="ident">import_error</span>.<span class="ident">into</span>()).<span class="ident">into</span>(),
-			<span class="ident">Error</span>(<span class="ident">ErrorKind</span>::<span class="ident">Util</span>(<span class="ident">util_error</span>::<span class="ident">ErrorKind</span>::<span class="ident">Decoder</span>(<span class="ident">decoder_err</span>)), <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">BlockImportErrorKind</span>::<span class="ident">Decoder</span>(<span class="ident">decoder_err</span>).<span class="ident">into</span>(),
 			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">BlockImportErrorKind</span>::<span class="ident">Other</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;other block import error: {:?}&quot;</span>, <span class="ident">e</span>)).<span class="ident">into</span>(),
 		}
 	}
@@ -590,11 +581,9 @@
 	}
 
 	<span class="ident">links</span> {
-		<span class="ident">Database</span>(<span class="ident">kvdb</span>::<span class="ident">Error</span>, <span class="ident">kvdb</span>::<span class="ident">ErrorKind</span>) <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;Database error.&quot;</span>]</span>;
-		<span class="ident">Util</span>(<span class="ident">UtilError</span>, <span class="ident">util_error</span>::<span class="ident">ErrorKind</span>) <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;Error concerning a utility&quot;</span>]</span>;
 		<span class="ident">Import</span>(<span class="ident">ImportError</span>, <span class="ident">ImportErrorKind</span>) <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;Error concerning block import.&quot;</span> ]</span>;
 	}
-		
+
 	<span class="ident">foreign_links</span> {
 		<span class="ident">Io</span>(<span class="ident">IoError</span>) <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;Io create error&quot;</span>]</span>;
 		<span class="ident">StdIo</span>(::<span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span>) <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;Error concerning the Rust standard library&#39;s IO subsystem.&quot;</span>]</span>;
@@ -624,14 +613,14 @@
 		<span class="ident">AccountProvider</span>(<span class="ident">err</span>: <span class="ident">AccountsError</span>) {
 			<span class="ident">description</span>(<span class="string">&quot;Accounts Provider error&quot;</span>)
 			<span class="ident">display</span>(<span class="string">&quot;Accounts Provider error {}&quot;</span>, <span class="ident">err</span>)
-		} 
+		}
 
 		<span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;PoW hash is invalid or out of date.&quot;</span>]</span>
 		<span class="ident">PowHashInvalid</span> {
 			<span class="ident">description</span>(<span class="string">&quot;PoW hash is invalid or out of date.&quot;</span>)
 			<span class="ident">display</span>(<span class="string">&quot;PoW hash is invalid or out of date.&quot;</span>)
 		}
-	
+
 		<span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="string">&quot;The value of the nonce or mishash is invalid.&quot;</span>]</span>
 		<span class="ident">PowInvalid</span> {
 			<span class="ident">description</span>(<span class="string">&quot;The value of the nonce or mishash is invalid.&quot;</span>)
@@ -664,10 +653,10 @@
 	}
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">AccountsError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> { 
-	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">AccountsError</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> { 
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">AccountsError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">AccountsError</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
 		<span class="ident">ErrorKind</span>::<span class="ident">AccountProvider</span>(<span class="ident">err</span>).<span class="ident">into</span>()
-	} 
+	}
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span>::<span class="ident">rlp</span>::<span class="ident">DecoderError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
@@ -681,7 +670,6 @@
 		<span class="kw">match</span> <span class="ident">err</span> {
 			<span class="ident">BlockImportError</span>(<span class="ident">BlockImportErrorKind</span>::<span class="ident">Block</span>(<span class="ident">e</span>), <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">ErrorKind</span>::<span class="ident">Block</span>(<span class="ident">e</span>).<span class="ident">into</span>(),
 			<span class="ident">BlockImportError</span>(<span class="ident">BlockImportErrorKind</span>::<span class="ident">Import</span>(<span class="ident">e</span>), <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">ErrorKind</span>::<span class="ident">Import</span>(<span class="ident">e</span>).<span class="ident">into</span>(),
-			<span class="ident">BlockImportError</span>(<span class="ident">BlockImportErrorKind</span>::<span class="ident">Other</span>(<span class="ident">s</span>), <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">UtilError</span>::<span class="ident">from</span>(<span class="ident">s</span>).<span class="ident">into</span>(),
 			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">ErrorKind</span>::<span class="ident">Msg</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;other block import error: {:?}&quot;</span>, <span class="ident">err</span>)).<span class="ident">into</span>(),
 		}
 	}

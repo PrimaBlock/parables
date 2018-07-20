@@ -9,6 +9,13 @@ $ ( # [ $ <span class="ident">meta</span> : <span class="ident">meta</span> ] ) 
 <span class="ident">params</span> : <span class="ident">tt</span> ( $ ( $ <span class="ident">var</span> : <span class="ident">pat</span> <span class="kw">in</span> $ <span class="ident">strategy</span> : <span class="ident">expr</span> ) , <span class="op">+</span> $ ( , ) <span class="op">*</span> ) (
 $ ( $ <span class="ident">var2</span> : <span class="ident">pat</span> <span class="kw">in</span> $ <span class="ident">strategy2</span> : <span class="ident">expr</span> ) , <span class="op">+</span> $ ( , ) <span class="op">*</span> ) <span class="op">-&gt;</span> $ <span class="ident">return_type</span> : <span class="ident">ty</span>
 $ <span class="ident">body</span> : <span class="ident">block</span> ) <span class="op">=&gt;</span> { ... };
+    (
+$ ( # [ $ <span class="ident">meta</span> : <span class="ident">meta</span> ] ) <span class="op">*</span> $ ( [ $ ( $ <span class="ident">vis</span> : <span class="ident">tt</span> ) <span class="op">*</span> ] ) <span class="op">*</span> <span class="kw">fn</span> $ <span class="ident">name</span> : <span class="ident">ident</span> $
+<span class="ident">params</span> : <span class="ident">tt</span> ( $ ( $ <span class="ident">arg</span> : <span class="ident">tt</span> ) <span class="op">+</span> ) <span class="op">-&gt;</span> $ <span class="ident">return_type</span> : <span class="ident">ty</span> $ <span class="ident">body</span> : <span class="ident">block</span> ) <span class="op">=&gt;</span> { ... };
+    (
+$ ( # [ $ <span class="ident">meta</span> : <span class="ident">meta</span> ] ) <span class="op">*</span> $ ( [ $ ( $ <span class="ident">vis</span> : <span class="ident">tt</span> ) <span class="op">*</span> ] ) <span class="op">*</span> <span class="kw">fn</span> $ <span class="ident">name</span> : <span class="ident">ident</span> $
+<span class="ident">params</span> : <span class="ident">tt</span> ( $ ( $ <span class="ident">arg</span> : <span class="ident">tt</span> ) <span class="op">+</span> $ ( , ) <span class="op">*</span> ) ( $ ( $ <span class="ident">arg2</span> : <span class="ident">tt</span> ) <span class="op">+</span> $ ( , ) <span class="op">*</span> )
+<span class="op">-&gt;</span> $ <span class="ident">return_type</span> : <span class="ident">ty</span> $ <span class="ident">body</span> : <span class="ident">block</span> ) <span class="op">=&gt;</span> { ... };
 }</pre>
 </div><div class='docblock'><p>Convenience to define functions which produce new strategies.</p>
 <p>The macro has two general forms. In the first, you define a function with
@@ -37,7 +44,18 @@ the type of value being generated; the final return type of the function is
   }
 }</pre>
 <p>This form is simply sugar around making a tuple and then calling <code>prop_map</code>
-on it.</p>
+on it. You can also use <code>arg: type</code> as in <code>proptest! { .. }</code>:</p>
+
+<pre class="rust rust-example-rendered">
+
+
+<span class="macro">prop_compose</span><span class="macro">!</span> {
+  <span class="kw">fn</span> <span class="ident">my_struct_strategy</span>(<span class="ident">max_integer</span>: <span class="ident">u32</span>)
+                       (<span class="ident">integer</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">max_integer</span>, <span class="ident">string</span>: <span class="ident">String</span>)
+                       <span class="op">-&gt;</span> <span class="ident">MyStruct</span> {
+    <span class="ident">MyStruct</span> { <span class="ident">integer</span>, <span class="ident">string</span> }
+  }
+}</pre>
 <p>The second form is mostly the same, except that it takes <em>three</em> argument
 lists. The third argument list can see all values in both prior, which
 permits producing strategies based on other strategies.</p>

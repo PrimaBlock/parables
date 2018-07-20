@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/miner/src/pool/scoring.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scoring.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/miner/src/pool/scoring.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scoring.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -286,6 +286,41 @@
 <span id="286">286</span>
 <span id="287">287</span>
 <span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -319,19 +354,42 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">U256</span>;
-<span class="kw">use</span> <span class="ident">txpool</span>;
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">PrioritizationStrategy</span>, <span class="ident">VerifiedTransaction</span>};
+<span class="kw">use</span> <span class="ident">txpool</span>::{<span class="self">self</span>, <span class="ident">scoring</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">verifier</span>, <span class="ident">PrioritizationStrategy</span>, <span class="ident">VerifiedTransaction</span>};
 
 <span class="doccomment">/// Transaction with the same (sender, nonce) can be replaced only if</span>
 <span class="doccomment">/// `new_gas_price &gt; old_gas_price + old_gas_price &gt;&gt; SHIFT`</span>
 <span class="kw">const</span> <span class="ident">GAS_PRICE_BUMP_SHIFT</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">3</span>; <span class="comment">// 2 = 25%, 3 = 12.5%, 4 = 6.25%</span>
 
+<span class="doccomment">/// Calculate minimal gas price requirement.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">bump_gas_price</span>(<span class="ident">old_gp</span>: <span class="ident">U256</span>) <span class="op">-&gt;</span> <span class="ident">U256</span> {
+	<span class="ident">old_gp</span>.<span class="ident">saturating_add</span>(<span class="ident">old_gp</span> <span class="op">&gt;&gt;</span> <span class="ident">GAS_PRICE_BUMP_SHIFT</span>)
+}
+
 <span class="doccomment">/// Simple, gas-price based scoring for transactions.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// NOTE: Currently penalization does not apply to new transactions that enter the pool.</span>
 <span class="doccomment">/// We might want to store penalization status in some persistent state.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NonceAndGasPrice</span>(<span class="kw">pub</span> <span class="ident">PrioritizationStrategy</span>);
+
+<span class="kw">impl</span> <span class="ident">NonceAndGasPrice</span> {
+	<span class="doccomment">/// Decide if the transaction should even be considered into the pool (if the pool is full).</span>
+	<span class="doccomment">///</span>
+	<span class="doccomment">/// Used by Verifier to quickly reject transactions that don&#39;t have any chance to get into the pool later on,</span>
+	<span class="doccomment">/// and save time on more expensive checks like sender recovery, etc.</span>
+	<span class="doccomment">///</span>
+	<span class="doccomment">/// NOTE The method is never called for zero-gas-price transactions or local transactions</span>
+	<span class="doccomment">/// (such transactions are always considered to the pool and potentially rejected later on)</span>
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">should_reject_early</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>, <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">verifier</span>::<span class="ident">Transaction</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+		<span class="kw">if</span> <span class="ident">old</span>.<span class="ident">priority</span>().<span class="ident">is_local</span>() {
+			<span class="kw">return</span> <span class="bool-val">true</span>
+		}
+
+		<span class="kw-2">&amp;</span><span class="ident">old</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span> <span class="op">&gt;</span> <span class="ident">new</span>.<span class="ident">gas_price</span>()
+	}
+}
 
 <span class="kw">impl</span> <span class="ident">txpool</span>::<span class="ident">Scoring</span><span class="op">&lt;</span><span class="ident">VerifiedTransaction</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NonceAndGasPrice</span> {
 	<span class="kw">type</span> <span class="ident">Score</span> <span class="op">=</span> <span class="ident">U256</span>;
@@ -341,24 +399,24 @@
 		<span class="ident">old</span>.<span class="ident">transaction</span>.<span class="ident">nonce</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">transaction</span>.<span class="ident">nonce</span>)
 	}
 
-	<span class="kw">fn</span> <span class="ident">choose</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>, <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>) <span class="op">-&gt;</span> <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Choice</span> {
+	<span class="kw">fn</span> <span class="ident">choose</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>, <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>) <span class="op">-&gt;</span> <span class="ident">scoring</span>::<span class="ident">Choice</span> {
 		<span class="kw">if</span> <span class="ident">old</span>.<span class="ident">transaction</span>.<span class="ident">nonce</span> <span class="op">!=</span> <span class="ident">new</span>.<span class="ident">transaction</span>.<span class="ident">nonce</span> {
-			<span class="kw">return</span> <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">InsertNew</span>
+			<span class="kw">return</span> <span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">InsertNew</span>
 		}
 
 		<span class="kw">let</span> <span class="ident">old_gp</span> <span class="op">=</span> <span class="ident">old</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span>;
 		<span class="kw">let</span> <span class="ident">new_gp</span> <span class="op">=</span> <span class="ident">new</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span>;
 
-		<span class="kw">let</span> <span class="ident">min_required_gp</span> <span class="op">=</span> <span class="ident">old_gp</span> <span class="op">+</span> (<span class="ident">old_gp</span> <span class="op">&gt;&gt;</span> <span class="ident">GAS_PRICE_BUMP_SHIFT</span>);
+		<span class="kw">let</span> <span class="ident">min_required_gp</span> <span class="op">=</span> <span class="ident">bump_gas_price</span>(<span class="ident">old_gp</span>);
 
 		<span class="kw">match</span> <span class="ident">min_required_gp</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">new_gp</span>) {
-			<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">RejectNew</span>,
-			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">ReplaceOld</span>,
+			<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">RejectNew</span>,
+			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">ReplaceOld</span>,
 		}
 	}
 
-	<span class="kw">fn</span> <span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txs</span>: <span class="kw-2">&amp;</span>[<span class="ident">txpool</span>::<span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">VerifiedTransaction</span><span class="op">&gt;</span>], <span class="ident">scores</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">U256</span>], <span class="ident">change</span>: <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>) {
-		<span class="kw">use</span> <span class="self">self</span>::<span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>;
+	<span class="kw">fn</span> <span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txs</span>: <span class="kw-2">&amp;</span>[<span class="ident">txpool</span>::<span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">VerifiedTransaction</span><span class="op">&gt;</span>], <span class="ident">scores</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">U256</span>], <span class="ident">change</span>: <span class="ident">scoring</span>::<span class="ident">Change</span>) {
+		<span class="kw">use</span> <span class="self">self</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>;
 
 		<span class="kw">match</span> <span class="ident">change</span> {
 			<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {},
@@ -388,19 +446,30 @@
 		}
 	}
 
-	<span class="kw">fn</span> <span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>, <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+	<span class="kw">fn</span> <span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>, <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>) <span class="op">-&gt;</span> <span class="ident">scoring</span>::<span class="ident">Choice</span> {
 		<span class="kw">if</span> <span class="ident">old</span>.<span class="ident">sender</span> <span class="op">==</span> <span class="ident">new</span>.<span class="ident">sender</span> {
 			<span class="comment">// prefer earliest transaction</span>
 			<span class="kw">match</span> <span class="ident">new</span>.<span class="ident">transaction</span>.<span class="ident">nonce</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">old</span>.<span class="ident">transaction</span>.<span class="ident">nonce</span>) {
-				<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-				<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-				<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">choose</span>(<span class="ident">old</span>, <span class="ident">new</span>) <span class="op">==</span> <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">ReplaceOld</span>,
+				<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">ReplaceOld</span>,
+				<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">RejectNew</span>,
+				<span class="ident">cmp</span>::<span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">choose</span>(<span class="ident">old</span>, <span class="ident">new</span>),
 			}
+		} <span class="kw">else</span> <span class="kw">if</span> <span class="ident">old</span>.<span class="ident">priority</span>().<span class="ident">is_local</span>() <span class="op">&amp;&amp;</span> <span class="ident">new</span>.<span class="ident">priority</span>().<span class="ident">is_local</span>() {
+			<span class="comment">// accept local transactions over the limit</span>
+			<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">InsertNew</span>
 		} <span class="kw">else</span> {
 			<span class="kw">let</span> <span class="ident">old_score</span> <span class="op">=</span> (<span class="ident">old</span>.<span class="ident">priority</span>(), <span class="ident">old</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span>);
 			<span class="kw">let</span> <span class="ident">new_score</span> <span class="op">=</span> (<span class="ident">new</span>.<span class="ident">priority</span>(), <span class="ident">new</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span>);
-			<span class="ident">new_score</span> <span class="op">&gt;</span> <span class="ident">old_score</span>
-		}
+			<span class="kw">if</span> <span class="ident">new_score</span> <span class="op">&gt;</span> <span class="ident">old_score</span> {
+				<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">ReplaceOld</span>
+			} <span class="kw">else</span> {
+				<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="ident">RejectNew</span>
+			}
+	 	}
+	}
+
+	<span class="kw">fn</span> <span class="ident">should_ignore_sender_limit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">VerifiedTransaction</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+		<span class="ident">new</span>.<span class="ident">priority</span>().<span class="ident">is_local</span>()
 	}
 }
 
@@ -412,6 +481,7 @@
 	<span class="kw">use</span> <span class="ident">ethkey</span>::{<span class="ident">Random</span>, <span class="ident">Generator</span>};
 	<span class="kw">use</span> <span class="ident">pool</span>::<span class="ident">tests</span>::<span class="ident">tx</span>::{<span class="ident">Tx</span>, <span class="ident">TxExt</span>};
 	<span class="kw">use</span> <span class="ident">txpool</span>::<span class="ident">Scoring</span>;
+	<span class="kw">use</span> <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Choice</span>::<span class="kw-2">*</span>;
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">should_replace_same_sender_by_nonce</span>() {
@@ -447,14 +517,14 @@
 			}
 		}).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
 
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>]));
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">0</span>]));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>]), <span class="ident">RejectNew</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">0</span>]), <span class="ident">ReplaceOld</span>);
 
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">2</span>]));
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">2</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>]));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">2</span>]), <span class="ident">RejectNew</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">2</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>]), <span class="ident">RejectNew</span>);
 
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">3</span>]));
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">3</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>]));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">3</span>]), <span class="ident">ReplaceOld</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">3</span>], <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="number">1</span>]), <span class="ident">RejectNew</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -512,14 +582,14 @@
 			}
 		};
 
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_regular_low_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>));
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_low_gas</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_regular_low_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>), <span class="ident">ReplaceOld</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_low_gas</span>), <span class="ident">RejectNew</span>);
 
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_local_low_gas</span>));
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_local_low_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_local_low_gas</span>), <span class="ident">ReplaceOld</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_local_low_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_high_gas</span>), <span class="ident">RejectNew</span>);
 
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_local_low_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_local_high_gas</span>));
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_local_high_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_low_gas</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_local_low_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_local_high_gas</span>), <span class="ident">InsertNew</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scoring</span>.<span class="ident">should_replace</span>(<span class="kw-2">&amp;</span><span class="ident">tx_local_high_gas</span>, <span class="kw-2">&amp;</span><span class="ident">tx_regular_low_gas</span>), <span class="ident">RejectNew</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -543,35 +613,35 @@
 
 		<span class="comment">// No update required</span>
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">scores</span> <span class="op">=</span> <span class="ident">initial_scores</span>.<span class="ident">clone</span>();
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="number">0</span>));
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="number">1</span>));
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="number">2</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="number">0</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="number">1</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Culled</span>(<span class="number">2</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="ident">initial_scores</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">scores</span> <span class="op">=</span> <span class="ident">initial_scores</span>.<span class="ident">clone</span>();
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">RemovedAt</span>(<span class="number">0</span>));
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">RemovedAt</span>(<span class="number">1</span>));
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">RemovedAt</span>(<span class="number">2</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">RemovedAt</span>(<span class="number">0</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">RemovedAt</span>(<span class="number">1</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">RemovedAt</span>(<span class="number">2</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="ident">initial_scores</span>);
 
 		<span class="comment">// Compute score at given index</span>
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">scores</span> <span class="op">=</span> <span class="ident">initial_scores</span>.<span class="ident">clone</span>();
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">InsertedAt</span>(<span class="number">0</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">InsertedAt</span>(<span class="number">0</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>()]);
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">InsertedAt</span>(<span class="number">1</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">InsertedAt</span>(<span class="number">1</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">1024</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>()]);
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">InsertedAt</span>(<span class="number">2</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">InsertedAt</span>(<span class="number">2</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">1024</span>.<span class="ident">into</span>(), <span class="number">1</span>.<span class="ident">into</span>()]);
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">scores</span> <span class="op">=</span> <span class="ident">initial_scores</span>.<span class="ident">clone</span>();
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">ReplacedAt</span>(<span class="number">0</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">ReplacedAt</span>(<span class="number">0</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>()]);
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">ReplacedAt</span>(<span class="number">1</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">ReplacedAt</span>(<span class="number">1</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">1024</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>()]);
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">ReplacedAt</span>(<span class="number">2</span>));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">ReplacedAt</span>(<span class="number">2</span>));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">1024</span>.<span class="ident">into</span>(), <span class="number">1</span>.<span class="ident">into</span>()]);
 
 		<span class="comment">// Check penalization</span>
-		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">txpool</span>::<span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Event</span>(()));
+		<span class="ident">scoring</span>.<span class="ident">update_scores</span>(<span class="kw-2">&amp;</span><span class="ident">transactions</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">scores</span>, <span class="ident">scoring</span>::<span class="ident">Change</span>::<span class="ident">Event</span>(()));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">scores</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">32768</span>.<span class="ident">into</span>(), <span class="number">128</span>.<span class="ident">into</span>(), <span class="number">0</span>.<span class="ident">into</span>()]);
 	}
 }

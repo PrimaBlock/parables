@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/wasmi-0.2.0/src/module.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>module.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/registry/src/github.com-1ecc6299db9ec823/wasmi-0.3.0/src/module.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>module.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -832,7 +832,6 @@
 <span id="832">832</span>
 <span id="833">833</span>
 <span id="834">834</span>
-<span id="835">835</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">runner</span>::<span class="ident">check_function_args</span>;
 <span class="kw">use</span> <span class="ident">Trap</span>;
@@ -840,7 +839,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
-<span class="kw">use</span> <span class="ident">parity_wasm</span>::<span class="ident">elements</span>::{<span class="ident">External</span>, <span class="ident">InitExpr</span>, <span class="ident">Internal</span>, <span class="ident">Opcode</span>, <span class="ident">ResizableLimits</span>, <span class="ident">Type</span>};
+<span class="kw">use</span> <span class="ident">parity_wasm</span>::<span class="ident">elements</span>::{<span class="ident">External</span>, <span class="ident">InitExpr</span>, <span class="ident">Internal</span>, <span class="ident">Instruction</span>, <span class="ident">ResizableLimits</span>, <span class="ident">Type</span>};
 <span class="kw">use</span> {<span class="ident">Module</span>, <span class="ident">Error</span>, <span class="ident">Signature</span>, <span class="ident">MemoryInstance</span>, <span class="ident">RuntimeValue</span>, <span class="ident">TableInstance</span>};
 <span class="kw">use</span> <span class="ident">imports</span>::<span class="ident">ImportResolver</span>;
 <span class="kw">use</span> <span class="ident">global</span>::{<span class="ident">GlobalInstance</span>, <span class="ident">GlobalRef</span>};
@@ -1127,7 +1126,7 @@
 			}
 		}
 
-		<span class="kw">let</span> <span class="ident">labels</span> <span class="op">=</span> <span class="ident">loaded_module</span>.<span class="ident">labels</span>();
+		<span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">loaded_module</span>.<span class="ident">code</span>();
 		{
 			<span class="kw">let</span> <span class="ident">funcs</span> <span class="op">=</span> <span class="ident">module</span>.<span class="ident">function_section</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">fs</span><span class="op">|</span> <span class="ident">fs</span>.<span class="ident">entries</span>()).<span class="ident">unwrap_or</span>(
 				<span class="kw-2">&amp;</span>[],
@@ -1144,13 +1143,12 @@
 				<span class="kw">let</span> <span class="ident">signature</span> <span class="op">=</span> <span class="ident">instance</span>.<span class="ident">signature_by_index</span>(<span class="ident">ty</span>.<span class="ident">type_ref</span>()).<span class="ident">expect</span>(
 					<span class="string">&quot;Due to validation type should exists&quot;</span>,
 				);
-				<span class="kw">let</span> <span class="ident">labels</span> <span class="op">=</span> <span class="ident">labels</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>).<span class="ident">expect</span>(
+				<span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">code</span>.<span class="ident">get</span>(<span class="ident">index</span>).<span class="ident">expect</span>(
 					<span class="string">&quot;At func validation time labels are collected; Collected labels are added by index; qed&quot;</span>,
 				).<span class="ident">clone</span>();
 				<span class="kw">let</span> <span class="ident">func_body</span> <span class="op">=</span> <span class="ident">FuncBody</span> {
 					<span class="ident">locals</span>: <span class="ident">body</span>.<span class="ident">locals</span>().<span class="ident">to_vec</span>(),
-					<span class="ident">opcodes</span>: <span class="ident">body</span>.<span class="ident">code</span>().<span class="ident">clone</span>(),
-					<span class="ident">labels</span>: <span class="ident">labels</span>,
+					<span class="ident">code</span>: <span class="ident">code</span>,
 				};
 				<span class="kw">let</span> <span class="ident">func_instance</span> <span class="op">=</span>
 					<span class="ident">FuncInstance</span>::<span class="ident">alloc_internal</span>(<span class="ident">Rc</span>::<span class="ident">downgrade</span>(<span class="kw-2">&amp;</span><span class="ident">instance</span>.<span class="number">0</span>), <span class="ident">signature</span>, <span class="ident">func_body</span>);
@@ -1545,11 +1543,11 @@
 		<span class="string">&quot;Due to validation `code`.len() should be 2&quot;</span>
 	);
 	<span class="kw">match</span> <span class="ident">code</span>[<span class="number">0</span>] {
-		<span class="ident">Opcode</span>::<span class="ident">I32Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>.<span class="ident">into</span>(),
-		<span class="ident">Opcode</span>::<span class="ident">I64Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>.<span class="ident">into</span>(),
-		<span class="ident">Opcode</span>::<span class="ident">F32Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">RuntimeValue</span>::<span class="ident">decode_f32</span>(<span class="ident">v</span>),
-		<span class="ident">Opcode</span>::<span class="ident">F64Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">RuntimeValue</span>::<span class="ident">decode_f64</span>(<span class="ident">v</span>),
-		<span class="ident">Opcode</span>::<span class="ident">GetGlobal</span>(<span class="ident">idx</span>) <span class="op">=&gt;</span> {
+		<span class="ident">Instruction</span>::<span class="ident">I32Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>.<span class="ident">into</span>(),
+		<span class="ident">Instruction</span>::<span class="ident">I64Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>.<span class="ident">into</span>(),
+		<span class="ident">Instruction</span>::<span class="ident">F32Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">RuntimeValue</span>::<span class="ident">decode_f32</span>(<span class="ident">v</span>),
+		<span class="ident">Instruction</span>::<span class="ident">F64Const</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">RuntimeValue</span>::<span class="ident">decode_f64</span>(<span class="ident">v</span>),
+		<span class="ident">Instruction</span>::<span class="ident">GetGlobal</span>(<span class="ident">idx</span>) <span class="op">=&gt;</span> {
 			<span class="kw">let</span> <span class="ident">global</span> <span class="op">=</span> <span class="ident">module</span>.<span class="ident">global_by_index</span>(<span class="ident">idx</span>).<span class="ident">expect</span>(
 				<span class="string">&quot;Due to validation global should exists in module&quot;</span>,
 			);

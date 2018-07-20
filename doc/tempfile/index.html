@@ -10,9 +10,9 @@
 <p>When choosing between the temporary file variants, prefer <code>tempfile</code>
 unless you either need to know the file's path or to be able to persist it.</p>
 <h2 id="resource-leaking" class="section-header"><a href="#resource-leaking">Resource Leaking</a></h2>
-<p><code>tempfile</code> will (almost) never fail to cleanup temporary resources but <code>TempDir</code> and <code>NamedTempFile</code> will if
+<p><code>tempfile</code> will (almost) never fail to cleanup temporary resources, but <code>TempDir</code> and <code>NamedTempFile</code> will if
 their destructors don't run. This is because <code>tempfile</code> relies on the OS to cleanup the
-underlying file so the file while <code>TempDir</code> and <code>NamedTempFile</code> rely on their destructors to do so.</p>
+underlying file, while <code>TempDir</code> and <code>NamedTempFile</code> rely on their destructors to do so.</p>
 <h2 id="security" class="section-header"><a href="#security">Security</a></h2>
 <p>In the presence of pathological temporary file cleaner, relying on file paths is unsafe because
 a temporary file cleaner could delete the temporary file which an attacker could then replace.</p>

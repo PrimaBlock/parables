@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/util/triehash/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-common-b7e6dd3e48c6ce77/4481687/triehash/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -374,6 +374,37 @@
 <span id="374">374</span>
 <span id="375">375</span>
 <span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -397,14 +428,14 @@
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">elastic_array</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethereum_types</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">keccak_hash</span> <span class="kw">as</span> <span class="ident">hash</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">hashdb</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rlp</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">keccak_hasher</span>;
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BTreeMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 <span class="kw">use</span> <span class="ident">elastic_array</span>::{<span class="ident">ElasticArray4</span>, <span class="ident">ElasticArray8</span>};
-<span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">H256</span>;
-<span class="kw">use</span> <span class="ident">hash</span>::<span class="ident">keccak</span>;
+<span class="kw">use</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span>;
 <span class="kw">use</span> <span class="ident">rlp</span>::<span class="ident">RlpStream</span>;
 
 <span class="kw">fn</span> <span class="ident">shared_prefix_len</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Eq</span><span class="op">&gt;</span>(<span class="ident">first</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">second</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>]) <span class="op">-&gt;</span> <span class="ident">usize</span> {
@@ -416,20 +447,24 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust</span>
 <span class="doccomment">/// extern crate triehash;</span>
+<span class="doccomment">/// extern crate keccak_hasher;</span>
 <span class="doccomment">/// use triehash::ordered_trie_root;</span>
+<span class="doccomment">/// use keccak_hasher::KeccakHasher;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// fn main() {</span>
 <span class="doccomment">/// 	let v = &amp;[&quot;doe&quot;, &quot;reindeer&quot;];</span>
 <span class="doccomment">/// 	let root = &quot;e766d5d51b89dc39d981b41bda63248d7abce4f0225eefd023792a540bcffee3&quot;;</span>
-<span class="doccomment">/// 	assert_eq!(ordered_trie_root(v), root.into());</span>
+<span class="doccomment">/// 	assert_eq!(ordered_trie_root::&lt;KeccakHasher, _, _&gt;(v), root.into());</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ordered_trie_root</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">H256</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ordered_trie_root</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">H</span>::<span class="ident">Out</span>
 	<span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
 		  <span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		  <span class="ident">H</span>: <span class="ident">Hasher</span>,
+		  <span class="op">&lt;</span><span class="ident">H</span> <span class="kw">as</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>::<span class="ident">Out</span>: <span class="ident">cmp</span>::<span class="ident">Ord</span> <span class="op">+</span> <span class="ident">rlp</span>::<span class="ident">Encodable</span>,
 {
 	<span class="kw">let</span> <span class="ident">gen_input</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>
-		<span class="comment">// first put elements into btree to sort them by nibbles</span>
+		<span class="comment">// first put elements into btree to sort them by nibbles (key&#39;d by index)</span>
 		<span class="comment">// optimize it later</span>
 		.<span class="ident">into_iter</span>()
 		.<span class="ident">enumerate</span>()
@@ -440,14 +475,16 @@
 		.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">as_nibbles</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>), <span class="ident">v</span>) )
 		.<span class="ident">collect</span>();
 
-	<span class="ident">gen_trie_root</span>(<span class="kw-2">&amp;</span><span class="ident">gen_input</span>)
+	<span class="ident">gen_trie_root</span>::<span class="op">&lt;</span><span class="ident">H</span>,<span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">gen_input</span>)
 }
 
-<span class="doccomment">/// Generates a trie root hash for a vector of key-values</span>
+<span class="doccomment">/// Generates a trie root hash for a vector of key-value tuples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust</span>
 <span class="doccomment">/// extern crate triehash;</span>
+<span class="doccomment">/// extern crate keccak_hasher;</span>
 <span class="doccomment">/// use triehash::trie_root;</span>
+<span class="doccomment">/// use keccak_hasher::KeccakHasher;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// fn main() {</span>
 <span class="doccomment">/// 	let v = vec![</span>
@@ -457,13 +494,15 @@
 <span class="doccomment">/// 	];</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// 	let root = &quot;8aad789dff2f538bca5d8ea56e8abe10f4c7ba3a5dea95fea4cd6e7c3a1168d3&quot;;</span>
-<span class="doccomment">/// 	assert_eq!(trie_root(v), root.into());</span>
+<span class="doccomment">/// 	assert_eq!(trie_root::&lt;KeccakHasher, _, _, _&gt;(v), root.into());</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trie_root</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">H256</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trie_root</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">H</span>::<span class="ident">Out</span>
 	<span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">A</span>, <span class="ident">B</span>)<span class="op">&gt;</span>,
 		  <span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Ord</span>,
 		  <span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		  <span class="ident">H</span>: <span class="ident">Hasher</span>,
+		  <span class="op">&lt;</span><span class="ident">H</span> <span class="kw">as</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>::<span class="ident">Out</span>: <span class="ident">cmp</span>::<span class="ident">Ord</span> <span class="op">+</span> <span class="ident">rlp</span>::<span class="ident">Encodable</span>,
 {
 	<span class="kw">let</span> <span class="ident">gen_input</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>
 		<span class="comment">// first put elements into btree to sort them and to remove duplicates</span>
@@ -474,14 +513,16 @@
 		.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">as_nibbles</span>(<span class="ident">k</span>.<span class="ident">as_ref</span>()), <span class="ident">v</span>) )
 		.<span class="ident">collect</span>();
 
-	<span class="ident">gen_trie_root</span>(<span class="kw-2">&amp;</span><span class="ident">gen_input</span>)
+	<span class="ident">gen_trie_root</span>::<span class="op">&lt;</span><span class="ident">H</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">gen_input</span>)
 }
 
-<span class="doccomment">/// Generates a key-hashed (secure) trie root hash for a vector of key-values.</span>
+<span class="doccomment">/// Generates a key-hashed (secure) trie root hash for a vector of key-value tuples.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust</span>
 <span class="doccomment">/// extern crate triehash;</span>
+<span class="doccomment">/// extern crate keccak_hasher;</span>
 <span class="doccomment">/// use triehash::sec_trie_root;</span>
+<span class="doccomment">/// use keccak_hasher::KeccakHasher;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// fn main() {</span>
 <span class="doccomment">/// 	let v = vec![</span>
@@ -491,31 +532,39 @@
 <span class="doccomment">/// 	];</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// 	let root = &quot;d4cd937e4a4368d7931a9cf51686b7e10abb3dce38a39000fd7902a092b64585&quot;;</span>
-<span class="doccomment">/// 	assert_eq!(sec_trie_root(v), root.into());</span>
+<span class="doccomment">/// 	assert_eq!(sec_trie_root::&lt;KeccakHasher, _, _, _&gt;(v), root.into());</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sec_trie_root</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">H256</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sec_trie_root</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">H</span>::<span class="ident">Out</span>
 	<span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">A</span>, <span class="ident">B</span>)<span class="op">&gt;</span>,
 		  <span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
 		  <span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		  <span class="ident">H</span>: <span class="ident">Hasher</span>,
+		  <span class="op">&lt;</span><span class="ident">H</span> <span class="kw">as</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>::<span class="ident">Out</span>: <span class="ident">cmp</span>::<span class="ident">Ord</span> <span class="op">+</span> <span class="ident">rlp</span>::<span class="ident">Encodable</span>,
 {
 	<span class="kw">let</span> <span class="ident">gen_input</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>
 		<span class="comment">// first put elements into btree to sort them and to remove duplicates</span>
 		.<span class="ident">into_iter</span>()
-		.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">keccak</span>(<span class="ident">k</span>), <span class="ident">v</span>))
+		.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">H</span>::<span class="ident">hash</span>(<span class="ident">k</span>.<span class="ident">as_ref</span>()), <span class="ident">v</span>))
 		.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;&gt;</span>()
 		<span class="comment">// then move them to a vector</span>
 		.<span class="ident">into_iter</span>()
-		.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">as_nibbles</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>), <span class="ident">v</span>) )
+		.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">as_nibbles</span>(<span class="ident">k</span>.<span class="ident">as_ref</span>()), <span class="ident">v</span>) )
 		.<span class="ident">collect</span>();
 
-	<span class="ident">gen_trie_root</span>(<span class="kw-2">&amp;</span><span class="ident">gen_input</span>)
+	<span class="ident">gen_trie_root</span>::<span class="op">&lt;</span><span class="ident">H</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">gen_input</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">gen_trie_root</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[(<span class="ident">A</span>, <span class="ident">B</span>)]) <span class="op">-&gt;</span> <span class="ident">H256</span> {
+<span class="kw">fn</span> <span class="ident">gen_trie_root</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[(<span class="ident">A</span>, <span class="ident">B</span>)]) <span class="op">-&gt;</span> <span class="ident">H</span>::<span class="ident">Out</span>
+	<span class="kw">where</span>
+		<span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		<span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		<span class="ident">H</span>: <span class="ident">Hasher</span>,
+	  	<span class="op">&lt;</span><span class="ident">H</span> <span class="kw">as</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>::<span class="ident">Out</span>: <span class="ident">cmp</span>::<span class="ident">Ord</span> <span class="op">+</span> <span class="ident">rlp</span>::<span class="ident">Encodable</span>,
+{
 	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">RlpStream</span>::<span class="ident">new</span>();
-	<span class="ident">hash256rlp</span>(<span class="ident">input</span>, <span class="number">0</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>);
-	<span class="ident">keccak</span>(<span class="ident">stream</span>.<span class="ident">out</span>())
+	<span class="ident">hash256rlp</span>::<span class="op">&lt;</span><span class="ident">H</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">input</span>, <span class="number">0</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>);
+	<span class="ident">H</span>::<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="ident">stream</span>.<span class="ident">out</span>())
 }
 
 <span class="doccomment">/// Hex-prefix Notation. First nibble has flags: oddness = 2^0 &amp; termination = 2^1.</span>
@@ -573,7 +622,13 @@
 	<span class="ident">res</span>
 }
 
-<span class="kw">fn</span> <span class="ident">hash256rlp</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[(<span class="ident">A</span>, <span class="ident">B</span>)], <span class="ident">pre_len</span>: <span class="ident">usize</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RlpStream</span>) {
+<span class="kw">fn</span> <span class="ident">hash256rlp</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[(<span class="ident">A</span>, <span class="ident">B</span>)], <span class="ident">pre_len</span>: <span class="ident">usize</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RlpStream</span>)
+	<span class="kw">where</span>
+		<span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		<span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		<span class="ident">H</span>: <span class="ident">Hasher</span>,
+		<span class="op">&lt;</span><span class="ident">H</span> <span class="kw">as</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>::<span class="ident">Out</span>: <span class="ident">rlp</span>::<span class="ident">Encodable</span>,
+{
 	<span class="kw">let</span> <span class="ident">inlen</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">len</span>();
 
 	<span class="comment">// in case of empty slice, just append empty data</span>
@@ -597,7 +652,7 @@
 
 	<span class="comment">// get length of the longest shared prefix in slice keys</span>
 	<span class="kw">let</span> <span class="ident">shared_prefix</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">iter</span>()
-		<span class="comment">// skip first element</span>
+		<span class="comment">// skip first tuple</span>
 		.<span class="ident">skip</span>(<span class="number">1</span>)
 		<span class="comment">// get minimum number of shared nibbles between first and each successive</span>
 		.<span class="ident">fold</span>(<span class="ident">key</span>.<span class="ident">len</span>(), <span class="op">|</span> <span class="ident">acc</span>, <span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">k</span>, <span class="kw">_</span>) <span class="op">|</span> {
@@ -610,7 +665,7 @@
 	<span class="kw">if</span> <span class="ident">shared_prefix</span> <span class="op">&gt;</span> <span class="ident">pre_len</span> {
 		<span class="ident">stream</span>.<span class="ident">begin_list</span>(<span class="number">2</span>);
 		<span class="ident">stream</span>.<span class="ident">append</span>(<span class="op">&amp;&amp;</span><span class="kw-2">*</span><span class="ident">hex_prefix_encode</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>[<span class="ident">pre_len</span>..<span class="ident">shared_prefix</span>], <span class="bool-val">false</span>));
-		<span class="ident">hash256aux</span>(<span class="ident">input</span>, <span class="ident">shared_prefix</span>, <span class="ident">stream</span>);
+		<span class="ident">hash256aux</span>::<span class="op">&lt;</span><span class="ident">H</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">input</span>, <span class="ident">shared_prefix</span>, <span class="ident">stream</span>);
 		<span class="kw">return</span>;
 	}
 
@@ -626,7 +681,7 @@
 
 	<span class="comment">// iterate over all possible nibbles</span>
 	<span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">16</span> {
-		<span class="comment">// cout how many successive elements have same next nibble</span>
+		<span class="comment">// count how many successive elements have same next nibble</span>
 		<span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">begin</span> <span class="op">&lt;</span> <span class="ident">input</span>.<span class="ident">len</span>() {
 			<span class="bool-val">true</span> <span class="op">=&gt;</span> <span class="ident">input</span>[<span class="ident">begin</span>..].<span class="ident">iter</span>()
 				.<span class="ident">take_while</span>(<span class="op">|</span> <span class="ident">pair</span> <span class="op">|</span> <span class="ident">pair</span>.<span class="number">0</span>.<span class="ident">as_ref</span>()[<span class="ident">pre_len</span>] <span class="op">==</span> <span class="ident">i</span> )
@@ -638,7 +693,7 @@
 		<span class="comment">// append their suffixes</span>
 		<span class="kw">match</span> <span class="ident">len</span> {
 			<span class="number">0</span> <span class="op">=&gt;</span> { <span class="ident">stream</span>.<span class="ident">append_empty_data</span>(); },
-			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">hash256aux</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">begin</span>..(<span class="ident">begin</span> <span class="op">+</span> <span class="ident">len</span>)], <span class="ident">pre_len</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">stream</span>)
+			<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">hash256aux</span>::<span class="op">&lt;</span><span class="ident">H</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">begin</span>..(<span class="ident">begin</span> <span class="op">+</span> <span class="ident">len</span>)], <span class="ident">pre_len</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">stream</span>)
 		}
 		<span class="ident">begin</span> <span class="op">+=</span> <span class="ident">len</span>;
 	}
@@ -650,13 +705,19 @@
 	};
 }
 
-<span class="kw">fn</span> <span class="ident">hash256aux</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[(<span class="ident">A</span>, <span class="ident">B</span>)], <span class="ident">pre_len</span>: <span class="ident">usize</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RlpStream</span>) {
+<span class="kw">fn</span> <span class="ident">hash256aux</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[(<span class="ident">A</span>, <span class="ident">B</span>)], <span class="ident">pre_len</span>: <span class="ident">usize</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RlpStream</span>)
+	<span class="kw">where</span>
+		<span class="ident">A</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		<span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+		<span class="ident">H</span>: <span class="ident">Hasher</span>,
+		<span class="op">&lt;</span><span class="ident">H</span> <span class="kw">as</span> <span class="ident">hashdb</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>::<span class="ident">Out</span>: <span class="ident">rlp</span>::<span class="ident">Encodable</span>,
+{
 	<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RlpStream</span>::<span class="ident">new</span>();
-	<span class="ident">hash256rlp</span>(<span class="ident">input</span>, <span class="ident">pre_len</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>);
+	<span class="ident">hash256rlp</span>::<span class="op">&lt;</span><span class="ident">H</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">input</span>, <span class="ident">pre_len</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>);
 	<span class="kw">let</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">out</span>();
 	<span class="kw">match</span> <span class="ident">out</span>.<span class="ident">len</span>() {
 		<span class="number">0</span>...<span class="number">31</span> <span class="op">=&gt;</span> <span class="ident">stream</span>.<span class="ident">append_raw</span>(<span class="kw-2">&amp;</span><span class="ident">out</span>, <span class="number">1</span>),
-		<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">stream</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">keccak</span>(<span class="ident">out</span>))
+		<span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">stream</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">H</span>::<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="ident">out</span>))
 	};
 }
 
@@ -675,6 +736,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
 	<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">trie_root</span>, <span class="ident">shared_prefix_len</span>, <span class="ident">hex_prefix_encode</span>};
+	<span class="kw">use</span> <span class="ident">keccak_hasher</span>::<span class="ident">KeccakHasher</span>;
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_hex_prefix_encode</span>() {
@@ -711,21 +773,21 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">simple_test</span>() {
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="string">b&quot;A&quot;</span>, <span class="string">b&quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;</span> <span class="kw">as</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>])
 		]), <span class="string">&quot;d23786fb4a010da3ce639d66d5e904a11dbc02746d1ce25029e53290cabf28ab&quot;</span>.<span class="ident">into</span>());
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_triehash_out_of_order</span>() {
-		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]),
 		]) <span class="op">==</span>
-		<span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]),
-			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]),
+			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]), <span class="comment">// last two tuples are swapped</span>
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>]),
 		]));
 	}

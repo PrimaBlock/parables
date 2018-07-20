@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/miner/src/pool/verifier.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verifier.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/miner/src/pool/verifier.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verifier.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -294,6 +294,32 @@
 <span id="294">294</span>
 <span id="295">295</span>
 <span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -382,19 +408,20 @@
 		}
 	}
 
+	<span class="doccomment">/// Return transaction gas price</span>
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gas_price</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">U256</span> {
+		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+			<span class="ident">Transaction</span>::<span class="ident">Unverified</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas_price</span>,
+			<span class="ident">Transaction</span>::<span class="ident">Retracted</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas_price</span>,
+			<span class="ident">Transaction</span>::<span class="ident">Local</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas_price</span>,
+		}
+	}
+
 	<span class="kw">fn</span> <span class="ident">gas</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">U256</span> {
 		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
 			<span class="ident">Transaction</span>::<span class="ident">Unverified</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas</span>,
 			<span class="ident">Transaction</span>::<span class="ident">Retracted</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas</span>,
 			<span class="ident">Transaction</span>::<span class="ident">Local</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas</span>,
-		}
-	}
-
-	<span class="kw">fn</span> <span class="ident">gas_price</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">U256</span> {
-		<span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-			<span class="ident">Transaction</span>::<span class="ident">Unverified</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas_price</span>,
-			<span class="ident">Transaction</span>::<span class="ident">Retracted</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas_price</span>,
-			<span class="ident">Transaction</span>::<span class="ident">Local</span>(<span class="kw-2">ref</span> <span class="ident">tx</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">gas_price</span>,
 		}
 	}
 
@@ -425,24 +452,31 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Verification can be run in parallel for all incoming transactions.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">V</span><span class="op">&gt;</span> {
 	<span class="ident">client</span>: <span class="ident">C</span>,
 	<span class="ident">options</span>: <span class="ident">Options</span>,
 	<span class="ident">id</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AtomicUsize</span><span class="op">&gt;</span>,
+	<span class="ident">transaction_to_replace</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">S</span>, <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">S</span>, <span class="ident">V</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Creates new transaction verfier with specified options.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">client</span>: <span class="ident">C</span>, <span class="ident">options</span>: <span class="ident">Options</span>, <span class="ident">id</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AtomicUsize</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+		<span class="ident">client</span>: <span class="ident">C</span>,
+		<span class="ident">options</span>: <span class="ident">Options</span>,
+		<span class="ident">id</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">AtomicUsize</span><span class="op">&gt;</span>,
+		<span class="ident">transaction_to_replace</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">S</span>, <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
+	) <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="ident">Verifier</span> {
 			<span class="ident">client</span>,
 			<span class="ident">options</span>,
 			<span class="ident">id</span>,
+			<span class="ident">transaction_to_replace</span>,
 		}
 	}
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Client</span><span class="op">&gt;</span> <span class="ident">txpool</span>::<span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">Client</span><span class="op">&gt;</span> <span class="ident">txpool</span>::<span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Verifier</span><span class="op">&lt;</span><span class="ident">C</span>, ::<span class="ident">pool</span>::<span class="ident">scoring</span>::<span class="ident">NonceAndGasPrice</span>, <span class="ident">VerifiedTransaction</span><span class="op">&gt;</span> {
 	<span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">transaction</span>::<span class="ident">Error</span>;
 	<span class="kw">type</span> <span class="ident">VerifiedTransaction</span> <span class="op">=</span> <span class="ident">VerifiedTransaction</span>;
 
@@ -461,7 +495,7 @@
 		<span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">gas</span>() <span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">gas_limit</span> {
 			<span class="macro">debug</span><span class="macro">!</span>(
 				<span class="ident">target</span>: <span class="string">&quot;txqueue&quot;</span>,
-				<span class="string">&quot;[{:?}] Dropping transaction above gas limit: {} &gt; min({}, {})&quot;</span>,
+				<span class="string">&quot;[{:?}] Rejected transaction above gas limit: {} &gt; min({}, {})&quot;</span>,
 				<span class="ident">hash</span>,
 				<span class="ident">tx</span>.<span class="ident">gas</span>(),
 				<span class="self">self</span>.<span class="ident">options</span>.<span class="ident">block_gas_limit</span>,
@@ -476,7 +510,7 @@
 		<span class="kw">let</span> <span class="ident">minimal_gas</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">required_gas</span>(<span class="ident">tx</span>.<span class="ident">transaction</span>());
 		<span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">gas</span>() <span class="op">&lt;</span> <span class="kw-2">&amp;</span><span class="ident">minimal_gas</span> {
 			<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;txqueue&quot;</span>,
-				<span class="string">&quot;[{:?}] Dropping transaction with insufficient gas: {} &lt; {}&quot;</span>,
+				<span class="string">&quot;[{:?}] Rejected transaction with insufficient gas: {} &lt; {}&quot;</span>,
 				<span class="ident">hash</span>,
 				<span class="ident">tx</span>.<span class="ident">gas</span>(),
 				<span class="ident">minimal_gas</span>,
@@ -489,22 +523,40 @@
 		}
 
 		<span class="kw">let</span> <span class="ident">is_own</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">is_local</span>();
-		<span class="comment">// Quick exit for non-service transactions</span>
-		<span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">gas_price</span>() <span class="op">&lt;</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span>
-			<span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">tx</span>.<span class="ident">gas_price</span>().<span class="ident">is_zero</span>()
-			<span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_own</span>
-		{
-			<span class="macro">trace</span><span class="macro">!</span>(
-				<span class="ident">target</span>: <span class="string">&quot;txqueue&quot;</span>,
-				<span class="string">&quot;[{:?}] Rejected tx below minimal gas price threshold: {} &lt; {}&quot;</span>,
-				<span class="ident">hash</span>,
-				<span class="ident">tx</span>.<span class="ident">gas_price</span>(),
-				<span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span>,
-			);
-			<span class="macro">bail</span><span class="macro">!</span>(<span class="ident">transaction</span>::<span class="ident">Error</span>::<span class="ident">InsufficientGasPrice</span> {
-				<span class="ident">minimal</span>: <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span>,
-				<span class="ident">got</span>: <span class="kw-2">*</span><span class="ident">tx</span>.<span class="ident">gas_price</span>(),
-			});
+		<span class="comment">// Quick exit for non-service and non-local transactions</span>
+		<span class="comment">//</span>
+		<span class="comment">// We&#39;re checking if the transaction is below configured minimal gas price</span>
+		<span class="comment">// or the effective minimal gas price in case the pool is full.</span>
+		<span class="kw">if</span>  <span class="op">!</span><span class="ident">tx</span>.<span class="ident">gas_price</span>().<span class="ident">is_zero</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_own</span> {
+			<span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">gas_price</span>() <span class="op">&lt;</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span> {
+				<span class="macro">trace</span><span class="macro">!</span>(
+					<span class="ident">target</span>: <span class="string">&quot;txqueue&quot;</span>,
+					<span class="string">&quot;[{:?}] Rejected tx below minimal gas price threshold: {} &lt; {}&quot;</span>,
+					<span class="ident">hash</span>,
+					<span class="ident">tx</span>.<span class="ident">gas_price</span>(),
+					<span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span>,
+				);
+				<span class="macro">bail</span><span class="macro">!</span>(<span class="ident">transaction</span>::<span class="ident">Error</span>::<span class="ident">InsufficientGasPrice</span> {
+					<span class="ident">minimal</span>: <span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span>,
+					<span class="ident">got</span>: <span class="kw-2">*</span><span class="ident">tx</span>.<span class="ident">gas_price</span>(),
+				});
+			}
+
+			<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw-2">ref</span> <span class="ident">scoring</span>, <span class="kw-2">ref</span> <span class="ident">vtx</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">transaction_to_replace</span> {
+				<span class="kw">if</span> <span class="ident">scoring</span>.<span class="ident">should_reject_early</span>(<span class="ident">vtx</span>, <span class="kw-2">&amp;</span><span class="ident">tx</span>) {
+					<span class="macro">trace</span><span class="macro">!</span>(
+						<span class="ident">target</span>: <span class="string">&quot;txqueue&quot;</span>,
+						<span class="string">&quot;[{:?}] Rejected tx early, cause it doesn&#39;t have any chance to get to the pool: (gas price: {} &lt; {})&quot;</span>,
+						<span class="ident">hash</span>,
+						<span class="ident">tx</span>.<span class="ident">gas_price</span>(),
+						<span class="ident">vtx</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span>,
+					);
+					<span class="macro">bail</span><span class="macro">!</span>(<span class="ident">transaction</span>::<span class="ident">Error</span>::<span class="ident">InsufficientGasPrice</span> {
+						<span class="ident">minimal</span>: <span class="ident">vtx</span>.<span class="ident">transaction</span>.<span class="ident">gas_price</span>,
+						<span class="ident">got</span>: <span class="kw-2">*</span><span class="ident">tx</span>.<span class="ident">gas_price</span>(),
+					});
+				}
+			}
 		}
 
 		<span class="comment">// Some more heavy checks below.</span>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/ethcore/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -183,6 +183,8 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -251,11 +253,12 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">common_types</span> <span class="kw">as</span> <span class="ident">types</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethash</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_bloom_journal</span> <span class="kw">as</span> <span class="ident">bloom_journal</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_crypto</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">parity_crypto</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_io</span> <span class="kw">as</span> <span class="ident">io</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_bytes</span> <span class="kw">as</span> <span class="ident">bytes</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">parity_bytes</span> <span class="kw">as</span> <span class="ident">bytes</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_logger</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_miner</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stratum&quot;</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_stratum</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethcore_transaction</span> <span class="kw">as</span> <span class="ident">transaction</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethereum_types</span>;
@@ -277,13 +280,14 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rlp</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rlp_compress</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">keccak_hash</span> <span class="kw">as</span> <span class="ident">hash</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">keccak_hasher</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">heapsize</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">memorydb</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">patricia_trie</span> <span class="kw">as</span> <span class="ident">trie</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">triehash</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">patricia_trie_ethereum</span> <span class="kw">as</span> <span class="ident">ethtrie</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">triehash_ethereum</span> <span class="kw">as</span> <span class="ident">triehash</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ansi_term</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">unexpected</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">util_error</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">snappy</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethabi</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rustc_hex</span>;

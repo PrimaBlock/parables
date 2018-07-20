@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/util/hashdb/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-common-b7e6dd3e48c6ce77/4481687/hashdb/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
 <span id="2"> 2</span>
 <span id="3"> 3</span>
 <span id="4"> 4</span>
@@ -76,6 +76,11 @@
 <span id="76">76</span>
 <span id="77">77</span>
 <span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -93,67 +98,72 @@
 <span class="comment">// You should have received a copy of the GNU General Public License</span>
 <span class="comment">// along with Parity.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="doccomment">//! Database of byte-slices keyed to their Keccak hash.</span>
+<span class="doccomment">//! Database of byte-slices keyed to their hash.</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">elastic_array</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ethereum_types</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">heapsize</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">elastic_array</span>::<span class="ident">ElasticArray128</span>;
-<span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">H256</span>;
+<span class="kw">use</span> <span class="ident">heapsize</span>::<span class="ident">HeapSizeOf</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>::<span class="ident">Debug</span>, <span class="ident">hash</span>::<span class="ident">Hash</span>};
+
+<span class="doccomment">/// Trait describing an object that can hash a slice of bytes. Used to abstract</span>
+<span class="doccomment">/// other types over the hashing algorithm. Defines a single `hash` method and an</span>
+<span class="doccomment">/// `Out` associated type with the necessary bounds.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Hasher</span>: <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span> {
+	<span class="doccomment">/// The output type of the `Hasher`</span>
+	<span class="kw">type</span> <span class="ident">Out</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">AsMut</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Default</span> <span class="op">+</span> <span class="ident">HeapSizeOf</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Copy</span>;
+	<span class="doccomment">/// What to use to build `HashMap`s with this `Hasher`</span>
+	<span class="kw">type</span> <span class="ident">StdHasher</span>: <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Default</span> <span class="op">+</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hasher</span>;
+	<span class="doccomment">/// The length in bytes of the `Hasher` output</span>
+	<span class="kw">const</span> <span class="ident">LENGTH</span>: <span class="ident">usize</span>;
+
+	<span class="doccomment">/// Compute the hash of the provided slice of bytes returning the `Out` type of the `Hasher`</span>
+	<span class="kw">fn</span> <span class="ident">hash</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Out</span>;
+}
 
 <span class="doccomment">/// `HashDB` value type.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">DBValue</span> <span class="op">=</span> <span class="ident">ElasticArray128</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
 
-<span class="doccomment">/// Trait modelling datastore keyed by a 32-byte Keccak hash.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">HashDB</span>: <span class="ident">AsHashDB</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
+<span class="doccomment">/// Trait modelling datastore keyed by a hash defined by the `Hasher`.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&gt;</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">AsHashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Get the keys in the database together with number of underlying references.</span>
-	<span class="kw">fn</span> <span class="ident">keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">H256</span>, <span class="ident">i32</span><span class="op">&gt;</span>;
+	<span class="kw">fn</span> <span class="ident">keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">i32</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Look up a given hash into the bytes that hash to it, returning None if the</span>
 	<span class="doccomment">/// hash is not known.</span>
-	<span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>;
+	<span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">H</span>::<span class="ident">Out</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>;
 
 	<span class="doccomment">/// Check for the existance of a hash-key.</span>
-	<span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
+	<span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">H</span>::<span class="ident">Out</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
 
 	<span class="doccomment">/// Insert a datum item into the DB and return the datum&#39;s hash for a later lookup. Insertions</span>
 	<span class="doccomment">/// are counted and the equivalent number of `remove()`s must be performed before the data</span>
 	<span class="doccomment">/// is considered dead.</span>
-	<span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">H256</span>;
+	<span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">H</span>::<span class="ident">Out</span>;
 
-	<span class="doccomment">/// Like `insert()` , except you provide the key and the data is all moved.</span>
-	<span class="kw">fn</span> <span class="ident">emplace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">H256</span>, <span class="ident">value</span>: <span class="ident">DBValue</span>);
+	<span class="doccomment">/// Like `insert()`, except you provide the key and the data is all moved.</span>
+	<span class="kw">fn</span> <span class="ident">emplace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">value</span>: <span class="ident">DBValue</span>);
 
 	<span class="doccomment">/// Remove a datum previously inserted. Insertions can be &quot;owed&quot; such that the same number of `insert()`s may</span>
 	<span class="doccomment">/// happen without the data being eventually being inserted into the DB. It can be &quot;owed&quot; more than once.</span>
-	<span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">H256</span>);
+	<span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">H</span>::<span class="ident">Out</span>);
 }
 
 <span class="doccomment">/// Upcast trait.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsHashDB</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsHashDB</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Perform upcast to HashDB for anything that derives from HashDB.</span>
-	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span>;
+	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>;
 	<span class="doccomment">/// Perform mutable upcast to HashDB for anything that derives from HashDB.</span>
-	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span>;
+	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">HashDB</span><span class="op">&gt;</span> <span class="ident">AsHashDB</span> <span class="kw">for</span> <span class="ident">T</span> {
-	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span> {
-		<span class="self">self</span>
-	}
-	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span> {
-		<span class="self">self</span>
-	}
+<span class="comment">// NOTE: There used to be a `impl&lt;T&gt; AsHashDB for T` but that does not work with generics. See https://stackoverflow.com/questions/48432842/implementing-a-trait-for-reference-and-non-reference-types-causes-conflicting-im</span>
+<span class="comment">// This means we need concrete impls of AsHashDB in several places, which somewhat defeats the point of the trait.</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&gt;</span> <span class="ident">AsHashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span> }
+	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> { <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span> }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">AsHashDB</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span> {
-	<span class="kw">fn</span> <span class="ident">as_hashdb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span> {
-		<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>
-	}
-
-	<span class="kw">fn</span> <span class="ident">as_hashdb_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span> {
-		<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>
-	}
-}
 </pre>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "hashdb";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

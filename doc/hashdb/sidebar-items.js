@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["AsHashDB","Upcast trait."],["HashDB","Trait modelling datastore keyed by a 32-byte Keccak hash."]],"type":[["DBValue","`HashDB` value type."]]});
+initSidebarItems({"trait":[["AsHashDB","Upcast trait."],["HashDB","Trait modelling datastore keyed by a hash defined by the `Hasher`."],["Hasher","Trait describing an object that can hash a slice of bytes. Used to abstract other types over the hashing algorithm. Defines a single `hash` method and an `Out` associated type with the necessary bounds."]],"type":[["DBValue","`HashDB` value type."]]});

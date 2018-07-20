@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error",""],["ScryptError",""]],"struct":[["SymmError",""]]});

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/ac3a706/util/patricia_trie/src/triedbmut.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>triedbmut.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-common-b7e6dd3e48c6ce77/4481687/patricia_trie/src/triedbmut.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>triedbmut.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1307,6 +1307,29 @@
 <span id="1307">1307</span>
 <span id="1308">1308</span>
 <span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -1326,23 +1349,23 @@
 
 <span class="doccomment">//! In-memory trie representation.</span>
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">TrieError</span>, <span class="ident">TrieMut</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="prelude-ty">Result</span>, <span class="ident">TrieError</span>, <span class="ident">TrieMut</span>};
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">lookup</span>::<span class="ident">Lookup</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">node</span>::<span class="ident">Node</span> <span class="kw">as</span> <span class="ident">RlpNode</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">node</span>::<span class="ident">Node</span> <span class="kw">as</span> <span class="ident">EncodedNode</span>;
+<span class="kw">use</span> <span class="ident">node_codec</span>::<span class="ident">NodeCodec</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">node</span>::<span class="ident">NodeKey</span>;
 
-<span class="kw">use</span> <span class="ident">hashdb</span>::<span class="ident">HashDB</span>;
 <span class="kw">use</span> <span class="ident">bytes</span>::<span class="ident">ToPretty</span>;
+<span class="kw">use</span> <span class="ident">hashdb</span>::{<span class="ident">HashDB</span>, <span class="ident">Hasher</span>, <span class="ident">DBValue</span>};
 <span class="kw">use</span> <span class="ident">nibbleslice</span>::<span class="ident">NibbleSlice</span>;
-<span class="kw">use</span> <span class="ident">rlp</span>::{<span class="ident">Rlp</span>, <span class="ident">RlpStream</span>};
-<span class="kw">use</span> <span class="ident">hashdb</span>::<span class="ident">DBValue</span>;
 
+<span class="kw">use</span> <span class="ident">elastic_array</span>::<span class="ident">ElasticArray1024</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">HashSet</span>, <span class="ident">VecDeque</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Index</span>;
-<span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">H256</span>;
-<span class="kw">use</span> <span class="ident">elastic_array</span>::<span class="ident">ElasticArray1024</span>;
-<span class="kw">use</span> <span class="ident">keccak</span>::{<span class="ident">KECCAK_NULL_RLP</span>};
+<span class="kw">use</span> <span class="ident">heapsize</span>::<span class="ident">HeapSizeOf</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>::<span class="ident">Debug</span>, <span class="ident">hash</span>::<span class="ident">Hash</span>};
 
 <span class="comment">// For lookups into the Node storage buffer.</span>
 <span class="comment">// This is deliberately non-copyable.</span>
@@ -1351,26 +1374,20 @@
 
 <span class="comment">// Handles to nodes in the trie.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">enum</span> <span class="ident">NodeHandle</span> {
+<span class="kw">enum</span> <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Loaded into memory.</span>
 	<span class="ident">InMemory</span>(<span class="ident">StorageHandle</span>),
 	<span class="doccomment">/// Either a hash or an inline node</span>
-	<span class="ident">Hash</span>(<span class="ident">H256</span>),
+	<span class="ident">Hash</span>(<span class="ident">H</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">StorageHandle</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NodeHandle</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">StorageHandle</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">handle</span>: <span class="ident">StorageHandle</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">handle</span>)
 	}
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NodeHandle</span> {
-	<span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">hash</span>: <span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-		<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">hash</span>)
-	}
-}
-
-<span class="kw">fn</span> <span class="ident">empty_children</span>() <span class="op">-&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span>[<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NodeHandle</span><span class="op">&gt;</span>; <span class="number">16</span>]<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">empty_children</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>() <span class="op">-&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span>[<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;&gt;</span>; <span class="number">16</span>]<span class="op">&gt;</span> {
 	<span class="ident">Box</span>::<span class="ident">new</span>([
 		<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>,
 		<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>,
@@ -1379,7 +1396,7 @@
 
 <span class="doccomment">/// Node types in the Trie.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Node</span> {
+<span class="kw">enum</span> <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Empty node.</span>
 	<span class="ident">Empty</span>,
 	<span class="doccomment">/// A leaf node contains the end of a key and a value.</span>
@@ -1390,36 +1407,43 @@
 	<span class="doccomment">/// The shared portion is encoded from a `NibbleSlice` meaning it contains</span>
 	<span class="doccomment">/// a flag indicating it is an extension.</span>
 	<span class="doccomment">/// The child node is always a branch.</span>
-	<span class="ident">Extension</span>(<span class="ident">NodeKey</span>, <span class="ident">NodeHandle</span>),
+	<span class="ident">Extension</span>(<span class="ident">NodeKey</span>, <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>),
 	<span class="doccomment">/// A branch has up to 16 children and an optional value.</span>
-	<span class="ident">Branch</span>(<span class="ident">Box</span><span class="op">&lt;</span>[<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NodeHandle</span><span class="op">&gt;</span>; <span class="number">16</span>]<span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>)
+	<span class="ident">Branch</span>(<span class="ident">Box</span><span class="op">&lt;</span>[<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;&gt;</span>; <span class="number">16</span>]<span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>)
 }
 
-<span class="kw">impl</span> <span class="ident">Node</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">O</span><span class="op">&gt;</span> <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">O</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">O</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">AsMut</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Default</span> <span class="op">+</span> <span class="ident">HeapSizeOf</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Copy</span> {
 	<span class="comment">// load an inline node into memory or get the hash to do the lookup later.</span>
-	<span class="kw">fn</span> <span class="ident">inline_or_hash</span>(<span class="ident">node</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">HashDB</span>, <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeStorage</span>) <span class="op">-&gt;</span> <span class="ident">NodeHandle</span> {
-		<span class="ident">RlpNode</span>::<span class="ident">try_decode_hash</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)
+	<span class="kw">fn</span> <span class="ident">inline_or_hash</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="ident">node</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeStorage</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>
+	<span class="kw">where</span> <span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
+		  <span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&lt;</span><span class="ident">Out</span> <span class="op">=</span> <span class="ident">O</span><span class="op">&gt;</span>,
+	{
+		<span class="ident">C</span>::<span class="ident">try_decode_hash</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>)
 			.<span class="ident">map</span>(<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>)
 			.<span class="ident">unwrap_or_else</span>(<span class="op">||</span> {
-				<span class="kw">let</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">Node</span>::<span class="ident">from_rlp</span>(<span class="ident">node</span>, <span class="ident">db</span>, <span class="ident">storage</span>);
+				<span class="kw">let</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">Node</span>::<span class="ident">from_encoded</span>::<span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="ident">node</span>, <span class="ident">db</span>, <span class="ident">storage</span>);
 				<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">storage</span>.<span class="ident">alloc</span>(<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="ident">child</span>)))
 			})
 	}
 
-	<span class="comment">// decode a node from rlp without getting its children.</span>
-	<span class="kw">fn</span> <span class="ident">from_rlp</span>(<span class="ident">rlp</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">HashDB</span>, <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeStorage</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-		<span class="kw">match</span> <span class="ident">RlpNode</span>::<span class="ident">decoded</span>(<span class="ident">rlp</span>).<span class="ident">expect</span>(<span class="string">&quot;rlp read from db; qed&quot;</span>) {
-			<span class="ident">RlpNode</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="ident">Node</span>::<span class="ident">Empty</span>,
-			<span class="ident">RlpNode</span>::<span class="ident">Leaf</span>(<span class="ident">k</span>, <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">Node</span>::<span class="ident">Leaf</span>(<span class="ident">k</span>.<span class="ident">encoded</span>(<span class="bool-val">true</span>), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)),
-			<span class="ident">RlpNode</span>::<span class="ident">Extension</span>(<span class="ident">key</span>, <span class="ident">cb</span>) <span class="op">=&gt;</span> {
-				<span class="ident">Node</span>::<span class="ident">Extension</span>(<span class="ident">key</span>.<span class="ident">encoded</span>(<span class="bool-val">false</span>), <span class="self">Self</span>::<span class="ident">inline_or_hash</span>(<span class="ident">cb</span>, <span class="ident">db</span>, <span class="ident">storage</span>))
+	<span class="comment">// decode a node from encoded bytes without getting its children.</span>
+	<span class="kw">fn</span> <span class="ident">from_encoded</span><span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">storage</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NodeStorage</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+	<span class="kw">where</span> <span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
+		  <span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&lt;</span><span class="ident">Out</span> <span class="op">=</span> <span class="ident">O</span><span class="op">&gt;</span>,
+	{
+		<span class="kw">match</span> <span class="ident">C</span>::<span class="ident">decode</span>(<span class="ident">data</span>).<span class="ident">expect</span>(<span class="string">&quot;encoded bytes read from db; qed&quot;</span>) {
+			<span class="ident">EncodedNode</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="ident">Node</span>::<span class="ident">Empty</span>,
+			<span class="ident">EncodedNode</span>::<span class="ident">Leaf</span>(<span class="ident">k</span>, <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">Node</span>::<span class="ident">Leaf</span>(<span class="ident">k</span>.<span class="ident">encoded</span>(<span class="bool-val">true</span>), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)),
+			<span class="ident">EncodedNode</span>::<span class="ident">Extension</span>(<span class="ident">key</span>, <span class="ident">cb</span>) <span class="op">=&gt;</span> {
+				<span class="ident">Node</span>::<span class="ident">Extension</span>(
+					<span class="ident">key</span>.<span class="ident">encoded</span>(<span class="bool-val">false</span>),
+					<span class="self">Self</span>::<span class="ident">inline_or_hash</span>::<span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="ident">cb</span>, <span class="ident">db</span>, <span class="ident">storage</span>))
 			}
-			<span class="ident">RlpNode</span>::<span class="ident">Branch</span>(<span class="kw-2">ref</span> <span class="ident">children_rlp</span>, <span class="ident">val</span>) <span class="op">=&gt;</span> {
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> <span class="op">=</span> <span class="op">|</span><span class="ident">i</span><span class="op">|</span> {
-					<span class="kw">let</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">children_rlp</span>[<span class="ident">i</span>];
-					<span class="kw">let</span> <span class="ident">child_rlp</span> <span class="op">=</span> <span class="ident">Rlp</span>::<span class="ident">new</span>(<span class="ident">raw</span>);
-					<span class="kw">if</span> <span class="op">!</span><span class="ident">child_rlp</span>.<span class="ident">is_empty</span>() {
-						<span class="prelude-val">Some</span>(<span class="self">Self</span>::<span class="ident">inline_or_hash</span>(<span class="ident">raw</span>, <span class="ident">db</span>, <span class="ident">storage</span>))
+			<span class="ident">EncodedNode</span>::<span class="ident">Branch</span>(<span class="kw-2">ref</span> <span class="ident">encoded_children</span>, <span class="ident">val</span>) <span class="op">=&gt;</span> {
+				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> <span class="op">=</span> <span class="op">|</span><span class="ident">i</span>:<span class="ident">usize</span><span class="op">|</span> {
+					<span class="kw">let</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">encoded_children</span>[<span class="ident">i</span>];
+					<span class="kw">if</span> <span class="op">!</span><span class="ident">C</span>::<span class="ident">is_empty_node</span>(<span class="ident">raw</span>) {
+						<span class="prelude-val">Some</span>(<span class="self">Self</span>::<span class="ident">inline_or_hash</span>::<span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="ident">raw</span>, <span class="ident">db</span>, <span class="ident">storage</span>))
 					} <span class="kw">else</span> {
 						<span class="prelude-val">None</span>
 					}
@@ -1437,70 +1461,52 @@
 		}
 	}
 
-	<span class="comment">// encode a node to RLP</span>
 	<span class="comment">// TODO: parallelize</span>
-	<span class="kw">fn</span> <span class="ident">into_rlp</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">child_cb</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">ElasticArray1024</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>
-		<span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">NodeHandle</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RlpStream</span>)
+	<span class="kw">fn</span> <span class="ident">into_encoded</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">child_cb</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">ElasticArray1024</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>
+	<span class="kw">where</span>
+		<span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
+		<span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">ChildReference</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>,
+		<span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&lt;</span><span class="ident">Out</span> <span class="op">=</span> <span class="ident">O</span><span class="op">&gt;</span>,
 	{
 		<span class="kw">match</span> <span class="self">self</span> {
-			<span class="ident">Node</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> {
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">RlpStream</span>::<span class="ident">new</span>();
-				<span class="ident">stream</span>.<span class="ident">append_empty_data</span>();
-				<span class="ident">stream</span>.<span class="ident">drain</span>()
-			}
-			<span class="ident">Node</span>::<span class="ident">Leaf</span>(<span class="ident">partial</span>, <span class="ident">value</span>) <span class="op">=&gt;</span> {
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">RlpStream</span>::<span class="ident">new_list</span>(<span class="number">2</span>);
-				<span class="ident">stream</span>.<span class="ident">append</span>(<span class="op">&amp;&amp;</span><span class="kw-2">*</span><span class="ident">partial</span>);
-				<span class="ident">stream</span>.<span class="ident">append</span>(<span class="op">&amp;&amp;</span><span class="kw-2">*</span><span class="ident">value</span>);
-				<span class="ident">stream</span>.<span class="ident">drain</span>()
-			}
-			<span class="ident">Node</span>::<span class="ident">Extension</span>(<span class="ident">partial</span>, <span class="ident">child</span>) <span class="op">=&gt;</span> {
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">RlpStream</span>::<span class="ident">new_list</span>(<span class="number">2</span>);
-				<span class="ident">stream</span>.<span class="ident">append</span>(<span class="op">&amp;&amp;</span><span class="kw-2">*</span><span class="ident">partial</span>);
-				<span class="ident">child_cb</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>);
-				<span class="ident">stream</span>.<span class="ident">drain</span>()
-			}
+			<span class="ident">Node</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="ident">C</span>::<span class="ident">empty_node</span>(),
+			<span class="ident">Node</span>::<span class="ident">Leaf</span>(<span class="ident">partial</span>, <span class="ident">value</span>) <span class="op">=&gt;</span> <span class="ident">C</span>::<span class="ident">leaf_node</span>(<span class="kw-2">&amp;</span><span class="ident">partial</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>),
+			<span class="ident">Node</span>::<span class="ident">Extension</span>(<span class="ident">partial</span>, <span class="ident">child</span>) <span class="op">=&gt;</span> <span class="ident">C</span>::<span class="ident">ext_node</span>(<span class="kw-2">&amp;</span><span class="ident">partial</span>, <span class="ident">child_cb</span>(<span class="ident">child</span>)),
 			<span class="ident">Node</span>::<span class="ident">Branch</span>(<span class="kw-2">mut</span> <span class="ident">children</span>, <span class="ident">value</span>) <span class="op">=&gt;</span> {
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">RlpStream</span>::<span class="ident">new_list</span>(<span class="number">17</span>);
-				<span class="kw">for</span> <span class="ident">child</span> <span class="kw">in</span> <span class="ident">children</span>.<span class="ident">iter_mut</span>().<span class="ident">map</span>(<span class="prelude-ty">Option</span>::<span class="ident">take</span>) {
-					<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">handle</span>) <span class="op">=</span> <span class="ident">child</span> {
-						<span class="ident">child_cb</span>(<span class="ident">handle</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">stream</span>);
-					} <span class="kw">else</span> {
-						<span class="ident">stream</span>.<span class="ident">append_empty_data</span>();
-					}
-				}
-				<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">value</span> {
-					<span class="ident">stream</span>.<span class="ident">append</span>(<span class="op">&amp;&amp;</span><span class="kw-2">*</span><span class="ident">value</span>);
-				} <span class="kw">else</span> {
-					<span class="ident">stream</span>.<span class="ident">append_empty_data</span>();
-				}
-
-				<span class="ident">stream</span>.<span class="ident">drain</span>()
+				<span class="ident">C</span>::<span class="ident">branch_node</span>(
+					<span class="comment">// map the `NodeHandle`s from the Branch to `ChildReferences`</span>
+					<span class="ident">children</span>.<span class="ident">iter_mut</span>()
+						.<span class="ident">map</span>(<span class="prelude-ty">Option</span>::<span class="ident">take</span>)
+						.<span class="ident">map</span>(<span class="op">|</span><span class="ident">maybe_child</span><span class="op">|</span>
+							<span class="ident">maybe_child</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">child</span><span class="op">|</span> <span class="ident">child_cb</span>(<span class="ident">child</span>))
+						),
+					<span class="ident">value</span>
+				)
 			}
 		}
 	}
 }
 
 <span class="comment">// post-inspect action.</span>
-<span class="kw">enum</span> <span class="ident">Action</span> {
+<span class="kw">enum</span> <span class="ident">Action</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="comment">// Replace a node with a new one.</span>
-	<span class="ident">Replace</span>(<span class="ident">Node</span>),
+	<span class="ident">Replace</span>(<span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>),
 	<span class="comment">// Restore the original node. This trusts that the node is actually the original.</span>
-	<span class="ident">Restore</span>(<span class="ident">Node</span>),
+	<span class="ident">Restore</span>(<span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>),
 	<span class="comment">// if it is a new node, just clears the storage.</span>
 	<span class="ident">Delete</span>,
 }
 
 <span class="comment">// post-insert action. Same as action without delete</span>
-<span class="kw">enum</span> <span class="ident">InsertAction</span> {
+<span class="kw">enum</span> <span class="ident">InsertAction</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="comment">// Replace a node with a new one.</span>
-	<span class="ident">Replace</span>(<span class="ident">Node</span>),
+	<span class="ident">Replace</span>(<span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>),
 	<span class="comment">// Restore the original node.</span>
-	<span class="ident">Restore</span>(<span class="ident">Node</span>),
+	<span class="ident">Restore</span>(<span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">InsertAction</span> {
-	<span class="kw">fn</span> <span class="ident">into_action</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Action</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="ident">InsertAction</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">into_action</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Action</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="self">self</span> {
 			<span class="ident">InsertAction</span>::<span class="ident">Replace</span>(<span class="ident">n</span>) <span class="op">=&gt;</span> <span class="ident">Action</span>::<span class="ident">Replace</span>(<span class="ident">n</span>),
 			<span class="ident">InsertAction</span>::<span class="ident">Restore</span>(<span class="ident">n</span>) <span class="op">=&gt;</span> <span class="ident">Action</span>::<span class="ident">Restore</span>(<span class="ident">n</span>),
@@ -1508,7 +1514,7 @@
 	}
 
 	<span class="comment">// unwrap the node, disregarding replace or restore state.</span>
-	<span class="kw">fn</span> <span class="ident">unwrap_node</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Node</span> {
+	<span class="kw">fn</span> <span class="ident">unwrap_node</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="self">self</span> {
 			<span class="ident">InsertAction</span>::<span class="ident">Replace</span>(<span class="ident">n</span>) <span class="op">|</span> <span class="ident">InsertAction</span>::<span class="ident">Restore</span>(<span class="ident">n</span>) <span class="op">=&gt;</span> <span class="ident">n</span>,
 		}
@@ -1516,20 +1522,26 @@
 }
 
 <span class="comment">// What kind of node is stored here.</span>
-<span class="kw">enum</span> <span class="ident">Stored</span> {
+<span class="kw">enum</span> <span class="ident">Stored</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="comment">// A new node.</span>
-	<span class="ident">New</span>(<span class="ident">Node</span>),
+	<span class="ident">New</span>(<span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>),
 	<span class="comment">// A cached node, loaded from the DB.</span>
-	<span class="ident">Cached</span>(<span class="ident">Node</span>, <span class="ident">H256</span>),
+	<span class="ident">Cached</span>(<span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">H</span>),
+}
+
+<span class="doccomment">/// Used to build a collection of child nodes from a collection of `NodeHandle`s</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ChildReference</span><span class="op">&lt;</span><span class="ident">HO</span><span class="op">&gt;</span> { <span class="comment">// `HO` is e.g. `H256`, i.e. the output of a `Hasher`</span>
+	<span class="ident">Hash</span>(<span class="ident">HO</span>),
+	<span class="ident">Inline</span>(<span class="ident">HO</span>, <span class="ident">usize</span>), <span class="comment">// usize is the length of the node data we store in the `H::Out`</span>
 }
 
 <span class="doccomment">/// Compact and cache-friendly storage for Trie nodes.</span>
-<span class="kw">struct</span> <span class="ident">NodeStorage</span> {
-	<span class="ident">nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stored</span><span class="op">&gt;</span>,
+<span class="kw">struct</span> <span class="ident">NodeStorage</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
+	<span class="ident">nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stored</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;&gt;</span>,
 	<span class="ident">free_indices</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">NodeStorage</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> <span class="ident">NodeStorage</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Create a new storage.</span>
 	<span class="kw">fn</span> <span class="ident">empty</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="ident">NodeStorage</span> {
@@ -1539,7 +1551,7 @@
 	}
 
 	<span class="doccomment">/// Allocate a new node in the storage.</span>
-	<span class="kw">fn</span> <span class="ident">alloc</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">stored</span>: <span class="ident">Stored</span>) <span class="op">-&gt;</span> <span class="ident">StorageHandle</span> {
+	<span class="kw">fn</span> <span class="ident">alloc</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">stored</span>: <span class="ident">Stored</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">StorageHandle</span> {
 		<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">idx</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">free_indices</span>.<span class="ident">pop_front</span>() {
 			<span class="self">self</span>.<span class="ident">nodes</span>[<span class="ident">idx</span>] <span class="op">=</span> <span class="ident">stored</span>;
 			<span class="ident">StorageHandle</span>(<span class="ident">idx</span>)
@@ -1550,7 +1562,7 @@
 	}
 
 	<span class="doccomment">/// Remove a node from the storage, consuming the handle and returning the node.</span>
-	<span class="kw">fn</span> <span class="ident">destroy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">StorageHandle</span>) <span class="op">-&gt;</span> <span class="ident">Stored</span> {
+	<span class="kw">fn</span> <span class="ident">destroy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">StorageHandle</span>) <span class="op">-&gt;</span> <span class="ident">Stored</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">handle</span>.<span class="number">0</span>;
 
 		<span class="self">self</span>.<span class="ident">free_indices</span>.<span class="ident">push_back</span>(<span class="ident">idx</span>);
@@ -1558,10 +1570,10 @@
 	}
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">StorageHandle</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NodeStorage</span> {
-	<span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Node</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">StorageHandle</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">NodeStorage</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
+	<span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>;
 
-	<span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">handle</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">StorageHandle</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Node</span> {
+	<span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">handle</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">StorageHandle</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="self">self</span>.<span class="ident">nodes</span>[<span class="ident">handle</span>.<span class="number">0</span>] {
 			<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="kw-2">ref</span> <span class="ident">node</span>) <span class="op">=&gt;</span> <span class="ident">node</span>,
 			<span class="ident">Stored</span>::<span class="ident">Cached</span>(<span class="kw-2">ref</span> <span class="ident">node</span>, <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">node</span>,
@@ -1578,19 +1590,22 @@
 <span class="doccomment">/// # Example</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// extern crate patricia_trie as trie;</span>
-<span class="doccomment">/// extern crate keccak_hash;</span>
+<span class="doccomment">/// extern crate patricia_trie_ethereum as ethtrie;</span>
 <span class="doccomment">/// extern crate hashdb;</span>
+<span class="doccomment">/// extern crate keccak_hash;</span>
+<span class="doccomment">/// extern crate keccak_hasher;</span>
 <span class="doccomment">/// extern crate memorydb;</span>
 <span class="doccomment">/// extern crate ethereum_types;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// use keccak_hash::KECCAK_NULL_RLP;</span>
-<span class="doccomment">/// use trie::*;</span>
-<span class="doccomment">/// use hashdb::*;</span>
+<span class="doccomment">/// use ethtrie::{TrieDBMut, trie::TrieMut};</span>
+<span class="doccomment">/// use hashdb::DBValue;</span>
+<span class="doccomment">/// use keccak_hasher::KeccakHasher;</span>
 <span class="doccomment">/// use memorydb::*;</span>
 <span class="doccomment">/// use ethereum_types::H256;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///   let mut memdb = MemoryDB::new();</span>
+<span class="doccomment">///   let mut memdb = MemoryDB::&lt;KeccakHasher&gt;::new();</span>
 <span class="doccomment">///   let mut root = H256::new();</span>
 <span class="doccomment">///   let mut t = TrieDBMut::new(&amp;mut memdb, &amp;mut root);</span>
 <span class="doccomment">///   assert!(t.is_empty());</span>
@@ -1602,22 +1617,31 @@
 <span class="doccomment">///   assert!(!t.contains(b&quot;foo&quot;).unwrap());</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-	<span class="ident">storage</span>: <span class="ident">NodeStorage</span>,
-	<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span>,
-	<span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">H256</span>,
-	<span class="ident">root_handle</span>: <span class="ident">NodeHandle</span>,
-	<span class="ident">death_row</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">H256</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+	<span class="ident">H</span>: <span class="ident">Hasher</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
+	<span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
+{
+	<span class="ident">storage</span>: <span class="ident">NodeStorage</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>,
+	<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
+	<span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">H</span>::<span class="ident">Out</span>,
+	<span class="ident">root_handle</span>: <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>,
+	<span class="ident">death_row</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>,
 	<span class="doccomment">/// The number of hash operations this trie has performed.</span>
 	<span class="doccomment">/// Note that none are performed until changes are committed.</span>
 	<span class="ident">hash_count</span>: <span class="ident">usize</span>,
+	<span class="ident">marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>, <span class="comment">// TODO: rpheimer: &quot;we could have the NodeCodec trait take &amp;self to its methods and then we don&#39;t need PhantomData. we can just store an instance of C: NodeCodec in the trie struct. If it&#39;s a ZST it won&#39;t have any additional overhead anyway&quot;</span>
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+	<span class="ident">H</span>: <span class="ident">Hasher</span>,
+	<span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
+{
 	<span class="doccomment">/// Create a new trie with backing database `db` and empty `root`.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span>, <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-		<span class="kw-2">*</span><span class="ident">root</span> <span class="op">=</span> <span class="ident">KECCAK_NULL_RLP</span>;
-		<span class="kw">let</span> <span class="ident">root_handle</span> <span class="op">=</span> <span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">KECCAK_NULL_RLP</span>);
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">H</span>::<span class="ident">Out</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+		<span class="kw-2">*</span><span class="ident">root</span> <span class="op">=</span> <span class="ident">C</span>::<span class="ident">HASHED_NULL_NODE</span>;
+		<span class="kw">let</span> <span class="ident">root_handle</span> <span class="op">=</span> <span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">C</span>::<span class="ident">HASHED_NULL_NODE</span>);
 
 		<span class="ident">TrieDBMut</span> {
 			<span class="ident">storage</span>: <span class="ident">NodeStorage</span>::<span class="ident">empty</span>(),
@@ -1626,12 +1650,13 @@
 			<span class="ident">root_handle</span>: <span class="ident">root_handle</span>,
 			<span class="ident">death_row</span>: <span class="ident">HashSet</span>::<span class="ident">new</span>(),
 			<span class="ident">hash_count</span>: <span class="number">0</span>,
+			<span class="ident">marker</span>: <span class="ident">PhantomData</span>,
 		}
 	}
 
 	<span class="doccomment">/// Create a new trie with the backing database `db` and `root.</span>
 	<span class="doccomment">/// Returns an error if `root` does not exist.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_existing</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span>, <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_existing</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>, <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">H</span>::<span class="ident">Out</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">if</span> <span class="op">!</span><span class="ident">db</span>.<span class="ident">contains</span>(<span class="ident">root</span>) {
 			<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">TrieError</span>::<span class="ident">InvalidStateRoot</span>(<span class="kw-2">*</span><span class="ident">root</span>)));
 		}
@@ -1644,29 +1669,34 @@
 			<span class="ident">root_handle</span>: <span class="ident">root_handle</span>,
 			<span class="ident">death_row</span>: <span class="ident">HashSet</span>::<span class="ident">new</span>(),
 			<span class="ident">hash_count</span>: <span class="number">0</span>,
+			<span class="ident">marker</span>: <span class="ident">PhantomData</span>,
 		})
 	}
 	<span class="doccomment">/// Get the backing database.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">db</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">db</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">db</span>
 	}
 
 	<span class="doccomment">/// Get the backing database mutably.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">db_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">db_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span> {
 		<span class="self">self</span>.<span class="ident">db</span>
 	}
 
 	<span class="comment">// cache a node by hash</span>
-	<span class="kw">fn</span> <span class="ident">cache</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">hash</span>: <span class="ident">H256</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">StorageHandle</span><span class="op">&gt;</span> {
-		<span class="kw">let</span> <span class="ident">node_rlp</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>).<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">TrieError</span>::<span class="ident">IncompleteDatabase</span>(<span class="ident">hash</span>)))<span class="question-mark">?</span>;
-		<span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="ident">Node</span>::<span class="ident">from_rlp</span>(<span class="kw-2">&amp;</span><span class="ident">node_rlp</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">storage</span>);
+	<span class="kw">fn</span> <span class="ident">cache</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">hash</span>: <span class="ident">H</span>::<span class="ident">Out</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">StorageHandle</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+		<span class="kw">let</span> <span class="ident">node_encoded</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>).<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">TrieError</span>::<span class="ident">IncompleteDatabase</span>(<span class="ident">hash</span>)))<span class="question-mark">?</span>;
+		<span class="kw">let</span> <span class="ident">node</span> <span class="op">=</span> <span class="ident">Node</span>::<span class="ident">from_encoded</span>::<span class="op">&lt;</span><span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(
+			<span class="kw-2">&amp;</span><span class="ident">node_encoded</span>,
+			<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>,
+			<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">storage</span>
+		);
 		<span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">storage</span>.<span class="ident">alloc</span>(<span class="ident">Stored</span>::<span class="ident">Cached</span>(<span class="ident">node</span>, <span class="ident">hash</span>)))
 	}
 
 	<span class="comment">// inspect a node, choosing either to replace, restore, or delete it.</span>
 	<span class="comment">// if restored or replaced, returns the new node along with a flag of whether it was changed.</span>
-	<span class="kw">fn</span> <span class="ident">inspect</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">stored</span>: <span class="ident">Stored</span>, <span class="ident">inspector</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">Stored</span>, <span class="ident">bool</span>)<span class="op">&gt;&gt;</span>
-	<span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Node</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Action</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">inspect</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">stored</span>: <span class="ident">Stored</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">inspector</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">Stored</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">bool</span>)<span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+	<span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Action</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">stored</span> {
 			<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="ident">node</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">inspector</span>(<span class="self">self</span>, <span class="ident">node</span>)<span class="question-mark">?</span> {
 				<span class="ident">Action</span>::<span class="ident">Restore</span>(<span class="ident">node</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="ident">node</span>), <span class="bool-val">false</span>)),
@@ -1688,16 +1718,17 @@
 	}
 
 	<span class="comment">// walk the trie, attempting to find the key&#39;s node.</span>
-	<span class="kw">fn</span> <span class="ident">lookup</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span>, <span class="lifetime">&#39;key</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;x</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">partial</span>: <span class="ident">NibbleSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;key</span><span class="op">&gt;</span>, <span class="ident">handle</span>: <span class="kw-2">&amp;</span><span class="ident">NodeHandle</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span>
+	<span class="kw">fn</span> <span class="ident">lookup</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span>, <span class="lifetime">&#39;key</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;x</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">partial</span>: <span class="ident">NibbleSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;key</span><span class="op">&gt;</span>, <span class="ident">handle</span>: <span class="kw-2">&amp;</span><span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span>
 		<span class="kw">where</span> <span class="lifetime">&#39;x</span>: <span class="lifetime">&#39;key</span>
 	{
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">handle</span>;
 		<span class="kw">loop</span> {
 			<span class="kw">let</span> (<span class="ident">mid</span>, <span class="ident">child</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">handle</span> {
-				<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="kw-2">ref</span> <span class="ident">hash</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="ident">Lookup</span> {
+				<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="kw-2">ref</span> <span class="ident">hash</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="ident">Lookup</span>{
 					<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">db</span>,
 					<span class="ident">query</span>: <span class="ident">DBValue</span>::<span class="ident">from_slice</span>,
 					<span class="ident">hash</span>: <span class="ident">hash</span>.<span class="ident">clone</span>(),
+					<span class="ident">marker</span>: <span class="ident">PhantomData</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
 				}.<span class="ident">look_up</span>(<span class="ident">partial</span>),
 				<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="kw-2">ref</span> <span class="ident">handle</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">storage</span>[<span class="ident">handle</span>] {
 					<span class="ident">Node</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
@@ -1735,10 +1766,8 @@
 		}
 	}
 
-	<span class="doccomment">/// insert a key, value pair into the trie, creating new nodes if necessary.</span>
-	<span class="kw">fn</span> <span class="ident">insert_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">NodeHandle</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">value</span>: <span class="ident">DBValue</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>)
-		<span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">StorageHandle</span>, <span class="ident">bool</span>)<span class="op">&gt;</span>
-	{
+	<span class="doccomment">/// insert a key-value pair into the trie, creating new nodes if necessary.</span>
+	<span class="kw">fn</span> <span class="ident">insert_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">value</span>: <span class="ident">DBValue</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">StorageHandle</span>, <span class="ident">bool</span>), <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">handle</span> {
 			<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="ident">h</span>,
 			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">cache</span>(<span class="ident">h</span>)<span class="question-mark">?</span>,
@@ -1752,9 +1781,7 @@
 	}
 
 	<span class="doccomment">/// the insertion inspector.</span>
-	<span class="kw">fn</span> <span class="ident">insert_inspector</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">Node</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">value</span>: <span class="ident">DBValue</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>)
-		<span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">InsertAction</span><span class="op">&gt;</span>
-	{
+	<span class="kw">fn</span> <span class="ident">insert_inspector</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">value</span>: <span class="ident">DBValue</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">InsertAction</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;trie&quot;</span>, <span class="string">&quot;augmented (partial: {:?}, value: {:?})&quot;</span>, <span class="ident">partial</span>, <span class="ident">value</span>.<span class="ident">pretty</span>());
 
 		<span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">node</span> {
@@ -1915,9 +1942,7 @@
 	}
 
 	<span class="doccomment">/// Remove a node from the trie based on key.</span>
-	<span class="kw">fn</span> <span class="ident">remove_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">NodeHandle</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>)
-		<span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">StorageHandle</span>, <span class="ident">bool</span>)<span class="op">&gt;&gt;</span>
-	{
+	<span class="kw">fn</span> <span class="ident">remove_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">StorageHandle</span>, <span class="ident">bool</span>)<span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">let</span> <span class="ident">stored</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">handle</span> {
 			<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">storage</span>.<span class="ident">destroy</span>(<span class="ident">h</span>),
 			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> {
@@ -1932,7 +1957,7 @@
 	}
 
 	<span class="doccomment">/// the removal inspector</span>
-	<span class="kw">fn</span> <span class="ident">remove_inspector</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">Node</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Action</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">remove_inspector</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">partial</span>: <span class="ident">NibbleSlice</span>, <span class="ident">old_val</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Action</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="prelude-val">Ok</span>(<span class="kw">match</span> (<span class="ident">node</span>, <span class="ident">partial</span>.<span class="ident">is_empty</span>()) {
 			(<span class="ident">Node</span>::<span class="ident">Empty</span>, <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">Action</span>::<span class="ident">Delete</span>,
 			(<span class="ident">Node</span>::<span class="ident">Branch</span>(<span class="ident">c</span>, <span class="prelude-val">None</span>), <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">Action</span>::<span class="ident">Restore</span>(<span class="ident">Node</span>::<span class="ident">Branch</span>(<span class="ident">c</span>, <span class="prelude-val">None</span>)),
@@ -2018,7 +2043,7 @@
 	<span class="doccomment">/// _invalid state_ means:</span>
 	<span class="doccomment">/// - Branch node where there is only a single entry;</span>
 	<span class="doccomment">/// - Extension node followed by anything other than a Branch node.</span>
-	<span class="kw">fn</span> <span class="ident">fix</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">Node</span>) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">fix</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="ident">node</span> {
 			<span class="ident">Node</span>::<span class="ident">Branch</span>(<span class="kw-2">mut</span> <span class="ident">children</span>, <span class="ident">value</span>) <span class="op">=&gt;</span> {
 				<span class="comment">// if only a single value, transmute to leaf/extension and feed through fixed.</span>
@@ -2138,11 +2163,11 @@
 
 		<span class="kw">match</span> <span class="self">self</span>.<span class="ident">storage</span>.<span class="ident">destroy</span>(<span class="ident">handle</span>) {
 			<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="ident">node</span>) <span class="op">=&gt;</span> {
-				<span class="kw">let</span> <span class="ident">root_rlp</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">into_rlp</span>(<span class="op">|</span><span class="ident">child</span>, <span class="ident">stream</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">commit_node</span>(<span class="ident">child</span>, <span class="ident">stream</span>));
-				<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="ident">root_rlp</span>[..]);
+				<span class="kw">let</span> <span class="ident">encoded_root</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">into_encoded</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">child</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">commit_child</span>(<span class="ident">child</span>) );
+				<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="ident">encoded_root</span>[..]);
 				<span class="self">self</span>.<span class="ident">hash_count</span> <span class="op">+=</span> <span class="number">1</span>;
 
-				<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;trie&quot;</span>, <span class="string">&quot;root node rlp: {:?}&quot;</span>, (<span class="kw-2">&amp;</span><span class="ident">root_rlp</span>[..]).<span class="ident">pretty</span>());
+				<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;trie&quot;</span>, <span class="string">&quot;encoded root node: {:?}&quot;</span>, (<span class="kw-2">&amp;</span><span class="ident">encoded_root</span>[..]).<span class="ident">pretty</span>());
 				<span class="self">self</span>.<span class="ident">root_handle</span> <span class="op">=</span> <span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">root</span>);
 			}
 			<span class="ident">Stored</span>::<span class="ident">Cached</span>(<span class="ident">node</span>, <span class="ident">hash</span>) <span class="op">=&gt;</span> {
@@ -2153,29 +2178,38 @@
 		}
 	}
 
-	<span class="doccomment">/// commit a node, hashing it, committing it to the db,</span>
-	<span class="doccomment">/// and writing it to the rlp stream as necessary.</span>
-	<span class="kw">fn</span> <span class="ident">commit_node</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">NodeHandle</span>, <span class="ident">stream</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RlpStream</span>) {
+	<span class="doccomment">/// Commit a node by hashing it and writing it to the db. Returns a</span>
+	<span class="doccomment">/// `ChildReference` which in most cases carries a normal hash but for the</span>
+	<span class="doccomment">/// case where we can fit the actual data in the `Hasher`s output type, we</span>
+	<span class="doccomment">/// store the data inline. This function is used as the callback to the</span>
+	<span class="doccomment">/// `into_encoded` method of `Node`.</span>
+	<span class="kw">fn</span> <span class="ident">commit_child</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">handle</span>: <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">ChildReference</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="ident">handle</span> {
-			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="ident">stream</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">h</span>),
-			<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">storage</span>.<span class="ident">destroy</span>(<span class="ident">h</span>) {
-				<span class="ident">Stored</span>::<span class="ident">Cached</span>(<span class="kw">_</span>, <span class="ident">h</span>) <span class="op">=&gt;</span> <span class="ident">stream</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">h</span>),
-				<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="ident">node</span>) <span class="op">=&gt;</span> {
-					<span class="kw">let</span> <span class="ident">node_rlp</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">into_rlp</span>(<span class="op">|</span><span class="ident">child</span>, <span class="ident">stream</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">commit_node</span>(<span class="ident">child</span>, <span class="ident">stream</span>));
-					<span class="kw">if</span> <span class="ident">node_rlp</span>.<span class="ident">len</span>() <span class="op">&gt;=</span> <span class="number">32</span> {
-						<span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="ident">node_rlp</span>[..]);
-						<span class="self">self</span>.<span class="ident">hash_count</span> <span class="op">+=</span> <span class="number">1</span>;
-						<span class="ident">stream</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>)
-					} <span class="kw">else</span> {
-						<span class="ident">stream</span>.<span class="ident">append_raw</span>(<span class="kw-2">&amp;</span><span class="ident">node_rlp</span>, <span class="number">1</span>)
+			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">hash</span>) <span class="op">=&gt;</span> <span class="ident">ChildReference</span>::<span class="ident">Hash</span>(<span class="ident">hash</span>),
+			<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">storage_handle</span>) <span class="op">=&gt;</span> {
+				<span class="kw">match</span> <span class="self">self</span>.<span class="ident">storage</span>.<span class="ident">destroy</span>(<span class="ident">storage_handle</span>) {
+					<span class="ident">Stored</span>::<span class="ident">Cached</span>(<span class="kw">_</span>, <span class="ident">hash</span>) <span class="op">=&gt;</span> <span class="ident">ChildReference</span>::<span class="ident">Hash</span>(<span class="ident">hash</span>),
+					<span class="ident">Stored</span>::<span class="ident">New</span>(<span class="ident">node</span>) <span class="op">=&gt;</span> {
+						<span class="kw">let</span> <span class="ident">encoded</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">into_encoded</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">C</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">node_handle</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">commit_child</span>(<span class="ident">node_handle</span>) );
+						<span class="kw">if</span> <span class="ident">encoded</span>.<span class="ident">len</span>() <span class="op">&gt;=</span> <span class="ident">H</span>::<span class="ident">LENGTH</span> {
+							<span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="ident">encoded</span>[..]);
+							<span class="self">self</span>.<span class="ident">hash_count</span> <span class="op">+=</span><span class="number">1</span>;
+							<span class="ident">ChildReference</span>::<span class="ident">Hash</span>(<span class="ident">hash</span>)
+						} <span class="kw">else</span> {
+							<span class="comment">// it&#39;s a small value, so we cram it into a `H::Out` and tag with length</span>
+							<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">H</span>::<span class="ident">Out</span>::<span class="ident">default</span>();
+							<span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">encoded</span>.<span class="ident">len</span>();
+							<span class="ident">h</span>.<span class="ident">as_mut</span>()[..<span class="ident">len</span>].<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">encoded</span>[..<span class="ident">len</span>]);
+							<span class="ident">ChildReference</span>::<span class="ident">Inline</span>(<span class="ident">h</span>, <span class="ident">len</span>)
+						}
 					}
 				}
 			}
-		};
+		}
 	}
 
 	<span class="comment">// a hack to get the root node&#39;s handle</span>
-	<span class="kw">fn</span> <span class="ident">root_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">NodeHandle</span> {
+	<span class="kw">fn</span> <span class="ident">root_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">NodeHandle</span><span class="op">&lt;</span><span class="ident">H</span>::<span class="ident">Out</span><span class="op">&gt;</span> {
 		<span class="kw">match</span> <span class="self">self</span>.<span class="ident">root_handle</span> {
 			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>),
 			<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">StorageHandle</span>(<span class="ident">x</span>)) <span class="op">=&gt;</span> <span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="ident">StorageHandle</span>(<span class="ident">x</span>)),
@@ -2183,15 +2217,19 @@
 	}
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TrieMut</span> <span class="kw">for</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-	<span class="kw">fn</span> <span class="ident">root</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">H256</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">TrieMut</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+	<span class="ident">H</span>: <span class="ident">Hasher</span>,
+	<span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
+{
+	<span class="kw">fn</span> <span class="ident">root</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">H</span>::<span class="ident">Out</span> {
 		<span class="self">self</span>.<span class="ident">commit</span>();
 		<span class="self">self</span>.<span class="ident">root</span>
 	}
 
 	<span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
 		<span class="kw">match</span> <span class="self">self</span>.<span class="ident">root_handle</span> {
-			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="ident">h</span> <span class="op">==</span> <span class="ident">KECCAK_NULL_RLP</span>,
+			<span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">h</span>) <span class="op">=&gt;</span> <span class="ident">h</span> <span class="op">==</span> <span class="ident">C</span>::<span class="ident">HASHED_NULL_NODE</span>,
 			<span class="ident">NodeHandle</span>::<span class="ident">InMemory</span>(<span class="kw-2">ref</span> <span class="ident">h</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">storage</span>[<span class="ident">h</span>] {
 				<span class="ident">Node</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
 				<span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
@@ -2199,11 +2237,13 @@
 		}
 	}
 
-	<span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span>, <span class="lifetime">&#39;key</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;x</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;key</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> <span class="kw">where</span> <span class="lifetime">&#39;x</span>: <span class="lifetime">&#39;key</span> {
+	<span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span>, <span class="lifetime">&#39;key</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;x</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;key</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+		<span class="kw">where</span> <span class="lifetime">&#39;x</span>: <span class="lifetime">&#39;key</span>
+	{
 		<span class="self">self</span>.<span class="ident">lookup</span>(<span class="ident">NibbleSlice</span>::<span class="ident">new</span>(<span class="ident">key</span>), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">root_handle</span>)
 	}
 
-	<span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="kw">if</span> <span class="ident">value</span>.<span class="ident">is_empty</span>() { <span class="kw">return</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>) }
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_val</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -2224,7 +2264,7 @@
 		<span class="prelude-val">Ok</span>(<span class="ident">old_val</span>)
 	}
 
-	<span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="kw">super</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DBValue</span><span class="op">&gt;</span>, <span class="ident">H</span>::<span class="ident">Out</span>, <span class="ident">C</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
 		<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;trie&quot;</span>, <span class="string">&quot;remove: key={:?}&quot;</span>, <span class="ident">key</span>.<span class="ident">pretty</span>());
 
 		<span class="kw">let</span> <span class="ident">root_handle</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root_handle</span>();
@@ -2238,8 +2278,8 @@
 			}
 			<span class="prelude-val">None</span> <span class="op">=&gt;</span> {
 				<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;trie&quot;</span>, <span class="string">&quot;remove: obliterated trie&quot;</span>);
-				<span class="self">self</span>.<span class="ident">root_handle</span> <span class="op">=</span> <span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">KECCAK_NULL_RLP</span>);
-				<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">KECCAK_NULL_RLP</span>;
+				<span class="self">self</span>.<span class="ident">root_handle</span> <span class="op">=</span> <span class="ident">NodeHandle</span>::<span class="ident">Hash</span>(<span class="ident">C</span>::<span class="ident">HASHED_NULL_NODE</span>);
+				<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">C</span>::<span class="ident">HASHED_NULL_NODE</span>;
 			}
 		}
 
@@ -2247,7 +2287,11 @@
 	}
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+	<span class="ident">H</span>: <span class="ident">Hasher</span>,
+	<span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
+{
 	<span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
 		<span class="self">self</span>.<span class="ident">commit</span>();
 	}
@@ -2255,18 +2299,20 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-	<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">triehash</span>;
-
-	<span class="kw">use</span> <span class="self">self</span>::<span class="ident">triehash</span>::<span class="ident">trie_root</span>;
-	<span class="kw">use</span> <span class="ident">hashdb</span>::<span class="kw-2">*</span>;
-	<span class="kw">use</span> <span class="ident">memorydb</span>::<span class="kw-2">*</span>;
-	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 	<span class="kw">use</span> <span class="ident">bytes</span>::<span class="ident">ToPretty</span>;
-	<span class="kw">use</span> <span class="ident">keccak</span>::<span class="ident">KECCAK_NULL_RLP</span>;
-	<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">TrieMut</span>;
+	<span class="kw">use</span> <span class="ident">hashdb</span>::{<span class="ident">DBValue</span>, <span class="ident">Hasher</span>, <span class="ident">HashDB</span>};
+	<span class="kw">use</span> <span class="ident">keccak_hasher</span>::<span class="ident">KeccakHasher</span>;
+	<span class="kw">use</span> <span class="ident">memorydb</span>::<span class="ident">MemoryDB</span>;
+	<span class="kw">use</span> <span class="ident">rlp</span>::{<span class="ident">Decodable</span>, <span class="ident">Encodable</span>};
+	<span class="kw">use</span> <span class="ident">triehash</span>::<span class="ident">trie_root</span>;
 	<span class="kw">use</span> <span class="ident">standardmap</span>::<span class="kw-2">*</span>;
+	<span class="kw">use</span> <span class="ident">ethtrie</span>::{<span class="ident">TrieDBMut</span>, <span class="ident">RlpCodec</span>, <span class="ident">trie</span>::{<span class="ident">TrieMut</span>, <span class="ident">NodeCodec</span>}};
+	<span class="kw">use</span> <span class="ident">env_logger</span>;
+	<span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">H256</span>;
 
-	<span class="kw">fn</span> <span class="ident">populate_trie</span><span class="op">&lt;</span><span class="lifetime">&#39;db</span><span class="op">&gt;</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;db</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span>, <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;db</span> <span class="kw-2">mut</span> <span class="ident">H256</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span>[(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)]) <span class="op">-&gt;</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;db</span><span class="op">&gt;</span> {
+	<span class="kw">fn</span> <span class="ident">populate_trie</span><span class="op">&lt;</span><span class="lifetime">&#39;db</span>, <span class="ident">H</span>, <span class="ident">C</span><span class="op">&gt;</span>(<span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;db</span> <span class="kw-2">mut</span> <span class="ident">HashDB</span><span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>, <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;db</span> <span class="kw-2">mut</span> <span class="ident">H256</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span>[(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)]) <span class="op">-&gt;</span> <span class="ident">TrieDBMut</span><span class="op">&lt;</span><span class="lifetime">&#39;db</span><span class="op">&gt;</span>
+		<span class="kw">where</span> <span class="ident">H</span>: <span class="ident">Hasher</span>, <span class="ident">H</span>::<span class="ident">Out</span>: <span class="ident">Decodable</span> <span class="op">+</span> <span class="ident">Encodable</span>, <span class="ident">C</span>: <span class="ident">NodeCodec</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>
+	{
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="ident">db</span>, <span class="ident">root</span>);
 		<span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">v</span>.<span class="ident">len</span>() {
 			<span class="kw">let</span> <span class="ident">key</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">v</span>[<span class="ident">i</span>].<span class="number">0</span>;
@@ -2285,8 +2331,7 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">playpen</span>() {
-		::<span class="ident">ethcore_logger</span>::<span class="ident">init_log</span>();
-
+		<span class="ident">env_logger</span>::<span class="ident">init</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seed</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">for</span> <span class="ident">test_i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
 			<span class="kw">if</span> <span class="ident">test_i</span> <span class="op">%</span> <span class="number">50</span> <span class="op">==</span> <span class="number">0</span> {
@@ -2300,10 +2345,10 @@
 				<span class="ident">count</span>: <span class="number">100</span>,
 			}.<span class="ident">make_with</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">seed</span>);
 
-			<span class="kw">let</span> <span class="ident">real</span> <span class="op">=</span> <span class="ident">trie_root</span>(<span class="ident">x</span>.<span class="ident">clone</span>());
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+			<span class="kw">let</span> <span class="ident">real</span> <span class="op">=</span> <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">x</span>.<span class="ident">clone</span>());
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memtrie</span> <span class="op">=</span> <span class="ident">populate_trie</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memtrie</span> <span class="op">=</span> <span class="ident">populate_trie</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">RlpCodec</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>);
 
 			<span class="ident">memtrie</span>.<span class="ident">commit</span>();
 			<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>() <span class="op">!=</span> <span class="ident">real</span> {
@@ -2317,7 +2362,7 @@
 			<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>(), <span class="ident">real</span>);
 			<span class="ident">unpopulate_trie</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memtrie</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>);
 			<span class="ident">memtrie</span>.<span class="ident">commit</span>();
-			<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>() <span class="op">!=</span> <span class="ident">KECCAK_NULL_RLP</span> {
+			<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>() <span class="op">!=</span> <span class="ident">RlpCodec</span>::<span class="ident">HASHED_NULL_NODE</span> {
 				<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;- TRIE MISMATCH&quot;</span>);
 				<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;&quot;</span>);
 				<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?} vs {:?}&quot;</span>, <span class="ident">memtrie</span>.<span class="ident">root</span>(), <span class="ident">real</span>);
@@ -2325,39 +2370,40 @@
 					<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?} -&gt; {:?}&quot;</span>, <span class="ident">i</span>.<span class="number">0</span>.<span class="ident">pretty</span>(), <span class="ident">i</span>.<span class="number">1</span>.<span class="ident">pretty</span>());
 				}
 			}
-			<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>(), <span class="ident">KECCAK_NULL_RLP</span>);
+			<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>(), <span class="ident">RlpCodec</span>::<span class="ident">HASHED_NULL_NODE</span>);
 		}
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">init</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">KECCAK_NULL_RLP</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">RlpCodec</span>::<span class="ident">HASHED_NULL_NODE</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_on_empty</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[ (<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]) ]));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[ (<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]) ]));
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">remove_to_empty</span>() {
 		<span class="kw">let</span> <span class="ident">big_value</span> <span class="op">=</span> <span class="string">b&quot;00000000000000000000000000000000&quot;</span>;
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t1</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t1</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x23</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
 		<span class="ident">t1</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x34</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb2</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb2</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root2</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t2</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb2</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root2</span>);
+
 		<span class="ident">t2</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
 		<span class="ident">t2</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x23</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
 		<span class="ident">t2</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x34</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
@@ -2366,22 +2412,22 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_replace_root</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x23u8</span>, <span class="number">0x45</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[ (<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x23u8</span>, <span class="number">0x45</span>]) ]));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[ (<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x23u8</span>, <span class="number">0x45</span>]) ]));
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_make_branch_root</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>])
 		]));
@@ -2389,13 +2435,13 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_into_branch_root</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]),
@@ -2404,12 +2450,12 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_value_into_branch_root</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[], <span class="kw-2">&amp;</span>[<span class="number">0x0</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x0</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]),
 		]));
@@ -2417,12 +2463,12 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_split_leaf</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x34</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x34</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x34</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x34</span>]),
 		]));
@@ -2430,13 +2476,13 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">insert_split_extenstion</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x23</span>, <span class="number">0x45</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0xf3</span>, <span class="number">0x45</span>], <span class="kw-2">&amp;</span>[<span class="number">0x02</span>]).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0xf3</span>, <span class="number">0xf5</span>], <span class="kw-2">&amp;</span>[<span class="number">0x03</span>]).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01</span>, <span class="number">0x23</span>, <span class="number">0x45</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01</span>, <span class="number">0xf3</span>, <span class="number">0x45</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x02</span>]),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01</span>, <span class="number">0xf3</span>, <span class="number">0xf5</span>], <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x03</span>]),
@@ -2448,12 +2494,12 @@
 		<span class="kw">let</span> <span class="ident">big_value0</span> <span class="op">=</span> <span class="string">b&quot;00000000000000000000000000000000&quot;</span>;
 		<span class="kw">let</span> <span class="ident">big_value1</span> <span class="op">=</span> <span class="string">b&quot;11111111111111111111111111111111&quot;</span>;
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="ident">big_value0</span>).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>], <span class="ident">big_value1</span>).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="ident">big_value0</span>.<span class="ident">to_vec</span>()),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>], <span class="ident">big_value1</span>.<span class="ident">to_vec</span>())
 		]));
@@ -2463,12 +2509,12 @@
 	<span class="kw">fn</span> <span class="ident">insert_duplicate_value</span>() {
 		<span class="kw">let</span> <span class="ident">big_value</span> <span class="op">=</span> <span class="string">b&quot;00000000000000000000000000000000&quot;</span>;
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>], <span class="ident">big_value</span>).<span class="ident">unwrap</span>();
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="macro">vec</span><span class="macro">!</span>[
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="macro">vec</span><span class="macro">!</span>[
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="ident">big_value</span>.<span class="ident">to_vec</span>()),
 			(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">0x11u8</span>, <span class="number">0x23</span>], <span class="ident">big_value</span>.<span class="ident">to_vec</span>())
 		]));
@@ -2476,15 +2522,15 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_at_empty</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x5</span>]), <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x5</span>]).<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_at_one</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
@@ -2495,7 +2541,7 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_at_three</span>() {
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
@@ -2504,12 +2550,12 @@
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>(), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0xf1</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>(), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x81</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>(), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>]));
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x82</span>, <span class="number">0x23</span>]), <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x82</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>);
 		<span class="ident">t</span>.<span class="ident">commit</span>();
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>(), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0xf1</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>(), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">0xf1u8</span>, <span class="number">0x23</span>]));
 		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x81</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>(), <span class="ident">DBValue</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">0x81u8</span>, <span class="number">0x23</span>]));
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x82</span>, <span class="number">0x23</span>]), <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>[<span class="number">0x82</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2524,15 +2570,15 @@
 				<span class="ident">count</span>: <span class="number">4</span>,
 			}.<span class="ident">make_with</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">seed</span>);
 
-			<span class="kw">let</span> <span class="ident">real</span> <span class="op">=</span> <span class="ident">trie_root</span>(<span class="ident">x</span>.<span class="ident">clone</span>());
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+			<span class="kw">let</span> <span class="ident">real</span> <span class="op">=</span> <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">x</span>.<span class="ident">clone</span>());
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memtrie</span> <span class="op">=</span> <span class="ident">populate_trie</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memtrie</span> <span class="op">=</span> <span class="ident">populate_trie</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">RlpCodec</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>);
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">clone</span>();
 			<span class="ident">y</span>.<span class="ident">sort_by</span>(<span class="op">|</span><span class="kw-2">ref</span> <span class="ident">a</span>, <span class="kw-2">ref</span> <span class="ident">b</span><span class="op">|</span> <span class="ident">a</span>.<span class="number">0</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="number">0</span>));
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb2</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memdb2</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root2</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memtrie_sorted</span> <span class="op">=</span> <span class="ident">populate_trie</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb2</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root2</span>, <span class="kw-2">&amp;</span><span class="ident">y</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">memtrie_sorted</span> <span class="op">=</span> <span class="ident">populate_trie</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">RlpCodec</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">memdb2</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root2</span>, <span class="kw-2">&amp;</span><span class="ident">y</span>);
 			<span class="kw">if</span> <span class="kw-2">*</span><span class="ident">memtrie</span>.<span class="ident">root</span>() <span class="op">!=</span> <span class="ident">real</span> <span class="op">||</span> <span class="kw-2">*</span><span class="ident">memtrie_sorted</span>.<span class="ident">root</span>() <span class="op">!=</span> <span class="ident">real</span> {
 				<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;TRIE MISMATCH&quot;</span>);
 				<span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;&quot;</span>);
@@ -2552,15 +2598,15 @@
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
 	<span class="kw">fn</span> <span class="ident">test_trie_existing</span>() {
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
 		{
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 			<span class="ident">t</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>], <span class="kw-2">&amp;</span>[<span class="number">0x01u8</span>, <span class="number">0x23</span>]).<span class="ident">unwrap</span>();
 		}
 
 		{
-		 	<span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">from_existing</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
+			 <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">from_existing</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		}
 	}
 
@@ -2575,21 +2621,21 @@
 				<span class="ident">count</span>: <span class="number">4</span>,
 		}.<span class="ident">make_with</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">seed</span>);
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">key</span>, <span class="kw-2">ref</span> <span class="ident">value</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">x</span> {
 			<span class="ident">t</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">value</span>).<span class="ident">unwrap</span>();
 		}
 
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>(<span class="ident">x</span>.<span class="ident">clone</span>()));
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">trie_root</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span>, <span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">x</span>.<span class="ident">clone</span>()));
 
 		<span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">key</span>, <span class="kw">_</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">x</span> {
 			<span class="ident">t</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">unwrap</span>();
 		}
 
 		<span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>.<span class="ident">is_empty</span>());
-		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">KECCAK_NULL_RLP</span>);
+		<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">t</span>.<span class="ident">root</span>(), <span class="ident">RlpCodec</span>::<span class="ident">HASHED_NULL_NODE</span>);
 	}
 
 	<span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2603,7 +2649,7 @@
 				<span class="ident">count</span>: <span class="number">4</span>,
 		}.<span class="ident">make_with</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">seed</span>);
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="ident">new</span>();
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDB</span>::<span class="op">&lt;</span><span class="ident">KeccakHasher</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">H256</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">TrieDBMut</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">root</span>);
 		<span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">key</span>, <span class="kw-2">ref</span> <span class="ident">value</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">x</span> {
