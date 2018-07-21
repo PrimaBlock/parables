@@ -28,6 +28,7 @@ extern crate secp256k1;
 pub use ethabi_derive::*;
 pub use proptest::*;
 
+pub mod abi;
 #[cfg(feature = "account")]
 pub mod account;
 pub mod call;

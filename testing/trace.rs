@@ -1,61 +1,157 @@
 use ethcore::trace;
 use ethcore::trace::trace::{Call, Create};
-use ethereum_types::{H160, U256};
+use ethereum_types::{Address, H160, U256};
 use linker;
 use parity_bytes::Bytes;
 use parity_evm;
 use parity_vm;
-use source_map;
-use std::collections::HashMap;
 use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use utils;
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum TxEvent {
-    /// Generic trace error.
-    TraceError(String),
+/// Last known frame.
+#[derive(Debug, Clone, PartialEq)]
+pub enum FrameInfo {
+    Some(usize),
+    None,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ErrorKind {
+    Root,
+    Error(trace::TraceError),
+}
+
+impl ErrorKind {
+    /// Check if kind is reverted.
+    pub fn is_reverted(&self) -> bool {
+        match *self {
+            ErrorKind::Root => false,
+            ErrorKind::Error(ref e) => *e == trace::TraceError::Reverted,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ErrorInfo {
+    pub kind: ErrorKind,
+    pub line_info: Option<LineInfo>,
+    pub subs: Vec<ErrorInfo>,
+}
+
+impl ErrorInfo {
+    /// Create a new root error info.
+    pub fn new_root(subs: Vec<ErrorInfo>) -> Self {
+        Self {
+            kind: ErrorKind::Root,
+            line_info: None,
+            subs: subs,
+        }
+    }
+
+    fn fmt_sub(&self, fmt: &mut fmt::Formatter, level: usize) -> fmt::Result {
+        let prefix = (0..level).map(|_| "  ").collect::<String>();
+
+        match self.kind {
+            ErrorKind::Root => match self.line_info {
+                Some(ref line_info) => writeln!(fmt, "{}failed at {}", prefix, line_info)?,
+                None => writeln!(fmt, "{}failed", prefix)?,
+            },
+            ErrorKind::Error(ref e) => match self.line_info {
+                Some(ref line_info) => writeln!(fmt, "{}{} at {}", prefix, e, line_info)?,
+                None => writeln!(fmt, "{}{} at unknown location", prefix, e)?,
+            },
+        }
+
+        for sub in &self.subs {
+            sub.fmt_sub(fmt, level + 1)?;
+        }
+
+        Ok(())
+    }
+
+    /// Check if kind is reverted.
+    pub fn is_reverted(&self) -> bool {
+        if self.kind.is_reverted() {
+            return true;
+        }
+
+        self.subs.iter().any(|e| e.is_reverted())
+    }
+}
+
+impl fmt::Display for ErrorInfo {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        self.fmt_sub(fmt, 0)
+    }
 }
 
 pub struct TxTracer<'a> {
-    linker: Option<Arc<linker::Linker>>,
-    // current source.
-    source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
-    traces: Vec<TxEvent>,
+    linker: &'a linker::Linker,
+    // program counter of last revert.
+    frame_info: &'a Mutex<FrameInfo>,
+    // Information about a revert.
+    errors: Vec<ErrorInfo>,
 }
 
 impl<'a> TxTracer<'a> {
-    pub fn new(
-        linker: Option<Arc<linker::Linker>>,
-        source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
-    ) -> Self {
+    pub fn new(linker: &'a linker::Linker, frame_info: &'a Mutex<FrameInfo>) -> Self {
         Self {
             linker,
-            source,
-            traces: Vec::new(),
+            frame_info,
+            errors: Vec::new(),
         }
+    }
+
+    /// Get line info from the current program counter.
+    fn line_info(&self, address: Address, pc: usize) -> Option<LineInfo> {
+        let source = self.linker.find_runtime_source(address);
+
+        let (ref source, ref offsets) = match source.as_ref() {
+            Some(source) => source.as_ref(),
+            None => return None,
+        };
+
+        let offset = match offsets.get(&pc) {
+            Some(offset) => *offset,
+            None => return None,
+        };
+
+        let m = match source.find_mapping(offset) {
+            Some(m) => m,
+            None => return None,
+        };
+
+        let path = match m.file_index.and_then(|index| self.linker.find_file(index)) {
+            Some(path) => path,
+            None => return None,
+        };
+
+        let file = File::open(path).expect("bad file");
+
+        let (line_string, line, _) =
+            utils::find_line(file, (m.start as usize, (m.start + m.length) as usize))
+                .expect("line from file");
+
+        Some(LineInfo {
+            path: path.to_owned(),
+            line_string,
+            line,
+        })
     }
 }
 
 impl<'a> trace::Tracer for TxTracer<'a> {
-    type Output = TxEvent;
+    type Output = ErrorInfo;
 
     fn prepare_trace_call(&self, params: &parity_vm::ActionParams) -> Option<Call> {
-        if let Some(runtime_map) = self.linker
-            .as_ref()
-            .and_then(|linker| linker.find_runtime_source(params.address))
-        {
-            let mut source = self.source.lock().expect("not poisoned lock");
-            *source = Some(runtime_map);
-        }
-
-        None
+        Some(Call::from(params.clone()))
     }
 
-    fn prepare_trace_create(&self, _params: &parity_vm::ActionParams) -> Option<Create> {
-        None
+    fn prepare_trace_create(&self, params: &parity_vm::ActionParams) -> Option<Create> {
+        Some(Create::from(params.clone()))
     }
 
     fn prepare_trace_output(&self) -> Option<Bytes> {
@@ -67,37 +163,65 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         _call: Option<Call>,
         _gas_used: U256,
         _output: Option<Bytes>,
-        _subs: Vec<Self::Output>,
+        subs: Vec<Self::Output>,
     ) {
+        if !subs.is_empty() {
+            self.errors.extend(subs);
+        }
     }
 
-    /// Stores trace create info.
     fn trace_create(
         &mut self,
         _create: Option<Create>,
         _gas_used: U256,
         _code: Option<Bytes>,
         _address: H160,
-        _subs: Vec<Self::Output>,
+        subs: Vec<Self::Output>,
     ) {
+        if !subs.is_empty() {
+            self.errors.extend(subs);
+        }
     }
 
     fn trace_failed_call(
         &mut self,
-        _call: Option<Call>,
-        _subs: Vec<Self::Output>,
+        call: Option<Call>,
+        subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
-        self.traces.push(TxEvent::TraceError(error.to_string()));
+        let call = call.expect("no call");
+
+        let frame_info: FrameInfo = self.frame_info.lock().expect("poisoned lock").clone();
+
+        match frame_info {
+            FrameInfo::Some(pc) => {
+                let line_info = self.line_info(call.to, pc);
+
+                self.errors.push(ErrorInfo {
+                    kind: ErrorKind::Error(error),
+                    line_info,
+                    subs,
+                })
+            }
+            FrameInfo::None => self.errors.push(ErrorInfo {
+                kind: ErrorKind::Error(error),
+                line_info: None,
+                subs: subs,
+            }),
+        }
     }
 
     fn trace_failed_create(
         &mut self,
         _create: Option<Create>,
-        _subs: Vec<Self::Output>,
+        subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
-        self.traces.push(TxEvent::TraceError(error.to_string()));
+        self.errors.push(ErrorInfo {
+            kind: ErrorKind::Error(error),
+            line_info: None,
+            subs: subs,
+        })
     }
 
     fn trace_suicide(&mut self, _address: H160, _balance: U256, _refund_address: H160) {}
@@ -108,11 +232,11 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     where
         Self: Sized,
     {
-        TxTracer::new(self.linker.clone(), self.source)
+        TxTracer::new(self.linker, self.frame_info)
     }
 
-    fn drain(self) -> Vec<Self::Output> {
-        self.traces
+    fn drain(self) -> Vec<ErrorInfo> {
+        self.errors
     }
 }
 
@@ -135,99 +259,32 @@ impl fmt::Display for LineInfo {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Revert {
-    line_info: Option<LineInfo>,
-}
-
-impl fmt::Display for Revert {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match self.line_info {
-            Some(ref line_info) => write!(fmt, "reverted at {}", line_info),
-            None => write!(fmt, "reverted at unknown location"),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct TxVmOutput {
-    pub revert: Option<Revert>,
-}
-
 #[derive(Debug)]
 pub struct TxVmTracer<'a> {
-    linker: Option<Arc<linker::Linker>>,
-    // current source.
-    source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
+    linker: &'a linker::Linker,
+    // current sources.
+    frame_info: &'a Mutex<FrameInfo>,
     depth: usize,
     pc: usize,
     instruction: u8,
     stack: Vec<U256>,
-    revert: Option<Revert>,
 }
 
 impl<'a> TxVmTracer<'a> {
-    pub fn new(
-        linker: Option<Arc<linker::Linker>>,
-        source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
-    ) -> Self {
+    pub fn new(linker: &'a linker::Linker, frame_info: &'a Mutex<FrameInfo>) -> Self {
         TxVmTracer {
             linker,
-            source,
+            frame_info,
             depth: 0,
             pc: 0,
             instruction: 0,
             stack: Vec::new(),
-            revert: None,
         }
     }
 }
 
-impl<'a> TxVmTracer<'a> {
-    /// Get line info from the current program counter.
-    fn line_info(&self) -> Option<LineInfo> {
-        let source = self.source.lock().expect("not poisoned lock");
-
-        let (ref source, ref offsets) = match *source {
-            Some(ref source) => source.as_ref(),
-            None => return None,
-        };
-
-        let offset = match offsets.get(&self.pc) {
-            Some(offset) => *offset,
-            None => return None,
-        };
-
-        let m = match source.find_mapping(offset) {
-            Some(m) => m,
-            None => return None,
-        };
-
-        let path = match m.file_index.and_then(|index| {
-            self.linker
-                .as_ref()
-                .and_then(|linker| linker.find_file(index))
-        }) {
-            Some(path) => path,
-            None => return None,
-        };
-
-        let file = File::open(path).expect("bad file");
-
-        let (line_string, line, _) =
-            utils::find_line(file, (m.start as usize, (m.start + m.length) as usize))
-                .expect("line from file");
-
-        Some(LineInfo {
-            path: path.to_owned(),
-            line_string,
-            line,
-        })
-    }
-}
-
 impl<'a> trace::VMTracer for TxVmTracer<'a> {
-    type Output = TxVmOutput;
+    type Output = ();
 
     fn trace_next_instruction(&mut self, pc: usize, instruction: u8, _current_gas: U256) -> bool {
         self.pc = pc;
@@ -235,42 +292,44 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
         true
     }
 
-    // Parts borrowed from: https://github.com/paritytech/sol-rs/blob/master/solaris/src/trace.rs
     fn trace_executed(
         &mut self,
         _gas_used: U256,
-        _stack_push: &[U256],
+        stack_push: &[U256],
         _mem_diff: Option<(usize, &[u8])>,
         _store_diff: Option<(U256, U256)>,
     ) {
-        let info = parity_evm::Instruction::from_u8(self.instruction)
-            .expect("legal instruction")
-            .info();
+        let i = parity_evm::Instruction::from_u8(self.instruction).expect("legal instruction");
 
-        if info.name == "REVERT" {
-            let line_info = self.line_info();
-            self.revert = Some(Revert { line_info });
+        let len = self.stack.len();
+
+        {
+            let mut frame_info = self.frame_info.lock().expect("poisoned lock");
+            *frame_info = FrameInfo::Some(self.pc);
         }
+
+        let info = i.info();
+
+        self.stack.truncate(if len >= info.args {
+            len - info.args
+        } else {
+            0usize
+        });
+        self.stack.extend_from_slice(stack_push);
     }
 
     fn prepare_subtrace(&self, _code: &[u8]) -> Self
     where
         Self: Sized,
     {
-        let mut vm = TxVmTracer::new(self.linker.clone(), self.source);
+        let mut vm = TxVmTracer::new(self.linker, self.frame_info);
         vm.depth = self.depth + 1;
         vm
     }
 
-    fn done_subtrace(&mut self, sub: Self) {
-        if sub.revert.is_some() {
-            self.revert = sub.revert;
-        }
-    }
+    fn done_subtrace(&mut self, _sub: Self) {}
 
     fn drain(self) -> Option<Self::Output> {
-        Some(TxVmOutput {
-            revert: self.revert,
-        })
+        None
     }
 }

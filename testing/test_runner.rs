@@ -109,7 +109,7 @@ impl<'a, 'b: 'a> From<&'a panic::Location<'b>> for Location {
 }
 
 /// The outcome of a single test.
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq)]
 pub enum Outcome {
     /// Contains information about the failed outcome.
     Failed(PanicInfo),

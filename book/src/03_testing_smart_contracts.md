@@ -29,12 +29,9 @@ fn main() -> Result<()> {
     let owner = Address::random();
     let call = Call::new(owner).gas(1_000_000);
 
-    // Initialize a new linker.
-    let mut linker = Linker::new();
-
     // Set up a new virtual machine with a default (null) foundation.
     let foundation = Spec::new_null();
-    let mut evm = Evm::new(&foundation)?;
+    let mut evm = Evm::new(&foundation, new_context())?;
 
     // Deploy the SimpleContract.
     let code = simple_contract::bin(&linker)?;
@@ -102,18 +99,12 @@ In main, we start by creating a random `owner`, and set up the template model we
 our calls.
 
 ```rust
-let mut linker = Linker::new();
-```
-
-Next we set up our linker. There is currently no configuration necessary since our contract doesn't
-link to any other contracts. But we need one anyways.
-
-```rust
 let foundation = Spec::new_null();
-let mut evm = Evm::new(&foundation)?;
+let context = new_context();
+let mut evm = Evm::new(&foundation, context)?;
 ```
 
-Time to set up our _foundation_. A foundation determines the parameters of the blockchain.
+Time to set up our _foundation_ and our _contract context_. A foundation determines the parameters of the blockchain.
 The `null` foundation is the default foundation, which makes it operate like your modern Ethereum
 blockchain.
 But we also have access to older foundations like [`morden`].

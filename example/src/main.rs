@@ -6,29 +6,20 @@ use parables_testing::prelude::*;
 contracts!();
 
 fn main() -> Result<()> {
+    use simple_contract::simple_contract;
+    use simple_lib::simple_lib;
+
     let owner = Address::random();
     // template call
     let call = Call::new(owner).gas(1_000_000);
 
-    let mut linker = Linker::new();
-    // setup source maps.
-    source_maps(&mut linker)?;
-
     let foundation = Spec::new_null();
-    let mut evm = Evm::new(&foundation)?;
+    let mut evm = Evm::new(&foundation, new_context())?;
     evm.add_balance(owner, wei::from_ether(1000))?;
 
     // set up simple lib
-    let code = simple_lib::bin(&linker)?;
-    let simple_lib_address = evm.deploy(simple_lib::constructor(code), call)?.address;
-    linker.register_item("SimpleLib".to_string(), simple_lib_address);
-
-    let simple_contract_code = simple_contract::bin(&linker)?;
-    let simple = evm.deploy(simple_contract::constructor(simple_contract_code, 42), call)?
-        .address;
-    linker.register_item("SimpleContract".to_string(), simple);
-
-    evm.linker(linker);
+    evm.deploy(simple_lib::constructor(), call)?;
+    let simple = evm.deploy(simple_contract::constructor(42), call)?.address;
 
     let evm = Snapshot::new(evm);
 
@@ -38,8 +29,8 @@ fn main() -> Result<()> {
         "any set value",
         pt!{
             |(x in any::<u64>())| {
-                use simple_contract::events as ev;
-                use simple_contract::functions as f;
+                use simple_contract::simple_contract::events as ev;
+                use simple_contract::simple_contract::functions as f;
 
                 let mut evm = evm.get()?;
 
@@ -62,8 +53,8 @@ fn main() -> Result<()> {
     );
 
     runner.test("decrement step by step", || {
-        use simple_contract::events as ev;
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract::events as ev;
+        use simple_contract::simple_contract::functions as f;
 
         let mut evm = evm.get()?;
         let mut current = 42u64;

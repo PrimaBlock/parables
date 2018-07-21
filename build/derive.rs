@@ -21,11 +21,11 @@ pub struct ContractFields {
     abi: String,
     bin: String,
     #[serde(rename = "srcmap")]
-    source_map: String,
-    #[serde(rename = "srcmap-runtime")]
-    source_map_runtime: String,
+    source_map: Option<String>,
     #[serde(rename = "bin-runtime")]
-    bin_runtime: String,
+    runtime_bin: Option<String>,
+    #[serde(rename = "srcmap-runtime")]
+    runtime_source_map: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -38,143 +38,109 @@ pub struct Output {
     version: String,
 }
 
+#[derive(Debug, Hash, PartialEq, Eq)]
+pub struct Name {
+    path: String,
+    module_name: String,
+    type_module_name: String,
+    type_name: String,
+}
+
+impl fmt::Display for Name {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "{}:{}", self.path, self.type_name)
+    }
+}
+
 /// Implement a module for the given output.
 pub fn impl_module(path: &Path, output: Output) -> Result<quote::Tokens> {
     let mut result = Vec::new();
-    let mut source_maps = Vec::new();
+
+    let mut map = HashMap::new();
 
     for (name, contract) in output.contracts {
         let name = parse_name(&name)?;
 
-        let bin_function = bin_function(&contract)?;
-        let source_maps_function = source_maps_function(&name, &contract)?;
+        map.entry(name.module_name.to_string())
+            .or_insert_with(Vec::new)
+            .push((name, contract));
+    }
 
-        let contract = impl_contract_abi(&contract.abi)?;
+    for (module_name, values) in map.into_iter() {
+        let module_name = syn::Ident::from(module_name.as_str());
 
-        let module_name = syn::Ident::from(name.module_name);
+        let mut types = Vec::new();
+
+        for (name, contract) in values {
+            let contract = impl_contract_abi(&name, &contract, &contract.abi)?;
+
+            let type_module_name = syn::Ident::from(name.type_module_name.as_str());
+
+            types.push(quote! {
+                pub mod #type_module_name {
+                    #contract
+                }
+            });
+        }
 
         result.push(quote! {
             pub mod #module_name {
-                #bin_function
-
-                #source_maps_function
-
-                #contract
+                #(#types)*
             }
         });
-
-        source_maps.push(module_name);
     }
 
-    result.push(source_maps_global_function(
-        path,
-        output.source_list,
-        source_maps,
-    ));
+    result.push(new_context_function(path, output.source_list));
 
     return Ok(quote!{ #(#result)* });
 
-    #[derive(Debug)]
-    pub struct Name<'a> {
-        path: &'a str,
-        module_name: String,
-        type_name: &'a str,
-    }
-
-    impl<'a> fmt::Display for Name<'a> {
-        fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-            write!(fmt, "{}:{}", self.path, self.type_name)
-        }
-    }
-
-    fn parse_name<'a>(name: &'a str) -> Result<Name<'a>> {
+    fn parse_name(name: &str) -> Result<Name> {
         let mut parts = name.split(":");
 
         let path = parts.next().ok_or_else(|| format!("bad name: {}", name))?;
         let type_name = parts.next().ok_or_else(|| format!("bad name: {}", name))?;
 
-        let module_name = type_name.to_snake_case();
+        let mut parts = path.split(".");
+        let base = parts.next().ok_or_else(|| format!("bad path: {}", path))?;
+
+        let module_name = base.to_snake_case();
+        let type_module_name = type_name.to_snake_case();
 
         Ok(Name {
-            path,
+            path: path.to_string(),
             module_name,
-            type_name,
+            type_module_name,
+            type_name: type_name.to_string(),
         })
     }
 
-    fn bin_function(contract: &ContractFields) -> Result<quote::Tokens> {
-        let bin = &contract.bin;
-
-        Ok(quote! {
-            pub fn bin(linker: &::parables_testing::linker::Linker)
-                -> Result<Vec<u8>, ::parables_testing::error::Error>
-            {
-                linker.link(#bin)
-            }
-        })
-    }
-
-    fn source_maps_global_function(
-        path: &Path,
-        source_list: Vec<String>,
-        source_maps: Vec<syn::Ident>,
-    ) -> quote::Tokens {
+    fn new_context_function(path: &Path, source_list: Vec<String>) -> quote::Tokens {
         let source_list = source_list
             .into_iter()
             .map(|p| path.join(p).display().to_string())
             .collect::<Vec<_>>();
 
         quote! {
-            pub fn source_maps(linker: &mut ::parables_testing::linker::Linker)
-                -> ::std::result::Result<(), ::parables_testing::error::Error>
-            {
-                linker.register_source_list(vec![#(::std::path::Path::new(#source_list).to_owned(),)*]);
-                #(#source_maps::source_maps(linker)?;)*
-                Ok(())
+            pub fn new_context() -> ::parables_testing::abi::ContractContext {
+                ::parables_testing::abi::ContractContext {
+                    source_list: Some(vec![#(::std::path::Path::new(#source_list).to_owned(),)*]),
+                }
             }
         }
-    }
-
-    fn source_maps_function(name: &Name, contract: &ContractFields) -> Result<quote::Tokens> {
-        let name = name.type_name;
-        let bin = &contract.bin;
-        let source_map = &contract.source_map;
-        let source_map_runtime = &contract.source_map_runtime;
-        let bin_runtime = &contract.bin_runtime;
-
-        Ok(quote! {
-            pub fn source_maps(linker: &mut ::parables_testing::linker::Linker)
-                -> Result<(), ::parables_testing::error::Error>
-            {
-                /*let source_map = ::parables_testing::source_map::SourceMap::parse(#source_map)?;
-                let offsets = linker.decode_offsets(#bin)?;
-
-                linker.register_source(
-                    #name.to_string(),
-                    source_map, offsets);*/
-
-                let runtime_source_map = ::parables_testing::source_map::SourceMap::parse(#source_map_runtime)?;
-                let runtime_offsets = linker.decode_offsets(#bin_runtime)?;
-
-                linker.register_runtime_source(
-                    #name.to_string(),
-                    runtime_source_map, runtime_offsets);
-
-                Ok(())
-            }
-        })
     }
 }
 
 /// Implement the contract ABI.
-fn impl_contract_abi(input: &str) -> Result<quote::Tokens> {
+fn impl_contract_abi(
+    name: &Name,
+    contract_fields: &ContractFields,
+    input: &str,
+) -> Result<quote::Tokens> {
     let contract: Contract = serde_json::from_str(input)?;
 
     let functions: Vec<_> = contract.functions().map(impl_contract_function).collect();
     let events_impl: Vec<_> = contract.events().map(impl_contract_event).collect();
-    let constructor_impl = impl_contract_constructor(contract.constructor.as_ref());
-    let constructor_input_wrapper_struct =
-        declare_contract_constructor_input_wrapper(contract.constructor.as_ref());
+    let constructor_impl = impl_constructor(name, contract_fields, contract.constructor.as_ref());
     let logs_structs: Vec<_> = contract.events().map(declare_logs).collect();
     let events_structs: Vec<_> = contract.events().map(declare_events).collect();
     let func_structs: Vec<_> = contract.functions().map(declare_functions).collect();
@@ -189,9 +155,8 @@ fn impl_contract_abi(input: &str) -> Result<quote::Tokens> {
     } else {
         quote! {
             pub mod events {
+                #[allow(unused)]
                 use parables_testing::ethabi;
-                use parables_testing::ethabi::ParseLog;
-                use parables_testing::ethabi::LogFilter;
 
                 #(#events_structs)*
 
@@ -199,6 +164,7 @@ fn impl_contract_abi(input: &str) -> Result<quote::Tokens> {
             }
 
             pub mod logs {
+                #[allow(unused)]
                 use parables_testing::ethabi;
 
                 #(#logs_structs)*
@@ -211,6 +177,7 @@ fn impl_contract_abi(input: &str) -> Result<quote::Tokens> {
     } else {
         quote! {
             pub mod functions {
+                #[allow(unused)]
                 use parables_testing::ethabi;
 
                 #(#func_structs)*
@@ -228,6 +195,7 @@ fn impl_contract_abi(input: &str) -> Result<quote::Tokens> {
         quote! {
             /// Contract functions (for decoding output)
             pub mod outputs {
+                #[allow(unused)]
                 use parables_testing::ethabi;
 
                 #(#output_functions)*
@@ -236,12 +204,10 @@ fn impl_contract_abi(input: &str) -> Result<quote::Tokens> {
     };
 
     let result = quote! {
-        // may not be used
+        #[allow(unused)]
         use parables_testing::ethabi;
 
         #constructor_impl
-
-        #constructor_input_wrapper_struct
 
         #events_and_logs_quote
 
@@ -532,7 +498,11 @@ fn impl_contract_event(event: &Event) -> quote::Tokens {
     }
 }
 
-fn impl_contract_constructor(constructor: Option<&Constructor>) -> quote::Tokens {
+fn impl_constructor(
+    name: &Name,
+    contract_fields: &ContractFields,
+    constructor: Option<&Constructor>,
+) -> quote::Tokens {
     // [param0, hello_world, param2]
     let input_names: Vec<_> = constructor
         .map(|c| input_names(&c.inputs))
@@ -578,51 +548,84 @@ fn impl_contract_constructor(constructor: Option<&Constructor>) -> quote::Tokens
         })
         .collect();
 
-    quote! {
-        pub fn constructor<#(#template_params),*>(code: ethabi::Bytes, #(#params),* ) -> ConstructorWithInput {
-            let v: Vec<ethabi::Token> = vec![#(#usage),*];
-            ConstructorWithInput::new(code, v)
-        }
-
-    }
-}
-
-fn declare_contract_constructor_input_wrapper(constructor: Option<&Constructor>) -> quote::Tokens {
     let constructor_inputs = to_ethabi_param_vec(constructor.iter().flat_map(|c| c.inputs.iter()));
 
+    let item = &name.type_name;
+    let bin = &contract_fields.bin;
+
+    let source_map = match contract_fields.source_map.as_ref() {
+        Some(source_map) => quote!{ Some(#source_map) },
+        None => quote!{ None },
+    };
+
+    let runtime_bin = match contract_fields.runtime_bin.as_ref() {
+        Some(runtime_bin) => quote!{ Some(#runtime_bin) },
+        None => quote!{ None },
+    };
+
+    let runtime_source_map = match contract_fields.runtime_source_map.as_ref() {
+        Some(runtime_source_map) => quote!{ Some(#runtime_source_map) },
+        None => quote!{ None },
+    };
+
     quote! {
-        pub struct ConstructorWithInput {
-            encoded_input: ethabi::Bytes,
+        pub fn constructor<#(#template_params),*>(#(#params),* ) -> Constructor {
+            let v: Vec<ethabi::Token> = vec![#(#usage),*];
+            Constructor::new(v)
         }
-        impl ethabi::ContractFunction for ConstructorWithInput {
+
+        pub struct Constructor {
+            tokens: Vec<ethabi::Token>,
+        }
+
+        impl Constructor {
+            pub fn new(tokens: Vec<ethabi::Token>) -> Self {
+                Constructor { tokens }
+            }
+        }
+
+        impl ::parables_testing::abi::ContractFunction for Constructor {
             type Output = ethabi::Address;
 
-            fn encoded(&self) -> ethabi::Bytes {
-                self.encoded_input.clone()
-            }
-
-            fn output(&self, output_bytes: ethabi::Bytes) -> ethabi::Result<Self::Output> {
-                let out = ethabi::decode(&vec![ethabi::ParamType::Address], &output_bytes)?
-                    .into_iter()
-                    .next()
-                    .expect(#INTERNAL_ERR);
-                Ok(out.to_address().expect(#INTERNAL_ERR))
-            }
-        }
-        impl ConstructorWithInput {
-            pub fn new(code: ethabi::Bytes, tokens: Vec<ethabi::Token>) -> Self {
+            fn encoded(&self, linker: &::parables_testing::linker::Linker)
+                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::error::Error>
+            {
                 let constructor = ethabi::Constructor {
                     inputs: #constructor_inputs
                 };
 
-                let encoded_input: ethabi::Bytes = constructor
-                    .encode_input(code, &tokens)
+                let code = linker.link(<Self as ::parables_testing::abi::Constructor>::BIN)?;
+
+                let encoded: ethabi::Bytes = constructor
+                    .encode_input(code, &self.tokens)
                     .expect(#INTERNAL_ERR);
 
-                ConstructorWithInput { encoded_input: encoded_input }
+                Ok(encoded)
+            }
+
+            fn output(&self, output_bytes: ethabi::Bytes)
+                -> ::std::result::Result<ethabi::Address, ::parables_testing::error::Error>
+            {
+                let out = ethabi::decode(&vec![ethabi::ParamType::Address], &output_bytes)
+                    .map_err(|e| format!("failed to decode output: {}", e))?;
+
+                let out = out.into_iter().next()
+                    .ok_or_else(|| "expected one parameter")?;
+
+                let out = out.to_address()
+                    .ok_or_else(|| "failed to convert output to address")?;
+
+                Ok(out)
             }
         }
 
+        impl ::parables_testing::abi::Constructor for Constructor {
+            const ITEM: &'static str = #item;
+            const BIN: &'static str = #bin;
+            const SOURCE_MAP: Option<&'static str> = #source_map;
+            const RUNTIME_BIN: Option<&'static str> = #runtime_bin;
+            const RUNTIME_SOURCE_MAP: Option<&'static str> = #runtime_source_map;
+        }
     }
 }
 
@@ -771,6 +774,33 @@ fn declare_events(event: &Event) -> quote::Tokens {
             }
         })
         .collect::<Vec<_>>();
+
+    let parse_log = match log_params.len() {
+        0 => quote! {
+            /// Parses log.
+            fn parse_log(&self, _log: ethabi::RawLog)
+                -> ::std::result::Result<Self::Log, ::parables_testing::error::Error>
+            {
+                Ok(super::logs::#name { })
+            }
+        },
+        _ => quote! {
+            /// Parses log.
+            fn parse_log(&self, log: ethabi::RawLog)
+                -> ::std::result::Result<Self::Log, ::parables_testing::error::Error>
+            {
+                let log = self.event.parse_log(log)
+                    .map_err(|e| format!("failed to parse log: {}", e))?;
+
+                let mut log = log.params.into_iter();
+
+                Ok(super::logs::#name {
+                    #(#log_params),*
+                })
+            }
+        },
+    };
+
     let event_inputs = quote! { vec![ #(#event_inputs),* ] };
 
     let event_anonymous = &event.anonymous;
@@ -793,20 +823,13 @@ fn declare_events(event: &Event) -> quote::Tokens {
             }
         }
 
-        impl ParseLog for #name {
+        impl ::parables_testing::abi::ParseLog for #name {
             type Log = super::logs::#name;
 
-            /// Parses log.
-            fn parse_log(&self, log: ethabi::RawLog) -> ethabi::Result<Self::Log> {
-                let mut log = self.event.parse_log(log)?.params.into_iter();
-                let result = super::logs::#name {
-                    #(#log_params),*
-                };
-                Ok(result)
-            }
+            #parse_log
         }
 
-        impl LogFilter for #name {
+        impl ::parables_testing::abi::LogFilter for #name {
             /// Create a default topic filter that matches any messages.
             fn wildcard_filter(&self) -> ethabi::TopicFilter {
                 self.filter(#(#any_params),*)
@@ -839,7 +862,12 @@ fn declare_functions(function: &Function) -> quote::Tokens {
                 let o = quote! { out };
                 let from_first = from_token(&function.outputs[0].kind, &o);
                 quote! {
-                    let out = self.function.decode_output(output)?.into_iter().next().expect(#INTERNAL_ERR);
+                    let out = self.function.decode_output(output)
+                        .map_err(|e| format!("failed to decode output: {}", e))?;
+
+                    let out = out.into_iter().next()
+                        .ok_or_else(|| "expected one parameter")?;
+
                     Ok(#from_first)
                 }
             }
@@ -852,7 +880,10 @@ fn declare_functions(function: &Function) -> quote::Tokens {
                     .collect();
 
                 quote! {
-                    let mut out = self.function.decode_output(output)?.into_iter();
+                    let mut out = self.function.decode_output(output)
+                        .map_err(|e| format!("failed to decode output: {}", e))?
+                        .into_iter();
+
                     Ok(( #(#outs),* ))
                 }
             }
@@ -862,7 +893,9 @@ fn declare_functions(function: &Function) -> quote::Tokens {
         // Otherwise the output argument is unused
         quote! {
             #[allow(unused_variables)]
-            pub fn decode_output(&self, output: &[u8]) -> ethabi::Result<#output_kinds> {
+            pub fn decode_output(&self, output: &[u8])
+                -> ::std::result::Result<#output_kinds, ::parables_testing::error::Error>
+            {
                 #o_impl
             }
         }
@@ -895,8 +928,11 @@ fn declare_functions(function: &Function) -> quote::Tokens {
         impl #name {
             #decode_output
 
-            pub fn encode_input(&self, tokens: &[ethabi::Token]) -> ethabi::Result<ethabi::Bytes> {
+            pub fn encode_input(&self, tokens: &[ethabi::Token])
+                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::error::Error>
+            {
                 self.function.encode_input(tokens)
+                    .map_err(|e| format!("failed to encode input: {}", e).into())
             }
         }
     }
@@ -909,7 +945,9 @@ fn declare_output_functions(function: &Function) -> quote::Tokens {
 
     quote! {
         /// Returns the decoded output for this contract function
-        pub fn #name_snake(output_bytes : &[u8]) -> ethabi::Result<#output_kinds> {
+        pub fn #name_snake(output_bytes : &[u8])
+            -> ::std::result::Result<#output_kinds, ::parables_testing::error::Error>
+        {
             super::functions::#name_camel::default().decode_output(&output_bytes)
         }
     }
@@ -927,14 +965,18 @@ fn declare_functions_input_wrappers(function: &Function) -> quote::Tokens {
             encoded_input: ethabi::Bytes
         }
 
-        impl ethabi::ContractFunction for #name_with_input {
+        impl ::parables_testing::abi::ContractFunction for #name_with_input {
             type Output = #output_kinds;
 
-            fn encoded(&self) -> ethabi::Bytes {
-                self.encoded_input.clone()
+            fn encoded(&self, _linker: &::parables_testing::linker::Linker)
+                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::error::Error>
+            {
+                Ok(self.encoded_input.clone())
             }
 
-            fn output(&self, _output_bytes: ethabi::Bytes) -> ethabi::Result<Self::Output> {
+            fn output(&self, _output_bytes: ethabi::Bytes)
+                -> ::std::result::Result<Self::Output, ::parables_testing::error::Error>
+            {
                 #output_fn_body
             }
         }

@@ -9,16 +9,18 @@ use std::sync::Arc;
 /// hex lookup table
 ///
 /// each index maps the ascii value of a byte to its corresponding hexadecimal value.
-static HEX: [u8; 256] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
-    0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0,
+static HEX: [i8; 256] = [
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1, 10, 11, 12, 13, 14, 15, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 10,
+    11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 ];
 
 /// A solidity bytecode linker.
@@ -117,9 +119,8 @@ impl Linker {
     }
 
     /// Decoded the given code into instruction offsets.
-    pub fn decode_offsets(&self, mut code: &str) -> Result<HashMap<usize, usize>, Error> {
-        code = code.trim();
-
+    pub fn decode_offsets(&self, code: &str) -> Result<HashMap<usize, usize>, Error> {
+        // maps byte offset to instruction offset, to permit looking it up from a tracer.
         let mut out = HashMap::new();
 
         let mut n = 0;
@@ -127,50 +128,42 @@ impl Linker {
 
         out.insert(n, offset);
 
-        while code.len() >= 2 {
-            // swarm hash, ignore
-            if code.len() == 43 * 2 {
-                code = &code[43 * 2..];
-                continue;
-            }
+        let mut it = Decoder::new(code);
 
-            match code[..2].as_bytes() {
-                &[a, b] if a.is_ascii_hexdigit() && b.is_ascii_hexdigit() => {
-                    let mut o = 0u8;
-                    o += HEX[a as usize] << 4;
-                    o += HEX[b as usize];
-                    code = &code[2..];
+        while let Some(section) = it.next() {
+            let section = section?;
 
-                    let info =
-                        parity_evm::Instruction::from_u8(o).ok_or_else(|| Error::BadInputPos {
-                            position: n * 2,
-                            message: "bad instruction",
-                        })?;
-
+            match section {
+                Section::Instruction(_, _) => {
+                    n += 1;
+                    offset += 1;
+                }
+                Section::Push(_, push) => {
                     n += 1;
                     offset += 1;
 
-                    if let Some(bytes) = info.push_bytes() {
-                        if code.len() < 2 * bytes {
-                            return Err(Error::BadInputPos {
-                                position: n * 2,
-                                message: "expected push number of bytes",
-                            });
+                    match push {
+                        Push::Unlinked(_) => {
+                            // length of an unlinked section
+                            n += 20;
                         }
-
-                        n += bytes;
-                        code = &code[2 * bytes..];
+                        Push::Bytes(bytes) => {
+                            n += bytes.len();
+                        }
                     }
-
-                    out.insert(n, offset);
                 }
-                _ => {
-                    return Err(Error::BadInputPos {
-                        position: n * 2,
-                        message: "two hex digits",
-                    });
+                Section::BadInstruction(_) => {
+                    // causes an exception, but otherwise ignore
+                    n += 1;
+                    offset += 1;
+                }
+                Section::SwarmHash(..) => {
+                    // ignore
+                    continue;
                 }
             }
+
+            out.insert(n, offset);
         }
 
         Ok(out)
@@ -184,59 +177,56 @@ impl Linker {
     /// with an address corresponding to the linked object.
     ///
     /// All other entries should be left preserved.
-    pub fn link(&self, mut code: &str) -> Result<Vec<u8>, Error> {
-        code = code.trim();
-
+    pub fn link(&self, code: &str) -> Result<Vec<u8>, Error> {
+        let mut it = Decoder::new(code);
         let mut output = Vec::new();
-        let mut n = 0usize;
 
-        // read input in pairs.
-        while code.len() >= 2 {
-            match code[..2].as_bytes() {
-                // section to link
-                &[b'_', b'_'] => {
-                    if code.len() < 40 {
-                        return Err(Error::BadInputPos {
-                            position: n,
-                            message: "expected link section at position {}, but remaining code is too small",
-                        });
-                    }
+        while let Some(section) = it.next() {
+            let section = section?;
 
-                    let (path, item) = decode_linked(&code[..40])?;
-
-                    let address = match item {
-                        Some(item) => self.objects_by_item.get(item).ok_or_else(|| {
-                            Error::NoLinkerItem {
-                                item: item.to_string(),
-                            }
-                        })?,
-                        None => self.objects_by_path.get(path).ok_or_else(|| {
-                            Error::NoLinkerPath {
-                                path: path.to_string(),
-                            }
-                        })?,
-                    };
-
-                    output.extend(address.iter());
-
-                    code = &code[40..];
-                    n += 40;
+            let push = match section {
+                Section::Instruction(b, _) => {
+                    output.push(b);
+                    continue;
                 }
-                &[a, b] if a.is_ascii_hexdigit() && b.is_ascii_hexdigit() => {
-                    let mut o = 0u8;
-                    o += HEX[a as usize] << 4;
-                    o += HEX[b as usize];
-                    output.push(o);
-                    code = &code[2..];
-                    n += 2;
+                Section::Push(b, push) => {
+                    output.push(b);
+                    push
                 }
-                _ => {
-                    return Err(Error::BadInputPos {
-                        position: n,
-                        message: "expected `__` or two hex digits",
-                    });
+                Section::BadInstruction(b) => {
+                    output.push(b);
+                    continue;
                 }
-            }
+                Section::SwarmHash(bytes, _) => {
+                    output.extend(bytes);
+                    continue;
+                }
+            };
+
+            let unlinked = match push {
+                Push::Bytes(bytes) => {
+                    output.extend(bytes);
+                    continue;
+                }
+                Push::Unlinked(unlinked) => unlinked,
+            };
+
+            let (path, item) = decode_linked(unlinked)?;
+
+            let address = match item {
+                Some(item) => self.objects_by_item
+                    .get(item)
+                    .ok_or_else(|| Error::NoLinkerItem {
+                        item: item.to_string(),
+                    })?,
+                None => self.objects_by_path
+                    .get(path)
+                    .ok_or_else(|| Error::NoLinkerPath {
+                        path: path.to_string(),
+                    })?,
+            };
+
+            output.extend(address.iter());
         }
 
         return Ok(output);
@@ -269,8 +259,211 @@ impl Linker {
     }
 }
 
+#[derive(Debug)]
+pub enum Push<'a> {
+    Bytes(Vec<u8>),
+    Unlinked(&'a str),
+}
+
+#[derive(Debug)]
+pub enum Section<'a> {
+    /// A bad instruction.
+    BadInstruction(u8),
+    /// A regular instruction.
+    Instruction(u8, parity_evm::Instruction),
+    /// A push instruction.
+    Push(u8, Push<'a>),
+    /// Swarm hash as seen at end of contract.
+    SwarmHash(Vec<u8>, Vec<u8>),
+}
+
+#[derive(Debug)]
+pub struct Decoder<'a> {
+    pos: usize,
+    input: HexDecode<'a>,
+}
+
+impl<'a> Decoder<'a> {
+    fn new(input: &'a str) -> Decoder<'a> {
+        Decoder {
+            pos: 0usize,
+            input: HexDecode(input),
+        }
+    }
+}
+
+impl<'a> Iterator for Decoder<'a> {
+    type Item = Result<Section<'a>, Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let swarm_hash = match self.input.take_swarm_hash() {
+            Ok(swarm_hash) => swarm_hash,
+            Err(e) => return Some(Err(format!("{}: #{}", e, self.pos).into())),
+        };
+
+        if let Some((bytes, hash)) = swarm_hash {
+            return Some(Ok(Section::SwarmHash(bytes, hash)));
+        }
+
+        let c = match self.input.next() {
+            Some(c) => c,
+            None => return None,
+        };
+
+        self.pos += 1;
+
+        let c = match c {
+            Ok(c) => c,
+            Err(_) => return Some(Err(format!("bad hex: #{}", self.pos).into())),
+        };
+
+        let info = match parity_evm::Instruction::from_u8(c) {
+            Some(info) => info,
+            None => {
+                return Some(Ok(Section::BadInstruction(c)));
+            }
+        };
+
+        let bytes = match info.push_bytes() {
+            Some(bytes) => bytes,
+            None => {
+                return Some(Ok(Section::Instruction(c, info)));
+            }
+        };
+
+        let bytes = match self.input.take_raw(bytes) {
+            Some(bytes) => bytes,
+            None => {
+                return Some(Err(
+                    format!("not enough input for push: #{}", self.pos).into()
+                ))
+            }
+        };
+
+        // unlinked section.
+        if bytes.len() == 40 {
+            if &bytes[0..2] == "__" {
+                return Some(Ok(Section::Push(c, Push::Unlinked(bytes))));
+            };
+        }
+
+        let mut decoder = HexDecode(bytes);
+        let mut out = Vec::new();
+
+        while let Some(b) = decoder.next() {
+            let b = match b {
+                Ok(b) => b,
+                Err(_) => return Some(Err(format!("bad hex in section: #{}", self.pos).into())),
+            };
+
+            out.push(b);
+        }
+
+        return Some(Ok(Section::Push(c, Push::Bytes(out))));
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct BadHex;
+
+#[derive(Debug, Clone)]
+pub struct HexDecode<'a>(&'a str);
+
+macro_rules! decode_hex_digit {
+    ($source:expr) => {{
+        let __d = match $source.chars().next() {
+            Some(__d) => __d,
+            None => return None,
+        };
+
+        if __d.len_utf8() > 1 {
+            $source = "";
+            return Some(Err(BadHex));
+        }
+
+        let __d = HEX[__d as usize];
+
+        if __d < 0 {
+            $source = "";
+            return Some(Err(BadHex));
+        }
+
+        $source = &$source[1..];
+        __d as u8
+    }};
+}
+
+impl<'a> HexDecode<'a> {
+    /// Take a slice of bytes.
+    fn take_raw(&mut self, len: usize) -> Option<&'a str> {
+        let len = len * 2;
+
+        if self.0.len() < len {
+            return None;
+        }
+
+        if !self.0.is_char_boundary(len) {
+            return None;
+        }
+
+        let (out, rest) = self.0.split_at(len);
+        self.0 = rest;
+        Some(out)
+    }
+
+    /// Try to take swarm hash, if present.
+    fn take_swarm_hash(&mut self) -> Result<Option<(Vec<u8>, Vec<u8>)>, Error> {
+        if self.0.len() != 86 {
+            return Ok(None);
+        }
+
+        if !self.0.starts_with("a165627a7a72305820") {
+            return Ok(None);
+        }
+
+        if !self.0.ends_with("0029") {
+            return Ok(None);
+        }
+
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend(b"\xa1\x65\x62\x7a\x7a\x72\x30\x58\x20");
+
+        let hash = &self.0[18..];
+        let hash = &hash[..64];
+
+        let mut decoder = HexDecode(hash);
+        let mut hash = Vec::new();
+
+        while let Some(b) = decoder.next() {
+            let b = match b {
+                Ok(b) => b,
+                Err(_) => return Err("bad hex in swarm hash".into()),
+            };
+
+            hash.push(b);
+        }
+
+        bytes.extend(hash.iter().cloned());
+        bytes.extend(b"\x00\x29");
+
+        self.0 = "";
+        Ok(Some((bytes, hash)))
+    }
+}
+
+impl<'a> Iterator for HexDecode<'a> {
+    type Item = Result<u8, BadHex>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let a = decode_hex_digit!(self.0) << 4;
+        let b = decode_hex_digit!(self.0);
+        return Some(Ok(a + b));
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::HexDecode;
     use super::Linker;
 
     extern crate hex;
@@ -279,9 +472,10 @@ mod tests {
     fn test_linker() {
         let linker = Linker::new();
 
-        let a = hex::decode(b"01234567789abcdefABCDEFF").expect("bad hex decode");
+        let a = hex::decode("608060405234801561001057600080fd5b").expect("bad hex decode");
+
         let b = linker
-            .link("01234567789abcdefABCDEFF")
+            .link("608060405234801561001057600080fd5b")
             .expect("bad link decode");
 
         linker.link("FF").expect("bad link decode");
@@ -289,30 +483,58 @@ mod tests {
     }
 
     #[test]
-    fn test_linker_against_contract_a() {
+    fn test_contract_a_linker() {
         let mut linker = Linker::new();
         linker.register_item("SimpleLib".to_string(), 0x342a.into());
 
         let out = linker
-            .link(include_str!("tests/a.bin"))
+            .link(include_str!("tests/a.bin").trim())
             .expect("bad link decode");
 
         // already linked should have no effect.
         let linked = linker
-            .link(include_str!("tests/linked_a.bin"))
+            .link(include_str!("tests/linked_a.bin").trim())
             .expect("bad link decode");
 
         assert_eq!(linked, out);
     }
 
     #[test]
-    fn test_decode_instruction_offsets() {
+    fn test_decode_runtime_simple() {
         let linker = Linker::new();
 
         let decoded = linker
-            .decode_offsets(include_str!("tests/runtime.bin"))
+            .decode_offsets(include_str!("tests/runtime_simple.bin").trim())
             .expect("bad decode");
+    }
 
-        println!("decoded: {:?}", decoded);
+    #[test]
+    fn test_decode_runtime_big() {
+        let linker = Linker::new();
+
+        let decoded = linker
+            .decode_offsets(include_str!("tests/runtime_big.bin").trim())
+            .expect("bad decode");
+    }
+
+    #[test]
+    fn test_hex_decode() {
+        let decoded = HexDecode("00112233445566778899").collect::<Vec<_>>();
+
+        assert_eq!(
+            vec![
+                Ok(0x00),
+                Ok(0x11),
+                Ok(0x22),
+                Ok(0x33),
+                Ok(0x44),
+                Ok(0x55),
+                Ok(0x66),
+                Ok(0x77),
+                Ok(0x88),
+                Ok(0x99),
+            ],
+            decoded
+        );
     }
 }

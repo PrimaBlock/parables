@@ -18,7 +18,7 @@ use std::fmt;
 use std::mem;
 use std::sync::{Arc, Mutex};
 use trace;
-use {call, journaldb, kvdb, kvdb_memorydb, linker};
+use {abi, call, journaldb, kvdb, kvdb_memorydb, linker, source_map};
 
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -85,7 +85,7 @@ pub struct Evm {
     /// Logs collected by topic.
     logs: HashMap<ethabi::Hash, Vec<LogEntry>>,
     /// Linker used, if available it can be used to perform source-map lookups.
-    linker: Option<Arc<linker::Linker>>,
+    linker: linker::Linker,
 }
 
 impl fmt::Debug for Evm {
@@ -96,25 +96,26 @@ impl fmt::Debug for Evm {
 
 impl Evm {
     /// Create a new ethereum virtual machine abstraction.
-    pub fn new(spec: &spec::Spec) -> Result<Self, Error> {
+    pub fn new(spec: &spec::Spec, context: abi::ContractContext) -> Result<Self, Error> {
         let env_info = Self::env_info(Address::random());
         let engine = Arc::clone(&spec.engine);
         let state = Self::state_from_spec(spec)?;
+
+        let mut linker = linker::Linker::new();
+
+        if let Some(source_list) = context.source_list {
+            linker.register_source_list(source_list);
+        }
 
         let evm = Evm {
             env_info,
             state,
             engine,
             logs: HashMap::new(),
-            linker: None,
+            linker: linker,
         };
 
         Ok(evm)
-    }
-
-    /// Set the linker to use for source mappings.
-    pub fn linker(&mut self, linker: linker::Linker) {
-        self.linker = Some(Arc::new(linker));
     }
 
     /// Get the current block number.
@@ -183,15 +184,54 @@ impl Evm {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy<F>(
+    pub fn deploy<C>(
         &mut self,
-        f: F,
+        constructor: C,
         call: call::Call,
     ) -> Result<CreateResult, CallError<CreateResult>>
     where
-        F: ethabi::ContractFunction<Output = Address>,
+        C: abi::ContractFunction<Output = Address> + abi::Constructor,
     {
-        self.deploy_code(f.encoded(), call)
+        let code = constructor
+            .encoded(&self.linker)
+            .map_err(|e| format!("{}: failed to encode deployment: {}", C::ITEM, e))?;
+
+        let result = self.deploy_code(code, call);
+
+        // Register all linker information used for debugging.
+        match result.as_ref() {
+            Ok(result) => {
+                self.linker
+                    .register_item(C::ITEM.to_string(), result.address);
+
+                if let (Some(runtime_bin), Some(runtime_source_map)) =
+                    (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())
+                {
+                    let runtime_source_map = source_map::SourceMap::parse(runtime_source_map)
+                        .map_err(|e| {
+                            format!("{}: failed to decode runtime source map: {}", C::ITEM, e)
+                        })?;
+
+                    let runtime_offsets = self.linker.decode_offsets(runtime_bin).map_err(|e| {
+                        format!(
+                            "{}: failed to decode offsets from bin-runtime: {}",
+                            C::ITEM,
+                            e
+                        )
+                    })?;
+
+                    self.linker.register_runtime_source(
+                        C::ITEM.to_string(),
+                        runtime_source_map,
+                        runtime_offsets,
+                    );
+                }
+            }
+            // ignore
+            Err(_) => {}
+        }
+
+        result
     }
 
     /// Deploy the contract with the given code.
@@ -212,10 +252,12 @@ impl Evm {
         call: call::Call,
     ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
     where
-        F: ethabi::ContractFunction,
+        F: abi::ContractFunction,
     {
-        let (output, result) =
-            self.action(Action::Call(address), f.encoded(), call, Self::call_result)?;
+        let params = f.encoded(&self.linker)
+            .map_err(|e| format!("failed to encode input: {}", e))?;
+
+        let (output, result) = self.action(Action::Call(address), params, call, Self::call_result)?;
 
         let output = f.output(output)
             .map_err(|e| format!("VM output conversion failed: {}", e))?;
@@ -238,7 +280,7 @@ impl Evm {
     /// Setup a log drainer that drains the specified logs.
     pub fn logs<'a, P>(&'a mut self, log: P) -> LogDrainer<'a, P>
     where
-        P: ethabi::ParseLog + ethabi::LogFilter,
+        P: abi::ParseLog + abi::LogFilter,
     {
         LogDrainer::new(self, log)
     }
@@ -341,15 +383,15 @@ impl Evm {
             self.env_info.number >= self.engine.params().eip86_transition,
         ).map_err(|e| format!("verify failed: {}", e))?;
 
-        let source = Mutex::new(None);
+        let frame_info = Mutex::new(trace::FrameInfo::None);
 
         // Apply transaction
         let result = self.state.apply_with_tracing(
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(self.linker.clone(), &source),
-            trace::TxVmTracer::new(self.linker.clone(), &source),
+            trace::TxTracer::new(&self.linker, &frame_info),
+            trace::TxVmTracer::new(&self.linker, &frame_info),
         );
 
         let result = result.map_err(|e| format!("vm: {}", e))?;
@@ -362,20 +404,20 @@ impl Evm {
             return Err(CallError::SyncLogs { execution, message });
         }
 
-        match result.vm_trace {
-            Some(state) => {
-                if let Some(revert) = state.revert {
-                    return Err(CallError::Reverted { execution, revert });
-                }
-            }
-            _ => {}
-        }
-
         if !result.trace.is_empty() {
-            return Err(CallError::Trace {
-                execution,
-                trace: result.trace,
-            });
+            let reverted = result.trace.iter().any(|e| e.is_reverted());
+
+            if reverted {
+                return Err(CallError::Reverted {
+                    execution,
+                    error_info: trace::ErrorInfo::new_root(result.trace),
+                });
+            } else {
+                return Err(CallError::Errored {
+                    execution,
+                    error_info: trace::ErrorInfo::new_root(result.trace),
+                });
+            }
         }
 
         match result.receipt.outcome {
@@ -416,7 +458,7 @@ pub struct LogDrainer<'a, P> {
 
 impl<'a, P> LogDrainer<'a, P>
 where
-    P: ethabi::ParseLog + ethabi::LogFilter,
+    P: abi::ParseLog + abi::LogFilter,
 {
     pub fn new(evm: &'a mut Evm, log: P) -> Self {
         let filter = log.wildcard_filter();
@@ -438,7 +480,7 @@ where
     /// Consumer the drainer and build an interator out of it.
     pub fn iter(self) -> Result<impl Iterator<Item = P::Log>, Error>
     where
-        P: ethabi::ParseLog,
+        P: abi::ParseLog,
     {
         Ok(self.drain()?.into_iter())
     }
@@ -452,7 +494,7 @@ where
     /// Drain logs matching the given filter that has been registered so far.
     pub fn drain(self) -> Result<Vec<P::Log>, Error>
     where
-        P: ethabi::ParseLog,
+        P: abi::ParseLog,
     {
         self.drain_with(|_, log| log)
     }
