@@ -1,9 +1,17 @@
 use ethcore::trace;
 use ethcore::trace::trace::{Call, Create};
 use ethereum_types::{H160, U256};
+use linker;
 use parity_bytes::Bytes;
 use parity_evm;
 use parity_vm;
+use source_map;
+use std::collections::HashMap;
+use std::fmt;
+use std::fs::File;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use utils;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum TxEvent {
@@ -11,26 +19,42 @@ pub enum TxEvent {
     TraceError(String),
 }
 
-pub struct TxTracer {
+pub struct TxTracer<'a> {
+    linker: Option<Arc<linker::Linker>>,
+    // current source.
+    source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
     traces: Vec<TxEvent>,
 }
 
-impl TxTracer {
-    pub fn new() -> Self {
-        Self { traces: Vec::new() }
+impl<'a> TxTracer<'a> {
+    pub fn new(
+        linker: Option<Arc<linker::Linker>>,
+        source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
+    ) -> Self {
+        Self {
+            linker,
+            source,
+            traces: Vec::new(),
+        }
     }
 }
 
-impl trace::Tracer for TxTracer {
+impl<'a> trace::Tracer for TxTracer<'a> {
     type Output = TxEvent;
 
-    fn prepare_trace_call(&self, _params: &parity_vm::ActionParams) -> Option<Call> {
-        // println!("call: {:?} -> {:?} (data: {:?})", _params.sender, _params.address, _params.data.as_ref().map(|d| d.len()));
+    fn prepare_trace_call(&self, params: &parity_vm::ActionParams) -> Option<Call> {
+        if let Some(runtime_map) = self.linker
+            .as_ref()
+            .and_then(|linker| linker.find_runtime_source(params.address))
+        {
+            let mut source = self.source.lock().expect("not poisoned lock");
+            *source = Some(runtime_map);
+        }
+
         None
     }
 
     fn prepare_trace_create(&self, _params: &parity_vm::ActionParams) -> Option<Create> {
-        // println!("create: {:?} -> {:?} (data: {:?})", _params.sender, _params.address, _params.data.as_ref().map(|d| d.len()));
         None
     }
 
@@ -80,11 +104,11 @@ impl trace::Tracer for TxTracer {
 
     fn trace_reward(&mut self, _author: H160, _value: U256, _reward_type: trace::RewardType) {}
 
-    fn subtracer(&self) -> Self
+    fn subtracer(&self) -> TxTracer<'a>
     where
         Self: Sized,
     {
-        Self::new()
+        TxTracer::new(self.linker.clone(), self.source)
     }
 
     fn drain(self) -> Vec<Self::Output> {
@@ -92,64 +116,118 @@ impl trace::Tracer for TxTracer {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct LineInfo {
+    path: PathBuf,
+    line_string: String,
+    line: usize,
+}
+
+impl fmt::Display for LineInfo {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            fmt,
+            "{}:{}: {}",
+            self.path.display(),
+            self.line,
+            self.line_string
+        )
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Revert {
+    line_info: Option<LineInfo>,
+}
+
+impl fmt::Display for Revert {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match self.line_info {
+            Some(ref line_info) => write!(fmt, "reverted at {}", line_info),
+            None => write!(fmt, "reverted at unknown location"),
+        }
+    }
+}
+
 #[derive(Debug)]
-pub struct TxVmTracer {
+pub struct TxVmOutput {
+    pub revert: Option<Revert>,
+}
+
+#[derive(Debug)]
+pub struct TxVmTracer<'a> {
+    linker: Option<Arc<linker::Linker>>,
+    // current source.
+    source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
     depth: usize,
     pc: usize,
     instruction: u8,
     stack: Vec<U256>,
-    state: Option<TxVmState>,
+    revert: Option<Revert>,
 }
 
-impl Default for TxVmTracer {
-    fn default() -> Self {
+impl<'a> TxVmTracer<'a> {
+    pub fn new(
+        linker: Option<Arc<linker::Linker>>,
+        source: &'a Mutex<Option<Arc<(source_map::SourceMap, HashMap<usize, usize>)>>>,
+    ) -> Self {
         TxVmTracer {
+            linker,
+            source,
             depth: 0,
             pc: 0,
             instruction: 0,
             stack: Vec::new(),
-            state: None,
+            revert: None,
         }
     }
 }
 
-/// A non-success, terminal state of a transaction.
-#[derive(Debug, PartialEq, Eq)]
-pub enum TxVmState {
-    /// The transaction was reverted, all funds except the ones used until we hit the REVERT are
-    /// returned to the caller.
-    ///
-    /// This typically happens when a `require(...)` statement fires.
-    Reverted,
+impl<'a> TxVmTracer<'a> {
+    /// Get line info from the current program counter.
+    fn line_info(&self) -> Option<LineInfo> {
+        let source = self.source.lock().expect("not poisoned lock");
+
+        let (ref source, ref offsets) = match *source {
+            Some(ref source) => source.as_ref(),
+            None => return None,
+        };
+
+        let offset = match offsets.get(&self.pc) {
+            Some(offset) => *offset,
+            None => return None,
+        };
+
+        let m = match source.find_mapping(offset) {
+            Some(m) => m,
+            None => return None,
+        };
+
+        let path = match m.file_index.and_then(|index| {
+            self.linker
+                .as_ref()
+                .and_then(|linker| linker.find_file(index))
+        }) {
+            Some(path) => path,
+            None => return None,
+        };
+
+        let file = File::open(path).expect("bad file");
+
+        let (line_string, line, _) =
+            utils::find_line(file, (m.start as usize, (m.start + m.length) as usize))
+                .expect("line from file");
+
+        Some(LineInfo {
+            path: path.to_owned(),
+            line_string,
+            line,
+        })
+    }
 }
 
-impl TxVmTracer {
-    fn stack(&self) -> String {
-        let items = self.stack.iter().map(u256_as_str).collect::<Vec<_>>();
-        return format!("[{}]", items.join(","));
-
-        fn u256_as_str(v: &U256) -> String {
-            if v.is_zero() {
-                "0x0".into()
-            } else {
-                format!("{:x}", v)
-            }
-        }
-    }
-
-    fn depth(&self) -> String {
-        let mut s = String::new();
-
-        for _ in 0..self.depth {
-            s.push(' ');
-        }
-
-        s
-    }
-}
-
-impl trace::VMTracer for TxVmTracer {
-    type Output = TxVmState;
+impl<'a> trace::VMTracer for TxVmTracer<'a> {
+    type Output = TxVmOutput;
 
     fn trace_next_instruction(&mut self, pc: usize, instruction: u8, _current_gas: U256) -> bool {
         self.pc = pc;
@@ -160,8 +238,8 @@ impl trace::VMTracer for TxVmTracer {
     // Parts borrowed from: https://github.com/paritytech/sol-rs/blob/master/solaris/src/trace.rs
     fn trace_executed(
         &mut self,
-        gas_used: U256,
-        stack_push: &[U256],
+        _gas_used: U256,
+        _stack_push: &[U256],
         _mem_diff: Option<(usize, &[u8])>,
         _store_diff: Option<(U256, U256)>,
     ) {
@@ -170,47 +248,29 @@ impl trace::VMTracer for TxVmTracer {
             .info();
 
         if info.name == "REVERT" {
-            self.state = Some(TxVmState::Reverted);
+            let line_info = self.line_info();
+            self.revert = Some(Revert { line_info });
         }
-
-        if true {
-            return;
-        }
-
-        let len = self.stack.len();
-
-        self.stack
-            .truncate(if len > info.args { len - info.args } else { 0 });
-
-        self.stack.extend_from_slice(stack_push);
-
-        println!(
-            "{}[{}] {}({:x}) stack_after: {}, gas_left: {}",
-            self.depth(),
-            self.pc,
-            info.name,
-            self.instruction,
-            self.stack(),
-            gas_used,
-        );
     }
 
     fn prepare_subtrace(&self, _code: &[u8]) -> Self
     where
         Self: Sized,
     {
-        let mut vm = TxVmTracer::default();
+        let mut vm = TxVmTracer::new(self.linker.clone(), self.source);
         vm.depth = self.depth + 1;
         vm
     }
 
     fn done_subtrace(&mut self, sub: Self) {
-        if sub.state.is_some() {
-            self.state = sub.state;
+        if sub.revert.is_some() {
+            self.revert = sub.revert;
         }
     }
 
     fn drain(self) -> Option<Self::Output> {
-        self.state
+        Some(TxVmOutput {
+            revert: self.revert,
+        })
     }
 }

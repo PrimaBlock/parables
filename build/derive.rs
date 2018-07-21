@@ -11,6 +11,7 @@ use quote;
 use serde_json;
 use std::collections::HashMap;
 use std::fmt;
+use std::path::Path;
 use syn;
 
 const INTERNAL_ERR: &'static str = "`parables_testing` internal error";
@@ -20,11 +21,11 @@ pub struct ContractFields {
     abi: String,
     bin: String,
     #[serde(rename = "srcmap")]
-    #[allow(unused)]
     source_map: String,
     #[serde(rename = "srcmap-runtime")]
-    #[allow(unused)]
     source_map_runtime: String,
+    #[serde(rename = "bin-runtime")]
+    bin_runtime: String,
 }
 
 #[derive(Deserialize)]
@@ -38,13 +39,15 @@ pub struct Output {
 }
 
 /// Implement a module for the given output.
-pub fn impl_module(output: Output) -> Result<quote::Tokens> {
+pub fn impl_module(path: &Path, output: Output) -> Result<quote::Tokens> {
     let mut result = Vec::new();
+    let mut source_maps = Vec::new();
 
     for (name, contract) in output.contracts {
         let name = parse_name(&name)?;
 
         let bin_function = bin_function(&contract)?;
+        let source_maps_function = source_maps_function(&name, &contract)?;
 
         let contract = impl_contract_abi(&contract.abi)?;
 
@@ -54,10 +57,20 @@ pub fn impl_module(output: Output) -> Result<quote::Tokens> {
             pub mod #module_name {
                 #bin_function
 
+                #source_maps_function
+
                 #contract
             }
         });
+
+        source_maps.push(module_name);
     }
+
+    result.push(source_maps_global_function(
+        path,
+        output.source_list,
+        source_maps,
+    ));
 
     return Ok(quote!{ #(#result)* });
 
@@ -93,10 +106,61 @@ pub fn impl_module(output: Output) -> Result<quote::Tokens> {
         let bin = &contract.bin;
 
         Ok(quote! {
-            pub fn bin(linker: &::parables_testing::linker::Linker) -> Result<Vec<u8>, ::parables_testing::error::Error> {
-                let bin = #bin;
-                let out = linker.link(bin.as_bytes())?;
-                Ok(out)
+            pub fn bin(linker: &::parables_testing::linker::Linker)
+                -> Result<Vec<u8>, ::parables_testing::error::Error>
+            {
+                linker.link(#bin)
+            }
+        })
+    }
+
+    fn source_maps_global_function(
+        path: &Path,
+        source_list: Vec<String>,
+        source_maps: Vec<syn::Ident>,
+    ) -> quote::Tokens {
+        let source_list = source_list
+            .into_iter()
+            .map(|p| path.join(p).display().to_string())
+            .collect::<Vec<_>>();
+
+        quote! {
+            pub fn source_maps(linker: &mut ::parables_testing::linker::Linker)
+                -> ::std::result::Result<(), ::parables_testing::error::Error>
+            {
+                linker.register_source_list(vec![#(::std::path::Path::new(#source_list).to_owned(),)*]);
+                #(#source_maps::source_maps(linker)?;)*
+                Ok(())
+            }
+        }
+    }
+
+    fn source_maps_function(name: &Name, contract: &ContractFields) -> Result<quote::Tokens> {
+        let name = name.type_name;
+        let bin = &contract.bin;
+        let source_map = &contract.source_map;
+        let source_map_runtime = &contract.source_map_runtime;
+        let bin_runtime = &contract.bin_runtime;
+
+        Ok(quote! {
+            pub fn source_maps(linker: &mut ::parables_testing::linker::Linker)
+                -> Result<(), ::parables_testing::error::Error>
+            {
+                /*let source_map = ::parables_testing::source_map::SourceMap::parse(#source_map)?;
+                let offsets = linker.decode_offsets(#bin)?;
+
+                linker.register_source(
+                    #name.to_string(),
+                    source_map, offsets);*/
+
+                let runtime_source_map = ::parables_testing::source_map::SourceMap::parse(#source_map_runtime)?;
+                let runtime_offsets = linker.decode_offsets(#bin_runtime)?;
+
+                linker.register_runtime_source(
+                    #name.to_string(),
+                    runtime_source_map, runtime_offsets);
+
+                Ok(())
             }
         })
     }

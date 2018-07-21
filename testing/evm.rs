@@ -16,9 +16,9 @@ use parity_vm;
 use std::collections::{hash_map, HashMap};
 use std::fmt;
 use std::mem;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use trace;
-use {call, journaldb, kvdb, kvdb_memorydb};
+use {call, journaldb, kvdb, kvdb_memorydb, linker};
 
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,6 +84,8 @@ pub struct Evm {
     engine: Arc<engines::EthEngine>,
     /// Logs collected by topic.
     logs: HashMap<ethabi::Hash, Vec<LogEntry>>,
+    /// Linker used, if available it can be used to perform source-map lookups.
+    linker: Option<Arc<linker::Linker>>,
 }
 
 impl fmt::Debug for Evm {
@@ -104,9 +106,15 @@ impl Evm {
             state,
             engine,
             logs: HashMap::new(),
+            linker: None,
         };
 
         Ok(evm)
+    }
+
+    /// Set the linker to use for source mappings.
+    pub fn linker(&mut self, linker: linker::Linker) {
+        self.linker = Some(Arc::new(linker));
     }
 
     /// Get the current block number.
@@ -333,13 +341,15 @@ impl Evm {
             self.env_info.number >= self.engine.params().eip86_transition,
         ).map_err(|e| format!("verify failed: {}", e))?;
 
+        let source = Mutex::new(None);
+
         // Apply transaction
         let result = self.state.apply_with_tracing(
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(),
-            trace::TxVmTracer::default(),
+            trace::TxTracer::new(self.linker.clone(), &source),
+            trace::TxVmTracer::new(self.linker.clone(), &source),
         );
 
         let result = result.map_err(|e| format!("vm: {}", e))?;
@@ -353,8 +363,10 @@ impl Evm {
         }
 
         match result.vm_trace {
-            Some(trace::TxVmState::Reverted) => {
-                return Err(CallError::Reverted { execution });
+            Some(state) => {
+                if let Some(revert) = state.revert {
+                    return Err(CallError::Reverted { execution, revert });
+                }
             }
             _ => {}
         }

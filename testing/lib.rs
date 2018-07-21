@@ -19,11 +19,11 @@ extern crate rayon;
 #[macro_use]
 extern crate proptest;
 #[cfg(feature = "account")]
+extern crate crypto;
+#[cfg(feature = "account")]
 extern crate rand;
 #[cfg(feature = "account")]
 extern crate secp256k1;
-#[cfg(feature = "account")]
-extern crate crypto;
 
 pub use ethabi_derive::*;
 pub use proptest::*;
@@ -40,7 +40,9 @@ pub mod prelude;
 pub mod reporter;
 #[cfg(feature = "test-runner")]
 pub mod snapshot;
+pub mod source_map;
 #[cfg(feature = "test-runner")]
 pub mod test_runner;
 mod trace;
+mod utils;
 pub mod wei;

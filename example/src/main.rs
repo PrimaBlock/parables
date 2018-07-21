@@ -11,6 +11,8 @@ fn main() -> Result<()> {
     let call = Call::new(owner).gas(1_000_000);
 
     let mut linker = Linker::new();
+    // setup source maps.
+    source_maps(&mut linker)?;
 
     let foundation = Spec::new_null();
     let mut evm = Evm::new(&foundation)?;
@@ -24,6 +26,9 @@ fn main() -> Result<()> {
     let simple_contract_code = simple_contract::bin(&linker)?;
     let simple = evm.deploy(simple_contract::constructor(simple_contract_code, 42), call)?
         .address;
+    linker.register_item("SimpleContract".to_string(), simple);
+
+    evm.linker(linker);
 
     let evm = Snapshot::new(evm);
 

@@ -3,6 +3,7 @@ use evm::{CallResult, CreateResult};
 use proptest;
 use std::fmt;
 use std::result;
+use trace;
 use trace::TxEvent;
 
 #[derive(Debug, PartialEq, Eq, Fail)]
@@ -67,8 +68,8 @@ impl From<Error> for proptest::test_runner::TestCaseError {
 /// An error occurred during a call.
 #[derive(Debug, PartialEq, Eq, Fail)]
 pub enum CallError<E> {
-    #[fail(display = "call was reverted")]
-    Reverted { execution: E },
+    #[fail(display = "call was reverted: {}", revert)]
+    Reverted { execution: E, revert: trace::Revert },
     #[fail(display = "bad status: {}", status)]
     Status { execution: E, status: u8 },
     #[fail(display = "trace error")]
@@ -85,7 +86,7 @@ impl<E> CallError<E> {
         use self::CallError::*;
 
         match *self {
-            Reverted { ref execution } => Some(execution),
+            Reverted { ref execution, .. } => Some(execution),
             Status { ref execution, .. } => Some(execution),
             Trace { ref execution, .. } => Some(execution),
             SyncLogs { ref execution, .. } => Some(execution),

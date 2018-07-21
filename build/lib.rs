@@ -23,12 +23,15 @@ mod derive;
 pub fn compile<T: AsRef<Path>>(path: T) -> Result<(), Error> {
     let path = path.as_ref();
 
+    let path = path.canonicalize()
+        .map_err(|e| format!("failed to canonicalize: {}: {}", path.display(), e))?;
+
     let mut c = Command::new("solc");
 
     c.arg("--combined-json")
-        .arg("abi,bin,srcmap,srcmap-runtime");
+        .arg("abi,bin,srcmap,srcmap-runtime,bin-runtime");
 
-    let files = files_by_ext(path, "sol").expect("failed to list files");
+    let files = files_by_ext(&path, "sol").expect("failed to list files");
 
     // nothing to build
     if files.len() == 0 {
@@ -40,7 +43,7 @@ pub fn compile<T: AsRef<Path>>(path: T) -> Result<(), Error> {
         c.arg(file);
     }
 
-    let output = c.current_dir(path)
+    let output = c.current_dir(&path)
         .output()
         .map_err(|e| format!("error compiling contracts: {}", e))?;
 
@@ -57,7 +60,7 @@ pub fn compile<T: AsRef<Path>>(path: T) -> Result<(), Error> {
     let output: derive::Output =
         serde_json::from_str(&output).map_err(|e| format!("failed to decode output: {}", e))?;
 
-    let result = derive::impl_module(output).map_err(|e| format!("failed to build module: {}", e))?;
+    let result = derive::impl_module(&path, output).map_err(|e| format!("failed to build module: {}", e))?;
 
     // create contracts.rs
     let out_dir = env::var("OUT_DIR").map_err(|e| format!("OUT_DIR: {}", e))?;
