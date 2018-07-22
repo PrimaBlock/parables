@@ -7,10 +7,10 @@ Parables provides a wrapper for this using the `Evm` type.
 But before we start testing our contracts, we need to make sure that they are _compiled_ into
 bytecode and abi.
 
-To do this, we can use solcjs.
+To do this, we use solc.
 
 ```bash
-(cd contracts && solcjs *.sol --bin --abi)
+(cd contracts && solc *.sol --combined-json bin,abi,srcmap,bin-runtime)
 ```
 
 After this, you can put the following in `src/main.rs`.
@@ -34,8 +34,7 @@ fn main() -> Result<()> {
     let mut evm = Evm::new(&foundation, new_context())?;
 
     // Deploy the SimpleContract.
-    let code = simple_contract::bin(&linker)?;
-    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
+    let simple = evm.deploy(simple_contract::constructor(0), call)?.address;
 
     // Wrap the virtual machine in a Snapshot type so that it can be shared as a snapshot across
     // threads.
@@ -118,8 +117,7 @@ The currently available foundations are:
 For more details, you'll currently have to reference the [Spec source code].
 
 ```rust
-let code = simple_lib::bin(&linker)?;
-let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
+let simple = evm.deploy(simple_contract::constructor(0), call)?.address;
 ```
 
 For the next line we link our contract, and deploy it to our virtual machine by calling its
