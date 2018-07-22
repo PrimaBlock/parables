@@ -547,6 +547,60 @@
 <span id="547">547</span>
 <span id="548">548</span>
 <span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">BalanceError</span>, <span class="ident">CallError</span>, <span class="ident">Error</span>, <span class="ident">NonceError</span>};
 <span class="kw">use</span> <span class="ident">ethabi</span>;
@@ -566,9 +620,9 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">hash_map</span>, <span class="ident">HashMap</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 <span class="kw">use</span> <span class="ident">trace</span>;
-<span class="kw">use</span> {<span class="ident">call</span>, <span class="ident">journaldb</span>, <span class="ident">kvdb</span>, <span class="ident">kvdb_memorydb</span>};
+<span class="kw">use</span> {<span class="ident">abi</span>, <span class="ident">call</span>, <span class="ident">journaldb</span>, <span class="ident">kvdb</span>, <span class="ident">kvdb_memorydb</span>, <span class="ident">linker</span>, <span class="ident">source_map</span>};
 
 <span class="doccomment">/// The result of executing a call transaction.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
@@ -634,6 +688,8 @@
     <span class="ident">engine</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">engines</span>::<span class="ident">EthEngine</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Logs collected by topic.</span>
     <span class="ident">logs</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">ethabi</span>::<span class="ident">Hash</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LogEntry</span><span class="op">&gt;&gt;</span>,
+    <span class="doccomment">/// Linker used, if available it can be used to perform source-map lookups.</span>
+    <span class="ident">linker</span>: <span class="ident">linker</span>::<span class="ident">Linker</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Evm</span> {
@@ -644,16 +700,23 @@
 
 <span class="kw">impl</span> <span class="ident">Evm</span> {
     <span class="doccomment">/// Create a new ethereum virtual machine abstraction.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">spec</span>::<span class="ident">Spec</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">spec</span>::<span class="ident">Spec</span>, <span class="ident">context</span>: <span class="ident">abi</span>::<span class="ident">ContractContext</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">env_info</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">env_info</span>(<span class="ident">Address</span>::<span class="ident">random</span>());
         <span class="kw">let</span> <span class="ident">engine</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="ident">spec</span>.<span class="ident">engine</span>);
         <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">state_from_spec</span>(<span class="ident">spec</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">linker</span> <span class="op">=</span> <span class="ident">linker</span>::<span class="ident">Linker</span>::<span class="ident">new</span>();
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">source_list</span>) <span class="op">=</span> <span class="ident">context</span>.<span class="ident">source_list</span> {
+            <span class="ident">linker</span>.<span class="ident">register_source_list</span>(<span class="ident">source_list</span>);
+        }
 
         <span class="kw">let</span> <span class="ident">evm</span> <span class="op">=</span> <span class="ident">Evm</span> {
             <span class="ident">env_info</span>,
             <span class="ident">state</span>,
             <span class="ident">engine</span>,
             <span class="ident">logs</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>(),
+            <span class="ident">linker</span>: <span class="ident">linker</span>,
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">evm</span>)
@@ -725,15 +788,54 @@
     }
 
     <span class="doccomment">/// Deploy the contract with the given code.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deploy</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deploy</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">f</span>: <span class="ident">F</span>,
+        <span class="ident">constructor</span>: <span class="ident">C</span>,
         <span class="ident">call</span>: <span class="ident">call</span>::<span class="ident">Call</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CreateResult</span>, <span class="ident">CallError</span><span class="op">&lt;</span><span class="ident">CreateResult</span><span class="op">&gt;&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">ethabi</span>::<span class="ident">ContractFunction</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">Address</span><span class="op">&gt;</span>,
+        <span class="ident">C</span>: <span class="ident">abi</span>::<span class="ident">ContractFunction</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">Address</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">abi</span>::<span class="ident">Constructor</span>,
     {
-        <span class="self">self</span>.<span class="ident">deploy_code</span>(<span class="ident">f</span>.<span class="ident">encoded</span>(), <span class="ident">call</span>)
+        <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">constructor</span>
+            .<span class="ident">encoded</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">linker</span>)
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}: failed to encode deployment: {}&quot;</span>, <span class="ident">C</span>::<span class="ident">ITEM</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">deploy_code</span>(<span class="ident">code</span>, <span class="ident">call</span>);
+
+        <span class="comment">// Register all linker information used for debugging.</span>
+        <span class="kw">match</span> <span class="ident">result</span>.<span class="ident">as_ref</span>() {
+            <span class="prelude-val">Ok</span>(<span class="ident">result</span>) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">linker</span>
+                    .<span class="ident">register_item</span>(<span class="ident">C</span>::<span class="ident">ITEM</span>.<span class="ident">to_string</span>(), <span class="ident">result</span>.<span class="ident">address</span>);
+
+                <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">runtime_bin</span>), <span class="prelude-val">Some</span>(<span class="ident">runtime_source_map</span>)) <span class="op">=</span>
+                    (<span class="ident">C</span>::<span class="ident">RUNTIME_BIN</span>.<span class="ident">clone</span>(), <span class="ident">C</span>::<span class="ident">RUNTIME_SOURCE_MAP</span>.<span class="ident">clone</span>())
+                {
+                    <span class="kw">let</span> <span class="ident">runtime_source_map</span> <span class="op">=</span> <span class="ident">source_map</span>::<span class="ident">SourceMap</span>::<span class="ident">parse</span>(<span class="ident">runtime_source_map</span>)
+                        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}: failed to decode runtime source map: {}&quot;</span>, <span class="ident">C</span>::<span class="ident">ITEM</span>, <span class="ident">e</span>)
+                        })<span class="question-mark">?</span>;
+
+                    <span class="kw">let</span> <span class="ident">runtime_offsets</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">linker</span>.<span class="ident">decode_offsets</span>(<span class="ident">runtime_bin</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+                        <span class="macro">format</span><span class="macro">!</span>(
+                            <span class="string">&quot;{}: failed to decode offsets from bin-runtime: {}&quot;</span>,
+                            <span class="ident">C</span>::<span class="ident">ITEM</span>,
+                            <span class="ident">e</span>
+                        )
+                    })<span class="question-mark">?</span>;
+
+                    <span class="self">self</span>.<span class="ident">linker</span>.<span class="ident">register_runtime_source</span>(
+                        <span class="ident">C</span>::<span class="ident">ITEM</span>.<span class="ident">to_string</span>(),
+                        <span class="ident">runtime_source_map</span>,
+                        <span class="ident">runtime_offsets</span>,
+                    );
+                }
+            }
+            <span class="comment">// ignore</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {}
+        }
+
+        <span class="ident">result</span>
     }
 
     <span class="doccomment">/// Deploy the contract with the given code.</span>
@@ -754,10 +856,12 @@
         <span class="ident">call</span>: <span class="ident">call</span>::<span class="ident">Call</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CallOutput</span><span class="op">&lt;</span><span class="ident">F</span>::<span class="ident">Output</span><span class="op">&gt;</span>, <span class="ident">CallError</span><span class="op">&lt;</span><span class="ident">CallResult</span><span class="op">&gt;&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">ethabi</span>::<span class="ident">ContractFunction</span>,
+        <span class="ident">F</span>: <span class="ident">abi</span>::<span class="ident">ContractFunction</span>,
     {
-        <span class="kw">let</span> (<span class="ident">output</span>, <span class="ident">result</span>) <span class="op">=</span>
-            <span class="self">self</span>.<span class="ident">action</span>(<span class="ident">Action</span>::<span class="ident">Call</span>(<span class="ident">address</span>), <span class="ident">f</span>.<span class="ident">encoded</span>(), <span class="ident">call</span>, <span class="self">Self</span>::<span class="ident">call_result</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">encoded</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">linker</span>)
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to encode input: {}&quot;</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> (<span class="ident">output</span>, <span class="ident">result</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">action</span>(<span class="ident">Action</span>::<span class="ident">Call</span>(<span class="ident">address</span>), <span class="ident">params</span>, <span class="ident">call</span>, <span class="self">Self</span>::<span class="ident">call_result</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">output</span>(<span class="ident">output</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;VM output conversion failed: {}&quot;</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
@@ -780,7 +884,7 @@
     <span class="doccomment">/// Setup a log drainer that drains the specified logs.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">logs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">log</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="ident">LogDrainer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">ethabi</span>::<span class="ident">ParseLog</span> <span class="op">+</span> <span class="ident">ethabi</span>::<span class="ident">LogFilter</span>,
+        <span class="ident">P</span>: <span class="ident">abi</span>::<span class="ident">ParseLog</span> <span class="op">+</span> <span class="ident">abi</span>::<span class="ident">LogFilter</span>,
     {
         <span class="ident">LogDrainer</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">log</span>)
     }
@@ -883,13 +987,15 @@
             <span class="self">self</span>.<span class="ident">env_info</span>.<span class="ident">number</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">params</span>().<span class="ident">eip86_transition</span>,
         ).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;verify failed: {}&quot;</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
 
+        <span class="kw">let</span> <span class="ident">frame_info</span> <span class="op">=</span> <span class="ident">Mutex</span>::<span class="ident">new</span>(<span class="ident">trace</span>::<span class="ident">FrameInfo</span>::<span class="prelude-val">None</span>);
+
         <span class="comment">// Apply transaction</span>
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">apply_with_tracing</span>(
             <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">env_info</span>,
             <span class="self">self</span>.<span class="ident">engine</span>.<span class="ident">machine</span>(),
             <span class="kw-2">&amp;</span><span class="ident">tx</span>,
-            <span class="ident">trace</span>::<span class="ident">TxTracer</span>::<span class="ident">new</span>(),
-            <span class="ident">trace</span>::<span class="ident">TxVmTracer</span>::<span class="ident">default</span>(),
+            <span class="ident">trace</span>::<span class="ident">TxTracer</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">linker</span>, <span class="kw-2">&amp;</span><span class="ident">frame_info</span>),
+            <span class="ident">trace</span>::<span class="ident">TxVmTracer</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">linker</span>, <span class="kw-2">&amp;</span><span class="ident">frame_info</span>),
         );
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;vm: {}&quot;</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
@@ -902,18 +1008,20 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CallError</span>::<span class="ident">SyncLogs</span> { <span class="ident">execution</span>, <span class="ident">message</span> });
         }
 
-        <span class="kw">match</span> <span class="ident">result</span>.<span class="ident">vm_trace</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">trace</span>::<span class="ident">TxVmState</span>::<span class="ident">Reverted</span>) <span class="op">=&gt;</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CallError</span>::<span class="ident">Reverted</span> { <span class="ident">execution</span> });
-            }
-            <span class="kw">_</span> <span class="op">=&gt;</span> {}
-        }
-
         <span class="kw">if</span> <span class="op">!</span><span class="ident">result</span>.<span class="ident">trace</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CallError</span>::<span class="ident">Trace</span> {
-                <span class="ident">execution</span>,
-                <span class="ident">trace</span>: <span class="ident">result</span>.<span class="ident">trace</span>,
-            });
+            <span class="kw">let</span> <span class="ident">reverted</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">trace</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">is_reverted</span>());
+
+            <span class="kw">if</span> <span class="ident">reverted</span> {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CallError</span>::<span class="ident">Reverted</span> {
+                    <span class="ident">execution</span>,
+                    <span class="ident">error_info</span>: <span class="ident">trace</span>::<span class="ident">ErrorInfo</span>::<span class="ident">new_root</span>(<span class="ident">result</span>.<span class="ident">trace</span>),
+                });
+            } <span class="kw">else</span> {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CallError</span>::<span class="ident">Errored</span> {
+                    <span class="ident">execution</span>,
+                    <span class="ident">error_info</span>: <span class="ident">trace</span>::<span class="ident">ErrorInfo</span>::<span class="ident">new_root</span>(<span class="ident">result</span>.<span class="ident">trace</span>),
+                });
+            }
         }
 
         <span class="kw">match</span> <span class="ident">result</span>.<span class="ident">receipt</span>.<span class="ident">outcome</span> {
@@ -954,7 +1062,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">LogDrainer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">ethabi</span>::<span class="ident">ParseLog</span> <span class="op">+</span> <span class="ident">ethabi</span>::<span class="ident">LogFilter</span>,
+    <span class="ident">P</span>: <span class="ident">abi</span>::<span class="ident">ParseLog</span> <span class="op">+</span> <span class="ident">abi</span>::<span class="ident">LogFilter</span>,
 {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">evm</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Evm</span>, <span class="ident">log</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">log</span>.<span class="ident">wildcard_filter</span>();
@@ -976,7 +1084,7 @@
     <span class="doccomment">/// Consumer the drainer and build an interator out of it.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">P</span>::<span class="ident">Log</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">ethabi</span>::<span class="ident">ParseLog</span>,
+        <span class="ident">P</span>: <span class="ident">abi</span>::<span class="ident">ParseLog</span>,
     {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">drain</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>())
     }
@@ -990,7 +1098,7 @@
     <span class="doccomment">/// Drain logs matching the given filter that has been registered so far.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">P</span>::<span class="ident">Log</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">P</span>: <span class="ident">ethabi</span>::<span class="ident">ParseLog</span>,
+        <span class="ident">P</span>: <span class="ident">abi</span>::<span class="ident">ParseLog</span>,
     {
         <span class="self">self</span>.<span class="ident">drain_with</span>(<span class="op">|</span><span class="kw">_</span>, <span class="ident">log</span><span class="op">|</span> <span class="ident">log</span>)
     }

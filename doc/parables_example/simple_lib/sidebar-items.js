@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["bin",""],["constructor",""]],"mod":[["functions",""],["outputs","Contract functions (for decoding output)"]],"struct":[["AddWithInput","Contract function with already defined input values"],["ConstructorWithInput",""]]});
+initSidebarItems({"mod":[["simple_lib",""]]});

@@ -251,12 +251,7 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts! {
-    simple_contract {
-        &quot;contracts/SimpleContract_sol_SimpleContract.abi&quot;,
-        &quot;contracts/SimpleContract_sol_SimpleContract.bin&quot;
-    },
-}
+contracts!();
 
 fn main() -&gt; Result&lt;()&gt; {
     let mut tests = TestRunner::new();
@@ -277,8 +272,8 @@ fn main() -&gt; Result&lt;()&gt; {
 <p>Parables provides a wrapper for this using the <code>Evm</code> type.</p>
 <p>But before we start testing our contracts, we need to make sure that they are <em>compiled</em> into
 bytecode and abi.</p>
-<p>To do this, we can use solcjs.</p>
-<pre><code class="language-bash">(cd contracts &amp;&amp; solcjs *.sol --bin --abi)
+<p>To do this, we use solc.</p>
+<pre><code class="language-bash">(cd contracts &amp;&amp; solc *.sol --combined-json bin,abi,srcmap,bin-runtime)
 </code></pre>
 <p>After this, you can put the following in <code>src/main.rs</code>.
 Don't worry, we will walk you through line-by-line what it is below.</p>
@@ -287,28 +282,19 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts! {
-    simple_contract {
-        &quot;contracts/SimpleContract_sol_SimpleContract.abi&quot;,
-        &quot;contracts/SimpleContract_sol_SimpleContract.bin&quot;
-    },
-}
+contracts!();
 
 fn main() -&gt; Result&lt;()&gt; {
     // Set up a template call with a default amount of gas.
     let owner = Address::random();
     let call = Call::new(owner).gas(1_000_000);
 
-    // Initialize a new linker.
-    let mut linker = Linker::new();
-
     // Set up a new virtual machine with a default (null) foundation.
     let foundation = Spec::new_null();
-    let mut evm = Evm::new(&amp;foundation)?;
+    let mut evm = Evm::new(&amp;foundation, new_context())?;
 
     // Deploy the SimpleContract.
-    let code = simple_contract::bin(&amp;linker)?;
-    let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
+    let simple = evm.deploy(simple_contract::constructor(0), call)?.address;
 
     // Wrap the virtual machine in a Snapshot type so that it can be shared as a snapshot across
     // threads.
@@ -354,12 +340,7 @@ use parables_testing::prelude::*;
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-contracts! {
-    simple_contract {
-        &quot;contracts/SimpleContract_sol_SimpleContract.abi&quot;,
-        &quot;contracts/SimpleContract_sol_SimpleContract.bin&quot;
-    },
-}
+contracts!();
 #}</code></pre></pre>
 <p>This makes use of ethabi's derive module to build a type-safe model for the contract that we can
 use through the <code>simple_contract</code> module.</p>
@@ -375,17 +356,11 @@ our calls.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-let mut linker = Linker::new();
-#}</code></pre></pre>
-<p>Next we set up our linker. There is currently no configuration necessary since our contract doesn't
-link to any other contracts. But we need one anyways.</p>
-<pre><pre class="playpen"><code class="language-rust">
-# #![allow(unused_variables)]
-#fn main() {
 let foundation = Spec::new_null();
-let mut evm = Evm::new(&amp;foundation)?;
+let context = new_context();
+let mut evm = Evm::new(&amp;foundation, context)?;
 #}</code></pre></pre>
-<p>Time to set up our <em>foundation</em>. A foundation determines the parameters of the blockchain.
+<p>Time to set up our <em>foundation</em> and our <em>contract context</em>. A foundation determines the parameters of the blockchain.
 The <code>null</code> foundation is the default foundation, which makes it operate like your modern Ethereum
 blockchain.
 But we also have access to older foundations like [<code>morden</code>].</p>
@@ -399,8 +374,7 @@ But we also have access to older foundations like [<code>morden</code>].</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-let code = simple_lib::bin(&amp;linker)?;
-let simple = evm.deploy(simple_contract::constructor(code, 0), call)?.address;
+let simple = evm.deploy(simple_contract::constructor(0), call)?.address;
 #}</code></pre></pre>
 <p>For the next line we link our contract, and deploy it to our virtual machine by calling its
 constructor.</p>

@@ -177,15 +177,22 @@
 <span id="177">177</span>
 <span id="178">178</span>
 <span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">U256</span>;
 <span class="kw">use</span> <span class="ident">evm</span>::{<span class="ident">CallResult</span>, <span class="ident">CreateResult</span>};
 <span class="kw">use</span> <span class="ident">proptest</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">result</span>;
-<span class="kw">use</span> <span class="ident">trace</span>::<span class="ident">TxEvent</span>;
+<span class="kw">use</span> <span class="ident">trace</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Fail</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Fail</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;no object item to link named `{}`&quot;</span>, <span class="ident">item</span>)]</span>
     <span class="ident">NoLinkerItem</span> { <span class="ident">item</span>: <span class="ident">String</span> },
@@ -194,7 +201,7 @@
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;bad input at position `{}`: {}&quot;</span>, <span class="ident">position</span>, <span class="ident">message</span>)]</span>
     <span class="ident">BadInputPos</span> {
         <span class="ident">position</span>: <span class="ident">usize</span>,
-        <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
+        <span class="ident">message</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span>,
     },
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;call error: {}&quot;</span>, <span class="ident">message</span>)]</span>
     <span class="ident">Call</span> { <span class="ident">message</span>: <span class="ident">String</span> },
@@ -245,14 +252,20 @@
 }
 
 <span class="doccomment">/// An error occurred during a call.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Fail</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Fail</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">CallError</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;call was reverted&quot;</span>)]</span>
-    <span class="ident">Reverted</span> { <span class="ident">execution</span>: <span class="ident">E</span> },
+    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;call was reverted: {}&quot;</span>, <span class="ident">error_info</span>)]</span>
+    <span class="ident">Reverted</span> {
+        <span class="ident">execution</span>: <span class="ident">E</span>,
+        <span class="ident">error_info</span>: <span class="ident">trace</span>::<span class="ident">ErrorInfo</span>,
+    },
+    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;call errored: {}&quot;</span>, <span class="ident">error_info</span>)]</span>
+    <span class="ident">Errored</span> {
+        <span class="ident">execution</span>: <span class="ident">E</span>,
+        <span class="ident">error_info</span>: <span class="ident">trace</span>::<span class="ident">ErrorInfo</span>,
+    },
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;bad status: {}&quot;</span>, <span class="ident">status</span>)]</span>
     <span class="ident">Status</span> { <span class="ident">execution</span>: <span class="ident">E</span>, <span class="ident">status</span>: <span class="ident">u8</span> },
-    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;trace error&quot;</span>)]</span>
-    <span class="ident">Trace</span> { <span class="ident">execution</span>: <span class="ident">E</span>, <span class="ident">trace</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TxEvent</span><span class="op">&gt;</span> },
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;sync logs: {}&quot;</span>, <span class="ident">message</span>)]</span>
     <span class="ident">SyncLogs</span> { <span class="ident">execution</span>: <span class="ident">E</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> },
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;other call error: {}&quot;</span>, <span class="ident">message</span>)]</span>
@@ -265,9 +278,8 @@
         <span class="kw">use</span> <span class="self">self</span>::<span class="ident">CallError</span>::<span class="kw-2">*</span>;
 
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Reverted</span> { <span class="kw-2">ref</span> <span class="ident">execution</span> } <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">execution</span>),
+            <span class="ident">Reverted</span> { <span class="kw-2">ref</span> <span class="ident">execution</span>, .. } <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">execution</span>),
             <span class="ident">Status</span> { <span class="kw-2">ref</span> <span class="ident">execution</span>, .. } <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">execution</span>),
-            <span class="ident">Trace</span> { <span class="kw-2">ref</span> <span class="ident">execution</span>, .. } <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">execution</span>),
             <span class="ident">SyncLogs</span> { <span class="kw-2">ref</span> <span class="ident">execution</span>, .. } <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">execution</span>),
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         }

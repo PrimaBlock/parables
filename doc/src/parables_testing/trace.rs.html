@@ -214,41 +214,280 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">ethcore</span>::<span class="ident">trace</span>;
 <span class="kw">use</span> <span class="ident">ethcore</span>::<span class="ident">trace</span>::<span class="ident">trace</span>::{<span class="ident">Call</span>, <span class="ident">Create</span>};
-<span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H160</span>, <span class="ident">U256</span>};
+<span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">Address</span>, <span class="ident">H160</span>, <span class="ident">U256</span>};
+<span class="kw">use</span> <span class="ident">linker</span>;
 <span class="kw">use</span> <span class="ident">parity_bytes</span>::<span class="ident">Bytes</span>;
 <span class="kw">use</span> <span class="ident">parity_evm</span>;
 <span class="kw">use</span> <span class="ident">parity_vm</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Mutex</span>;
+<span class="kw">use</span> <span class="ident">utils</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TxEvent</span> {
-    <span class="doccomment">/// Generic trace error.</span>
-    <span class="ident">TraceError</span>(<span class="ident">String</span>),
+<span class="doccomment">/// Last known frame.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FrameInfo</span> {
+    <span class="prelude-val">Some</span>(<span class="ident">usize</span>),
+    <span class="prelude-val">None</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxTracer</span> {
-    <span class="ident">traces</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TxEvent</span><span class="op">&gt;</span>,
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ErrorKind</span> {
+    <span class="ident">Root</span>,
+    <span class="ident">Error</span>(<span class="ident">trace</span>::<span class="ident">TraceError</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">TxTracer</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">traces</span>: <span class="ident">Vec</span>::<span class="ident">new</span>() }
+<span class="kw">impl</span> <span class="ident">ErrorKind</span> {
+    <span class="doccomment">/// Check if kind is reverted.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_reverted</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">ErrorKind</span>::<span class="ident">Root</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">ErrorKind</span>::<span class="ident">Error</span>(<span class="kw-2">ref</span> <span class="ident">e</span>) <span class="op">=&gt;</span> <span class="kw-2">*</span><span class="ident">e</span> <span class="op">==</span> <span class="ident">trace</span>::<span class="ident">TraceError</span>::<span class="ident">Reverted</span>,
+        }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">trace</span>::<span class="ident">Tracer</span> <span class="kw">for</span> <span class="ident">TxTracer</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">TxEvent</span>;
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ErrorInfo</span> {
+    <span class="kw">pub</span> <span class="ident">kind</span>: <span class="ident">ErrorKind</span>,
+    <span class="kw">pub</span> <span class="ident">line_info</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LineInfo</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ErrorInfo</span><span class="op">&gt;</span>,
+}
 
-    <span class="kw">fn</span> <span class="ident">prepare_trace_call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_params</span>: <span class="kw-2">&amp;</span><span class="ident">parity_vm</span>::<span class="ident">ActionParams</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span> {
-        <span class="comment">// println!(&quot;call: {:?} -&gt; {:?} (data: {:?})&quot;, _params.sender, _params.address, _params.data.as_ref().map(|d| d.len()));</span>
-        <span class="prelude-val">None</span>
+<span class="kw">impl</span> <span class="ident">ErrorInfo</span> {
+    <span class="doccomment">/// Create a new root error info.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_root</span>(<span class="ident">subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ErrorInfo</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">kind</span>: <span class="ident">ErrorKind</span>::<span class="ident">Root</span>,
+            <span class="ident">line_info</span>: <span class="prelude-val">None</span>,
+            <span class="ident">subs</span>: <span class="ident">subs</span>,
+        }
     }
 
-    <span class="kw">fn</span> <span class="ident">prepare_trace_create</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_params</span>: <span class="kw-2">&amp;</span><span class="ident">parity_vm</span>::<span class="ident">ActionParams</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Create</span><span class="op">&gt;</span> {
-        <span class="comment">// println!(&quot;create: {:?} -&gt; {:?} (data: {:?})&quot;, _params.sender, _params.address, _params.data.as_ref().map(|d| d.len()));</span>
-        <span class="prelude-val">None</span>
+    <span class="kw">fn</span> <span class="ident">fmt_sub</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>, <span class="ident">level</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">level</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;  &quot;</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>();
+
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kind</span> {
+            <span class="ident">ErrorKind</span>::<span class="ident">Root</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">line_info</span> {
+                <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">line_info</span>) <span class="op">=&gt;</span> <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{}failed at {}&quot;</span>, <span class="ident">prefix</span>, <span class="ident">line_info</span>)<span class="question-mark">?</span>,
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{}failed&quot;</span>, <span class="ident">prefix</span>)<span class="question-mark">?</span>,
+            },
+            <span class="ident">ErrorKind</span>::<span class="ident">Error</span>(<span class="kw-2">ref</span> <span class="ident">e</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">line_info</span> {
+                <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">line_info</span>) <span class="op">=&gt;</span> <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{}{} at {}&quot;</span>, <span class="ident">prefix</span>, <span class="ident">e</span>, <span class="ident">line_info</span>)<span class="question-mark">?</span>,
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="macro">writeln</span><span class="macro">!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{}{} at unknown location&quot;</span>, <span class="ident">prefix</span>, <span class="ident">e</span>)<span class="question-mark">?</span>,
+            },
+        }
+
+        <span class="kw">for</span> <span class="ident">sub</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">subs</span> {
+            <span class="ident">sub</span>.<span class="ident">fmt_sub</span>(<span class="ident">fmt</span>, <span class="ident">level</span> <span class="op">+</span> <span class="number">1</span>)<span class="question-mark">?</span>;
+        }
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Check if kind is reverted.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_reverted</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">kind</span>.<span class="ident">is_reverted</span>() {
+            <span class="kw">return</span> <span class="bool-val">true</span>;
+        }
+
+        <span class="self">self</span>.<span class="ident">subs</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">is_reverted</span>())
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ErrorInfo</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="self">self</span>.<span class="ident">fmt_sub</span>(<span class="ident">fmt</span>, <span class="number">0</span>)
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">linker</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">linker</span>::<span class="ident">Linker</span>,
+    <span class="comment">// program counter of last revert.</span>
+    <span class="ident">frame_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">FrameInfo</span><span class="op">&gt;</span>,
+    <span class="comment">// Information about a revert.</span>
+    <span class="ident">errors</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ErrorInfo</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TxTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">linker</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">linker</span>::<span class="ident">Linker</span>, <span class="ident">frame_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">FrameInfo</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">linker</span>,
+            <span class="ident">frame_info</span>,
+            <span class="ident">errors</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+        }
+    }
+
+    <span class="doccomment">/// Get line info from the current program counter.</span>
+    <span class="kw">fn</span> <span class="ident">line_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address</span>: <span class="ident">Address</span>, <span class="ident">pc</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LineInfo</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">source</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">linker</span>.<span class="ident">find_runtime_source</span>(<span class="ident">address</span>);
+
+        <span class="kw">let</span> (<span class="kw-2">ref</span> <span class="ident">source</span>, <span class="kw-2">ref</span> <span class="ident">offsets</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">source</span>.<span class="ident">as_ref</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">source</span>) <span class="op">=&gt;</span> <span class="ident">source</span>.<span class="ident">as_ref</span>(),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">offsets</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">pc</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">offset</span>) <span class="op">=&gt;</span> <span class="kw-2">*</span><span class="ident">offset</span>,
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">source</span>.<span class="ident">find_mapping</span>(<span class="ident">offset</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">m</span>) <span class="op">=&gt;</span> <span class="ident">m</span>,
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">m</span>.<span class="ident">file_index</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">index</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">linker</span>.<span class="ident">find_file</span>(<span class="ident">index</span>)) {
+            <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="op">=&gt;</span> <span class="ident">path</span>,
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;bad file&quot;</span>);
+
+        <span class="kw">let</span> (<span class="ident">line_string</span>, <span class="ident">line</span>, <span class="kw">_</span>) <span class="op">=</span>
+            <span class="ident">utils</span>::<span class="ident">find_line</span>(<span class="ident">file</span>, (<span class="ident">m</span>.<span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>, (<span class="ident">m</span>.<span class="ident">start</span> <span class="op">+</span> <span class="ident">m</span>.<span class="ident">length</span>) <span class="kw">as</span> <span class="ident">usize</span>))
+                .<span class="ident">expect</span>(<span class="string">&quot;line from file&quot;</span>);
+
+        <span class="prelude-val">Some</span>(<span class="ident">LineInfo</span> {
+            <span class="ident">path</span>: <span class="ident">path</span>.<span class="ident">to_owned</span>(),
+            <span class="ident">line_string</span>,
+            <span class="ident">line</span>,
+        })
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">trace</span>::<span class="ident">Tracer</span> <span class="kw">for</span> <span class="ident">TxTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">ErrorInfo</span>;
+
+    <span class="kw">fn</span> <span class="ident">prepare_trace_call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">parity_vm</span>::<span class="ident">ActionParams</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">Call</span>::<span class="ident">from</span>(<span class="ident">params</span>.<span class="ident">clone</span>()))
+    }
+
+    <span class="kw">fn</span> <span class="ident">prepare_trace_create</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">parity_vm</span>::<span class="ident">ActionParams</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Create</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">Create</span>::<span class="ident">from</span>(<span class="ident">params</span>.<span class="ident">clone</span>()))
     }
 
     <span class="kw">fn</span> <span class="ident">prepare_trace_output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span> {
@@ -260,113 +499,128 @@
         <span class="ident">_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span>,
         <span class="ident">_gas_used</span>: <span class="ident">U256</span>,
         <span class="ident">_output</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span>,
-        <span class="ident">_subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
+        <span class="ident">subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
     ) {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">subs</span>.<span class="ident">is_empty</span>() {
+            <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">extend</span>(<span class="ident">subs</span>);
+        }
     }
 
-    <span class="doccomment">/// Stores trace create info.</span>
     <span class="kw">fn</span> <span class="ident">trace_create</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_create</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Create</span><span class="op">&gt;</span>,
         <span class="ident">_gas_used</span>: <span class="ident">U256</span>,
         <span class="ident">_code</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&gt;</span>,
         <span class="ident">_address</span>: <span class="ident">H160</span>,
-        <span class="ident">_subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
+        <span class="ident">subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
     ) {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">subs</span>.<span class="ident">is_empty</span>() {
+            <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">extend</span>(<span class="ident">subs</span>);
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">trace_failed_call</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">_call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span>,
-        <span class="ident">_subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
+        <span class="ident">call</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Call</span><span class="op">&gt;</span>,
+        <span class="ident">subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
         <span class="ident">error</span>: <span class="ident">trace</span>::<span class="ident">TraceError</span>,
     ) {
-        <span class="self">self</span>.<span class="ident">traces</span>.<span class="ident">push</span>(<span class="ident">TxEvent</span>::<span class="ident">TraceError</span>(<span class="ident">error</span>.<span class="ident">to_string</span>()));
+        <span class="kw">let</span> <span class="ident">call</span> <span class="op">=</span> <span class="ident">call</span>.<span class="ident">expect</span>(<span class="string">&quot;no call&quot;</span>);
+
+        <span class="kw">let</span> <span class="ident">frame_info</span>: <span class="ident">FrameInfo</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">frame_info</span>.<span class="ident">lock</span>().<span class="ident">expect</span>(<span class="string">&quot;poisoned lock&quot;</span>).<span class="ident">clone</span>();
+
+        <span class="kw">match</span> <span class="ident">frame_info</span> {
+            <span class="ident">FrameInfo</span>::<span class="prelude-val">Some</span>(<span class="ident">pc</span>) <span class="op">=&gt;</span> {
+                <span class="kw">let</span> <span class="ident">line_info</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">line_info</span>(<span class="ident">call</span>.<span class="ident">to</span>, <span class="ident">pc</span>);
+
+                <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">push</span>(<span class="ident">ErrorInfo</span> {
+                    <span class="ident">kind</span>: <span class="ident">ErrorKind</span>::<span class="ident">Error</span>(<span class="ident">error</span>),
+                    <span class="ident">line_info</span>,
+                    <span class="ident">subs</span>,
+                })
+            }
+            <span class="ident">FrameInfo</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">push</span>(<span class="ident">ErrorInfo</span> {
+                <span class="ident">kind</span>: <span class="ident">ErrorKind</span>::<span class="ident">Error</span>(<span class="ident">error</span>),
+                <span class="ident">line_info</span>: <span class="prelude-val">None</span>,
+                <span class="ident">subs</span>: <span class="ident">subs</span>,
+            }),
+        }
     }
 
     <span class="kw">fn</span> <span class="ident">trace_failed_create</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">_create</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Create</span><span class="op">&gt;</span>,
-        <span class="ident">_subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
+        <span class="ident">subs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>,
         <span class="ident">error</span>: <span class="ident">trace</span>::<span class="ident">TraceError</span>,
     ) {
-        <span class="self">self</span>.<span class="ident">traces</span>.<span class="ident">push</span>(<span class="ident">TxEvent</span>::<span class="ident">TraceError</span>(<span class="ident">error</span>.<span class="ident">to_string</span>()));
+        <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">push</span>(<span class="ident">ErrorInfo</span> {
+            <span class="ident">kind</span>: <span class="ident">ErrorKind</span>::<span class="ident">Error</span>(<span class="ident">error</span>),
+            <span class="ident">line_info</span>: <span class="prelude-val">None</span>,
+            <span class="ident">subs</span>: <span class="ident">subs</span>,
+        })
     }
 
     <span class="kw">fn</span> <span class="ident">trace_suicide</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_address</span>: <span class="ident">H160</span>, <span class="ident">_balance</span>: <span class="ident">U256</span>, <span class="ident">_refund_address</span>: <span class="ident">H160</span>) {}
 
     <span class="kw">fn</span> <span class="ident">trace_reward</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_author</span>: <span class="ident">H160</span>, <span class="ident">_value</span>: <span class="ident">U256</span>, <span class="ident">_reward_type</span>: <span class="ident">trace</span>::<span class="ident">RewardType</span>) {}
 
-    <span class="kw">fn</span> <span class="ident">subtracer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">fn</span> <span class="ident">subtracer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">TxTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
     {
-        <span class="self">Self</span>::<span class="ident">new</span>()
+        <span class="ident">TxTracer</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">linker</span>, <span class="self">self</span>.<span class="ident">frame_info</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">traces</span>
+    <span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ErrorInfo</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">errors</span>
+    }
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LineInfo</span> {
+    <span class="ident">path</span>: <span class="ident">PathBuf</span>,
+    <span class="ident">line_string</span>: <span class="ident">String</span>,
+    <span class="ident">line</span>: <span class="ident">usize</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">LineInfo</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="macro">write</span><span class="macro">!</span>(
+            <span class="ident">fmt</span>,
+            <span class="string">&quot;{}:{}: {}&quot;</span>,
+            <span class="self">self</span>.<span class="ident">path</span>.<span class="ident">display</span>(),
+            <span class="self">self</span>.<span class="ident">line</span>,
+            <span class="self">self</span>.<span class="ident">line_string</span>
+        )
     }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxVmTracer</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxVmTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">linker</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">linker</span>::<span class="ident">Linker</span>,
+    <span class="comment">// current sources.</span>
+    <span class="ident">frame_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">FrameInfo</span><span class="op">&gt;</span>,
     <span class="ident">depth</span>: <span class="ident">usize</span>,
     <span class="ident">pc</span>: <span class="ident">usize</span>,
     <span class="ident">instruction</span>: <span class="ident">u8</span>,
     <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">U256</span><span class="op">&gt;</span>,
-    <span class="ident">state</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TxVmState</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">TxVmTracer</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TxVmTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">linker</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">linker</span>::<span class="ident">Linker</span>, <span class="ident">frame_info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">FrameInfo</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">TxVmTracer</span> {
+            <span class="ident">linker</span>,
+            <span class="ident">frame_info</span>,
             <span class="ident">depth</span>: <span class="number">0</span>,
             <span class="ident">pc</span>: <span class="number">0</span>,
             <span class="ident">instruction</span>: <span class="number">0</span>,
             <span class="ident">stack</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-            <span class="ident">state</span>: <span class="prelude-val">None</span>,
         }
     }
 }
 
-<span class="doccomment">/// A non-success, terminal state of a transaction.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TxVmState</span> {
-    <span class="doccomment">/// The transaction was reverted, all funds except the ones used until we hit the REVERT are</span>
-    <span class="doccomment">/// returned to the caller.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This typically happens when a `require(...)` statement fires.</span>
-    <span class="ident">Reverted</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">TxVmTracer</span> {
-    <span class="kw">fn</span> <span class="ident">stack</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
-        <span class="kw">let</span> <span class="ident">items</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">u256_as_str</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
-        <span class="kw">return</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;[{}]&quot;</span>, <span class="ident">items</span>.<span class="ident">join</span>(<span class="string">&quot;,&quot;</span>));
-
-        <span class="kw">fn</span> <span class="ident">u256_as_str</span>(<span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="ident">U256</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
-            <span class="kw">if</span> <span class="ident">v</span>.<span class="ident">is_zero</span>() {
-                <span class="string">&quot;0x0&quot;</span>.<span class="ident">into</span>()
-            } <span class="kw">else</span> {
-                <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:x}&quot;</span>, <span class="ident">v</span>)
-            }
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">depth</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">depth</span> {
-            <span class="ident">s</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
-        }
-
-        <span class="ident">s</span>
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">trace</span>::<span class="ident">VMTracer</span> <span class="kw">for</span> <span class="ident">TxVmTracer</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">TxVmState</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">trace</span>::<span class="ident">VMTracer</span> <span class="kw">for</span> <span class="ident">TxVmTracer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> ();
 
     <span class="kw">fn</span> <span class="ident">trace_next_instruction</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">pc</span>: <span class="ident">usize</span>, <span class="ident">instruction</span>: <span class="ident">u8</span>, <span class="ident">_current_gas</span>: <span class="ident">U256</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">pc</span> <span class="op">=</span> <span class="ident">pc</span>;
@@ -374,61 +628,45 @@
         <span class="bool-val">true</span>
     }
 
-    <span class="comment">// Parts borrowed from: https://github.com/paritytech/sol-rs/blob/master/solaris/src/trace.rs</span>
     <span class="kw">fn</span> <span class="ident">trace_executed</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">gas_used</span>: <span class="ident">U256</span>,
+        <span class="ident">_gas_used</span>: <span class="ident">U256</span>,
         <span class="ident">stack_push</span>: <span class="kw-2">&amp;</span>[<span class="ident">U256</span>],
         <span class="ident">_mem_diff</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">&amp;</span>[<span class="ident">u8</span>])<span class="op">&gt;</span>,
         <span class="ident">_store_diff</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">U256</span>, <span class="ident">U256</span>)<span class="op">&gt;</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">parity_evm</span>::<span class="ident">Instruction</span>::<span class="ident">from_u8</span>(<span class="self">self</span>.<span class="ident">instruction</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;legal instruction&quot;</span>)
-            .<span class="ident">info</span>();
-
-        <span class="kw">if</span> <span class="ident">info</span>.<span class="ident">name</span> <span class="op">==</span> <span class="string">&quot;REVERT&quot;</span> {
-            <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">TxVmState</span>::<span class="ident">Reverted</span>);
-        }
-
-        <span class="kw">if</span> <span class="bool-val">true</span> {
-            <span class="kw">return</span>;
-        }
+        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">parity_evm</span>::<span class="ident">Instruction</span>::<span class="ident">from_u8</span>(<span class="self">self</span>.<span class="ident">instruction</span>).<span class="ident">expect</span>(<span class="string">&quot;legal instruction&quot;</span>);
 
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">len</span>();
 
-        <span class="self">self</span>.<span class="ident">stack</span>
-            .<span class="ident">truncate</span>(<span class="kw">if</span> <span class="ident">len</span> <span class="op">&gt;</span> <span class="ident">info</span>.<span class="ident">args</span> { <span class="ident">len</span> <span class="op">-</span> <span class="ident">info</span>.<span class="ident">args</span> } <span class="kw">else</span> { <span class="number">0</span> });
+        {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">frame_info</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">frame_info</span>.<span class="ident">lock</span>().<span class="ident">expect</span>(<span class="string">&quot;poisoned lock&quot;</span>);
+            <span class="kw-2">*</span><span class="ident">frame_info</span> <span class="op">=</span> <span class="ident">FrameInfo</span>::<span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">pc</span>);
+        }
 
+        <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">i</span>.<span class="ident">info</span>();
+
+        <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">truncate</span>(<span class="kw">if</span> <span class="ident">len</span> <span class="op">&gt;=</span> <span class="ident">info</span>.<span class="ident">args</span> {
+            <span class="ident">len</span> <span class="op">-</span> <span class="ident">info</span>.<span class="ident">args</span>
+        } <span class="kw">else</span> {
+            <span class="number">0usize</span>
+        });
         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">extend_from_slice</span>(<span class="ident">stack_push</span>);
-
-        <span class="macro">println</span><span class="macro">!</span>(
-            <span class="string">&quot;{}[{}] {}({:x}) stack_after: {}, gas_left: {}&quot;</span>,
-            <span class="self">self</span>.<span class="ident">depth</span>(),
-            <span class="self">self</span>.<span class="ident">pc</span>,
-            <span class="ident">info</span>.<span class="ident">name</span>,
-            <span class="self">self</span>.<span class="ident">instruction</span>,
-            <span class="self">self</span>.<span class="ident">stack</span>(),
-            <span class="ident">gas_used</span>,
-        );
     }
 
     <span class="kw">fn</span> <span class="ident">prepare_subtrace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_code</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">TxVmTracer</span>::<span class="ident">default</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">TxVmTracer</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">linker</span>, <span class="self">self</span>.<span class="ident">frame_info</span>);
         <span class="ident">vm</span>.<span class="ident">depth</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">depth</span> <span class="op">+</span> <span class="number">1</span>;
         <span class="ident">vm</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">done_subtrace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sub</span>: <span class="self">Self</span>) {
-        <span class="kw">if</span> <span class="ident">sub</span>.<span class="ident">state</span>.<span class="ident">is_some</span>() {
-            <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">sub</span>.<span class="ident">state</span>;
-        }
-    }
+    <span class="kw">fn</span> <span class="ident">done_subtrace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_sub</span>: <span class="self">Self</span>) {}
 
     <span class="kw">fn</span> <span class="ident">drain</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">state</span>
+        <span class="prelude-val">None</span>
     }
 }
 </pre>
