@@ -1,6 +1,6 @@
 use ethcore::trace;
 use ethcore::trace::trace::{Call, Create};
-use ethereum_types::{Address, H160, U256};
+use ethereum_types::{H160, U256};
 use linker;
 use parity_bytes::Bytes;
 use parity_evm;
@@ -8,7 +8,7 @@ use parity_vm;
 use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use utils;
 
 /// Last known frame.
@@ -90,6 +90,8 @@ impl fmt::Display for ErrorInfo {
 
 pub struct TxTracer<'a> {
     linker: &'a linker::Linker,
+    // if present, the source used when creating a contract.
+    entry_source: Option<Arc<linker::Source>>,
     // program counter of last revert.
     frame_info: &'a Mutex<FrameInfo>,
     // Information about a revert.
@@ -97,19 +99,25 @@ pub struct TxTracer<'a> {
 }
 
 impl<'a> TxTracer<'a> {
-    pub fn new(linker: &'a linker::Linker, frame_info: &'a Mutex<FrameInfo>) -> Self {
+    pub fn new(
+        linker: &'a linker::Linker,
+        entry_source: Option<Arc<linker::Source>>,
+        frame_info: &'a Mutex<FrameInfo>,
+    ) -> Self {
         Self {
             linker,
+            entry_source,
             frame_info,
             errors: Vec::new(),
         }
     }
 
     /// Get line info from the current program counter.
-    fn line_info(&self, address: Address, pc: usize) -> Option<LineInfo> {
-        let source = self.linker.find_runtime_source(address);
-
-        let (ref source, ref offsets) = match source.as_ref() {
+    fn line_info(&self, source: Option<&Arc<linker::Source>>, pc: usize) -> Option<LineInfo> {
+        let linker::Source {
+            ref source_map,
+            ref offsets,
+        } = match source {
             Some(source) => source.as_ref(),
             None => return None,
         };
@@ -119,7 +127,7 @@ impl<'a> TxTracer<'a> {
             None => return None,
         };
 
-        let m = match source.find_mapping(offset) {
+        let m = match source_map.find_mapping(offset) {
             Some(m) => m,
             None => return None,
         };
@@ -195,7 +203,8 @@ impl<'a> trace::Tracer for TxTracer<'a> {
 
         match frame_info {
             FrameInfo::Some(pc) => {
-                let line_info = self.line_info(call.to, pc);
+                let source = self.linker.find_runtime_source(call.to);
+                let line_info = self.line_info(source.as_ref(), pc);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
@@ -217,11 +226,24 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
-        self.errors.push(ErrorInfo {
-            kind: ErrorKind::Error(error),
-            line_info: None,
-            subs: subs,
-        })
+        let frame_info: FrameInfo = self.frame_info.lock().expect("poisoned lock").clone();
+
+        match frame_info {
+            FrameInfo::Some(pc) => {
+                let line_info = self.line_info(self.entry_source.as_ref(), pc);
+
+                self.errors.push(ErrorInfo {
+                    kind: ErrorKind::Error(error),
+                    line_info,
+                    subs,
+                })
+            }
+            FrameInfo::None => self.errors.push(ErrorInfo {
+                kind: ErrorKind::Error(error),
+                line_info: None,
+                subs: subs,
+            }),
+        }
     }
 
     fn trace_suicide(&mut self, _address: H160, _balance: U256, _refund_address: H160) {}
@@ -232,7 +254,7 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     where
         Self: Sized,
     {
-        TxTracer::new(self.linker, self.frame_info)
+        TxTracer::new(self.linker, self.entry_source.clone(), self.frame_info)
     }
 
     fn drain(self) -> Vec<ErrorInfo> {
@@ -262,6 +284,8 @@ impl fmt::Display for LineInfo {
 #[derive(Debug)]
 pub struct TxVmTracer<'a> {
     linker: &'a linker::Linker,
+    // if present, the source used to create a contract.
+    entry_source: Option<Arc<linker::Source>>,
     // current sources.
     frame_info: &'a Mutex<FrameInfo>,
     depth: usize,
@@ -271,9 +295,14 @@ pub struct TxVmTracer<'a> {
 }
 
 impl<'a> TxVmTracer<'a> {
-    pub fn new(linker: &'a linker::Linker, frame_info: &'a Mutex<FrameInfo>) -> Self {
+    pub fn new(
+        linker: &'a linker::Linker,
+        entry_source: Option<Arc<linker::Source>>,
+        frame_info: &'a Mutex<FrameInfo>,
+    ) -> Self {
         TxVmTracer {
             linker,
+            entry_source,
             frame_info,
             depth: 0,
             pc: 0,
@@ -322,7 +351,7 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
     where
         Self: Sized,
     {
-        let mut vm = TxVmTracer::new(self.linker, self.frame_info);
+        let mut vm = TxVmTracer::new(self.linker, self.entry_source.clone(), self.frame_info);
         vm.depth = self.depth + 1;
         vm
     }

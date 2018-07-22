@@ -6,6 +6,15 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+/// All necessary source information to perform tracing.
+#[derive(Debug)]
+pub struct Source {
+    /// The source map for the given source.
+    pub source_map: SourceMap,
+    /// The decoded offsets for the given source, from program counter to instruction offset.
+    pub offsets: HashMap<usize, usize>,
+}
+
 /// hex lookup table
 ///
 /// each index maps the ascii value of a byte to its corresponding hexadecimal value.
@@ -33,9 +42,9 @@ pub struct Linker {
     /// Known linkable objects by path.
     objects_by_path: HashMap<String, Address>,
     /// Known source maps by item.
-    sources: HashMap<String, Arc<(SourceMap, HashMap<usize, usize>)>>,
+    sources: HashMap<String, Arc<Source>>,
     /// Known runtime source maps by item.
-    runtime_sources: HashMap<String, Arc<(SourceMap, HashMap<usize, usize>)>>,
+    runtime_sources: HashMap<String, Arc<Source>>,
     /// Known sources.
     source_list: Option<Arc<Vec<PathBuf>>>,
 }
@@ -58,20 +67,12 @@ impl Linker {
     }
 
     /// Register a runtime source.
-    pub fn register_source(
-        &mut self,
-        item: String,
-        source_map: SourceMap,
-        offsets: HashMap<usize, usize>,
-    ) {
-        self.sources.insert(item, Arc::new((source_map, offsets)));
+    pub fn register_source(&mut self, item: String, source: Source) {
+        self.sources.insert(item, Arc::new(source));
     }
 
     /// Find a corresponding source map for the given address.
-    pub fn find_source(
-        &self,
-        address: Address,
-    ) -> Option<(Arc<(SourceMap, HashMap<usize, usize>)>)> {
+    pub fn find_source(&self, address: Address) -> Option<Arc<Source>> {
         self.item_by_address
             .get(&address)
             .and_then(|item| self.sources.get(item))
@@ -79,21 +80,12 @@ impl Linker {
     }
 
     /// Register a runtime source.
-    pub fn register_runtime_source(
-        &mut self,
-        item: String,
-        source_map: SourceMap,
-        offsets: HashMap<usize, usize>,
-    ) {
-        self.runtime_sources
-            .insert(item, Arc::new((source_map, offsets)));
+    pub fn register_runtime_source(&mut self, item: String, source: Source) {
+        self.runtime_sources.insert(item, Arc::new(source));
     }
 
     /// Find a corresponding runtime source map for the given address.
-    pub fn find_runtime_source(
-        &self,
-        address: Address,
-    ) -> Option<(Arc<(SourceMap, HashMap<usize, usize>)>)> {
+    pub fn find_runtime_source(&self, address: Address) -> Option<Arc<Source>> {
         self.item_by_address
             .get(&address)
             .and_then(|item| self.runtime_sources.get(item))
@@ -116,6 +108,20 @@ impl Linker {
     /// Register an address for a path.
     pub fn register_path(&mut self, path: String, address: Address) {
         self.objects_by_path.insert(path, address);
+    }
+
+    /// Construct source information for the given code and source map.
+    pub fn source(&self, bin: &str, source_map: &str) -> Result<Source, Error> {
+        let source_map = SourceMap::parse(source_map)
+            .map_err(|e| format!("failed to decode source map: {}", e))?;
+
+        let offsets = self.decode_offsets(bin)
+            .map_err(|e| format!("failed to decode offsets from bin: {}", e))?;
+
+        Ok(Source {
+            source_map,
+            offsets,
+        })
     }
 
     /// Decoded the given code into instruction offsets.

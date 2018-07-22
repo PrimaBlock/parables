@@ -18,7 +18,7 @@ use std::fmt;
 use std::mem;
 use std::sync::{Arc, Mutex};
 use trace;
-use {abi, call, journaldb, kvdb, kvdb_memorydb, linker, source_map};
+use {abi, call, journaldb, kvdb, kvdb_memorydb, linker};
 
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -196,7 +196,19 @@ impl Evm {
             .encoded(&self.linker)
             .map_err(|e| format!("{}: failed to encode deployment: {}", C::ITEM, e))?;
 
-        let result = self.deploy_code(code, call);
+        // when deploying, special source information should be used.
+        let entry_source = match (C::BIN.clone(), C::SOURCE_MAP.clone()) {
+            (bin, Some(source_map)) => {
+                let source = self.linker
+                    .source(bin, source_map)
+                    .map_err(|e| format!("{}: {}", C::ITEM, e))?;
+
+                Some(Arc::new(source))
+            }
+            _ => None,
+        };
+
+        let result = self.deploy_code(code, call, entry_source);
 
         // Register all linker information used for debugging.
         match result.as_ref() {
@@ -204,27 +216,15 @@ impl Evm {
                 self.linker
                     .register_item(C::ITEM.to_string(), result.address);
 
-                if let (Some(runtime_bin), Some(runtime_source_map)) =
+                if let (Some(bin), Some(source_map)) =
                     (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())
                 {
-                    let runtime_source_map = source_map::SourceMap::parse(runtime_source_map)
-                        .map_err(|e| {
-                            format!("{}: failed to decode runtime source map: {}", C::ITEM, e)
-                        })?;
+                    let source = self.linker
+                        .source(bin, source_map)
+                        .map_err(|e| format!("{}: {}", C::ITEM, e))?;
 
-                    let runtime_offsets = self.linker.decode_offsets(runtime_bin).map_err(|e| {
-                        format!(
-                            "{}: failed to decode offsets from bin-runtime: {}",
-                            C::ITEM,
-                            e
-                        )
-                    })?;
-
-                    self.linker.register_runtime_source(
-                        C::ITEM.to_string(),
-                        runtime_source_map,
-                        runtime_offsets,
-                    );
+                    self.linker
+                        .register_runtime_source(C::ITEM.to_string(), source);
                 }
             }
             // ignore
@@ -239,9 +239,15 @@ impl Evm {
         &mut self,
         code: Vec<u8>,
         call: call::Call,
+        entry_source: Option<Arc<linker::Source>>,
     ) -> Result<CreateResult, CallError<CreateResult>> {
-        self.action(Action::Create, code, call, Self::create_result)
-            .map(|(_, result)| result)
+        self.action(
+            Action::Create,
+            code,
+            call,
+            entry_source,
+            Self::create_result,
+        ).map(|(_, result)| result)
     }
 
     /// Perform a call against the given contract function.
@@ -257,7 +263,8 @@ impl Evm {
         let params = f.encoded(&self.linker)
             .map_err(|e| format!("failed to encode input: {}", e))?;
 
-        let (output, result) = self.action(Action::Call(address), params, call, Self::call_result)?;
+        let (output, result) =
+            self.action(Action::Call(address), params, call, None, Self::call_result)?;
 
         let output = f.output(output)
             .map_err(|e| format!("VM output conversion failed: {}", e))?;
@@ -273,8 +280,13 @@ impl Evm {
         address: Address,
         call: call::Call,
     ) -> Result<CallResult, CallError<CallResult>> {
-        self.action(Action::Call(address), Vec::new(), call, Self::call_result)
-            .map(|(_, result)| result)
+        self.action(
+            Action::Call(address),
+            Vec::new(),
+            call,
+            None,
+            Self::call_result,
+        ).map(|(_, result)| result)
     }
 
     /// Setup a log drainer that drains the specified logs.
@@ -313,6 +325,7 @@ impl Evm {
         action: Action,
         data: Vec<u8>,
         call: call::Call,
+        entry_source: Option<Arc<linker::Source>>,
         map: F,
     ) -> Result<(Vec<u8>, E), CallError<E>>
     where
@@ -332,7 +345,7 @@ impl Evm {
         };
 
         let tx = tx.fake_sign(call.get_sender().into());
-        self.run_transaction(tx, map)
+        self.run_transaction(tx, entry_source, map)
     }
 
     fn call_result(_: &mut Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
@@ -371,6 +384,7 @@ impl Evm {
     fn run_transaction<F, E>(
         &mut self,
         tx: SignedTransaction,
+        entry_source: Option<Arc<linker::Source>>,
         map: F,
     ) -> Result<(Vec<u8>, E), CallError<E>>
     where
@@ -390,8 +404,8 @@ impl Evm {
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(&self.linker, &frame_info),
-            trace::TxVmTracer::new(&self.linker, &frame_info),
+            trace::TxTracer::new(&self.linker, entry_source.clone(), &frame_info),
+            trace::TxVmTracer::new(&self.linker, entry_source.clone(), &frame_info),
         );
 
         let result = result.map_err(|e| format!("vm: {}", e))?;
