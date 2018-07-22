@@ -48,6 +48,14 @@ impl From<DecodingError> for Error {
     }
 }
 
+impl<E> From<Error> for CallError<E> {
+    fn from(error: Error) -> Self {
+        CallError::Other {
+            message: error.to_string(),
+        }
+    }
+}
+
 impl<E> From<CallError<E>> for Error
 where
     CallError<E>: fmt::Display,

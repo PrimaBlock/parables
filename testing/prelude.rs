@@ -1,3 +1,4 @@
+pub use abi::Vm;
 #[cfg(feature = "account")]
 pub use account::{Account, Crypto};
 pub use call::Call;

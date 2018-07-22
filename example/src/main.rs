@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     let call = Call::new(owner).gas(1_000_000);
 
     let foundation = Spec::new_null();
-    let mut evm = Evm::new(&foundation, new_context())?;
+    let evm = Evm::new(&foundation, new_context())?;
     evm.add_balance(owner, wei::from_ether(1000))?;
 
     // set up simple lib
@@ -29,17 +29,19 @@ fn main() -> Result<()> {
         "any set value",
         pt!{
             |(x in any::<u64>())| {
+                use simple_contract::simple_contract;
                 use simple_contract::simple_contract::events as ev;
-                use simple_contract::simple_contract::functions as f;
 
-                let mut evm = evm.get()?;
+                let evm = evm.get()?;
 
-                let out = evm.call(simple, f::get_value(), call)?.output;
+                let contract = simple_contract::contract(&evm, simple, call);
+
+                let out = contract.get_value()?.output;
                 assert_eq!(out, 42.into());
 
-                evm.call(simple, f::set_value(x), call)?;
+                contract.set_value(x)?;
 
-                let out = evm.call(simple, f::get_value(), call)?.output;
+                let out = contract.get_value()?.output;
                 assert_eq!(out, x.into());
 
                 for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
@@ -47,39 +49,42 @@ fn main() -> Result<()> {
                 }
 
                 assert_eq!(1, evm.logs(ev::value_updated()).iter()?.count());
-                assert!(!evm.has_logs(), "there were unprocessed logs");
+                assert!(!evm.has_logs()?, "there were unprocessed logs");
             }
         },
     );
 
     runner.test("decrement step by step", || {
+        use simple_contract::simple_contract;
         use simple_contract::simple_contract::events as ev;
-        use simple_contract::simple_contract::functions as f;
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
         let mut current = 42u64;
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let contract = simple_contract::contract(&evm, simple, call);
+
+        let out = contract.get_value()?.output;
         assert_eq!(out, current.into());
 
-        evm.call(simple, f::test_add(10, 20), call)?;
+        contract.test_add(10, 20)?;
         current = 30u64;
 
         for _ in 0..1000 {
-            let out = evm.call(simple, f::get_value(), call)?.output;
+            let out = contract.get_value()?.output;
             assert_eq!(out, current.into());
-            evm.call(
-                simple,
-                f::set_value(out + 1.into()),
-                call.value(wei::from_ether(1)),
-            )?;
+
+            // add a value to the call, this value will be sent to the contract.
+            contract
+                .with_value(wei::from_ether(1))
+                .set_value(out + 1.into())?;
+
             current += 1;
         }
 
         let not_owner = Address::random();
 
         // non-owner is not allowed to set value.
-        let non_owned_res = evm.call(simple, f::set_value(0), call.sender(not_owner));
+        let non_owned_res = contract.with_sender(not_owner).set_value(0);
         assert!(non_owned_res.is_reverted());
 
         let balance = evm.balance(owner)?;
@@ -94,13 +99,13 @@ fn main() -> Result<()> {
             .drop()?;
 
         assert_eq!(999, evm.logs(ev::value_updated()).iter()?.count());
-        assert!(!evm.has_logs(), "there were unprocessed logs");
+        assert!(!evm.has_logs()?, "there were unprocessed logs");
 
         Ok(())
     });
 
     runner.test("test balance", || {
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
 
         let a = Address::random();
         let b = Address::random();

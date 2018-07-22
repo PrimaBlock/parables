@@ -1,7 +1,10 @@
 //! Contract ABI helpers.
 
-use error::Error;
+use call::Call;
+use error::{CallError, Error};
 use ethabi::{Bytes, RawLog, TopicFilter};
+use ethereum_types::Address;
+use evm::{CallOutput, CallResult};
 use linker::Linker;
 use std::path::PathBuf;
 
@@ -52,4 +55,17 @@ pub trait Constructor {
 
     /// Access the runtime source map for the type this constructor is associated with.
     const RUNTIME_SOURCE_MAP: Option<&'static str>;
+}
+
+/// Virtual machine abstraction.
+pub trait Vm {
+    /// Perform a call against the given contract function.
+    fn call<F>(
+        &self,
+        address: Address,
+        f: F,
+        call: Call,
+    ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
+    where
+        F: ContractFunction;
 }

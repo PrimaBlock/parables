@@ -138,17 +138,26 @@ fn impl_contract_abi(
 ) -> Result<quote::Tokens> {
     let contract: Contract = serde_json::from_str(input)?;
 
-    let functions: Vec<_> = contract.functions().map(impl_contract_function).collect();
+    let mut static_functions = Vec::new();
+    let mut impl_functions = Vec::new();
+    let mut func_structs = Vec::new();
+    let mut output_functions = Vec::new();
+    let mut func_input_wrappers_structs = Vec::new();
+
+    for f in contract.functions() {
+        let (static_function, impl_function) = impl_contract_function(f);
+
+        static_functions.push(static_function);
+        impl_functions.push(impl_function);
+        func_structs.push(declare_functions(f));
+        output_functions.push(declare_output_functions(f));
+        func_input_wrappers_structs.push(declare_functions_input_wrappers(f));
+    }
+
     let events_impl: Vec<_> = contract.events().map(impl_contract_event).collect();
     let constructor_impl = impl_constructor(name, contract_fields, contract.constructor.as_ref());
     let logs_structs: Vec<_> = contract.events().map(declare_logs).collect();
     let events_structs: Vec<_> = contract.events().map(declare_events).collect();
-    let func_structs: Vec<_> = contract.functions().map(declare_functions).collect();
-    let output_functions: Vec<_> = contract.functions().map(declare_output_functions).collect();
-    let func_input_wrappers_structs: Vec<_> = contract
-        .functions()
-        .map(declare_functions_input_wrappers)
-        .collect();
 
     let events_and_logs_quote = if events_structs.is_empty() {
         quote!{}
@@ -172,6 +181,8 @@ fn impl_contract_abi(
         }
     };
 
+    let wrapper_quote = impl_wrapper(impl_functions);
+
     let functions_quote = if func_structs.is_empty() {
         quote!{}
     } else {
@@ -182,7 +193,7 @@ fn impl_contract_abi(
 
                 #(#func_structs)*
 
-                #(#functions)*
+                #(#static_functions)*
 
                 #(#func_input_wrappers_structs)*
             }
@@ -213,10 +224,71 @@ fn impl_contract_abi(
 
         #outputs_quote
 
+        #wrapper_quote
+
         #functions_quote
     };
 
-    Ok(result)
+    return Ok(result);
+
+    fn impl_wrapper(impl_functions: Vec<quote::Tokens>) -> quote::Tokens {
+        quote! {
+            pub struct Contract<'a, VM: 'a> {
+                vm: &'a VM,
+                address: ethabi::Address,
+                call: ::parables_testing::call::Call,
+            }
+
+            impl<'a, VM> Clone for Contract<'a, VM> {
+                fn clone(&self) -> Self {
+                    *self
+                }
+            }
+
+            impl<'a, VM> Copy for Contract<'a, VM> {
+            }
+
+            impl<'a, VM> Contract<'a, VM> {
+                #(#impl_functions)*
+
+                /// Modify the call for the contract.
+                pub fn with_call(self, call: ::parables_testing::call::Call) -> Self {
+                    Self {
+                        call: call,
+                        ..self
+                    }
+                }
+
+                /// Modify the default sender for the contract.
+                pub fn with_sender(self, sender: ethabi::Address) -> Self {
+                    Self {
+                        call: self.call.sender(sender),
+                        ..self
+                    }
+                }
+
+                /// Modify the default value for a copy of the current contract.
+                pub fn with_value<V>(self, value: V) -> Self
+                    where V: Into<::parables_testing::ethereum_types::U256>
+                {
+                    Self {
+                        call: self.call.value(value),
+                        ..self
+                    }
+                }
+            }
+
+            pub fn contract<'a, VM>(
+                vm: &'a VM,
+                address: ethabi::Address,
+                call: ::parables_testing::call::Call
+            ) -> Contract<'a, VM>
+                where VM: ::parables_testing::abi::Vm
+            {
+                Contract { vm, address, call }
+            }
+        }
+    }
 }
 
 fn to_syntax_string(param_type: &ethabi::ParamType) -> quote::Tokens {
@@ -437,7 +509,7 @@ fn get_output_kinds(outputs: &Vec<Param>) -> quote::Tokens {
     }
 }
 
-fn impl_contract_function(function: &Function) -> quote::Tokens {
+fn impl_contract_function(function: &Function) -> (quote::Tokens, quote::Tokens) {
     let name = syn::Ident::from(function.name.to_snake_case());
     let function_input_wrapper_name =
         syn::Ident::from(format!("{}WithInput", function.name.to_camel_case()));
@@ -470,6 +542,13 @@ fn impl_contract_function(function: &Function) -> quote::Tokens {
         .map(|(param_name, template_name)| quote! { #param_name: #template_name })
         .collect();
 
+    // [param0, hello_world, param2]
+    let ref param_names: Vec<_> = input_names
+        .iter()
+        .zip(template_names.iter())
+        .map(|(param_name, _)| quote! { #param_name })
+        .collect();
+
     // [Token::Uint(param0.into()), Token::Bytes(hello_world.into()), Token::Array(param2.into_iter().map(Into::into).collect())]
     let usage: Vec<_> = input_names
         .iter()
@@ -479,13 +558,31 @@ fn impl_contract_function(function: &Function) -> quote::Tokens {
         })
         .collect();
 
-    quote! {
+    let output_kinds = get_output_kinds(&function.outputs);
+
+    let static_function = quote! {
         /// Sets the input (arguments) for this contract function
         pub fn #name<#(#template_params),*>(#(#params),*) -> #function_input_wrapper_name {
             let v: Vec<ethabi::Token> = vec![#(#usage),*];
             #function_input_wrapper_name::new(v)
         }
-    }
+    };
+
+    let impl_function = quote! {
+        /// Sets the input (arguments) for this contract function
+        pub fn #name<#(#template_params),*>(&self, #(#params),*)
+            -> ::std::result::Result<
+                ::parables_testing::evm::CallOutput<#output_kinds>,
+                ::parables_testing::error::CallError<::parables_testing::evm::CallResult>
+            >
+            where VM: ::parables_testing::abi::Vm
+        {
+            let function_call = self::functions::#name(#(#param_names),*);
+            self.vm.call(self.address, function_call, self.call)
+        }
+    };
+
+    (static_function, impl_function)
 }
 
 fn impl_contract_event(event: &Event) -> quote::Tokens {

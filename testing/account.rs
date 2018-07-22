@@ -65,7 +65,7 @@ impl Account {
     }
 
     /// Create a new signer.
-    pub fn signer<'a>(&'a self, crypto: &'a mut Crypto) -> Signer<'a> {
+    pub fn signer<'a>(&'a self, crypto: &'a Crypto) -> Signer<'a> {
         Signer::new(self, crypto)
     }
 
@@ -77,12 +77,12 @@ impl Account {
 
 pub struct Signer<'a> {
     address: &'a Account,
-    crypto: &'a mut Crypto,
+    crypto: &'a Crypto,
     checksum: Sha3,
 }
 
 impl<'a> Signer<'a> {
-    pub fn new(address: &'a Account, crypto: &'a mut Crypto) -> Self {
+    pub fn new(address: &'a Account, crypto: &'a Crypto) -> Self {
         Self {
             address,
             crypto,
@@ -151,7 +151,7 @@ impl<'a> Signer<'a> {
 
 /// Context for all cryptography functions.
 pub struct Crypto {
-    rng: Box<Rng>,
+    rng: Box<dyn Rng + Sync>,
     secp: Secp256k1,
 }
 

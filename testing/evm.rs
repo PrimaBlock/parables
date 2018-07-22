@@ -13,6 +13,7 @@ use ethcore_transaction::{Action, SignedTransaction, Transaction};
 use ethereum_types::{Address, U256};
 use kvdb::KeyValueDB;
 use parity_vm;
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::{hash_map, HashMap};
 use std::fmt;
 use std::mem;
@@ -77,15 +78,19 @@ pub struct CallOutput<T> {
     pub result: CallResult,
 }
 
+// Primary EVM abstraction.
+//
+// Most state is guarded by runtime checks (e.g. RefCell) to simplify how we can interact with the
+// Evm.
 #[derive(Clone)]
 pub struct Evm {
     env_info: parity_vm::EnvInfo,
-    state: state::State<state_db::StateDB>,
+    state: RefCell<state::State<state_db::StateDB>>,
     engine: Arc<engines::EthEngine>,
     /// Logs collected by topic.
-    logs: HashMap<ethabi::Hash, Vec<LogEntry>>,
+    logs: RefCell<HashMap<ethabi::Hash, Vec<LogEntry>>>,
     /// Linker used, if available it can be used to perform source-map lookups.
-    linker: linker::Linker,
+    linker: RefCell<linker::Linker>,
 }
 
 impl fmt::Debug for Evm {
@@ -109,10 +114,10 @@ impl Evm {
 
         let evm = Evm {
             env_info,
-            state,
+            state: RefCell::new(state),
             engine,
-            logs: HashMap::new(),
-            linker: linker,
+            logs: RefCell::new(HashMap::new()),
+            linker: RefCell::new(linker),
         };
 
         Ok(evm)
@@ -185,21 +190,23 @@ impl Evm {
 
     /// Deploy the contract with the given code.
     pub fn deploy<C>(
-        &mut self,
+        &self,
         constructor: C,
         call: call::Call,
     ) -> Result<CreateResult, CallError<CreateResult>>
     where
         C: abi::ContractFunction<Output = Address> + abi::Constructor,
     {
+        let mut linker = self.borrow_mut_linker()?;
+
         let code = constructor
-            .encoded(&self.linker)
+            .encoded(&linker)
             .map_err(|e| format!("{}: failed to encode deployment: {}", C::ITEM, e))?;
 
         // when deploying, special source information should be used.
         let entry_source = match (C::BIN.clone(), C::SOURCE_MAP.clone()) {
             (bin, Some(source_map)) => {
-                let source = self.linker
+                let source = linker
                     .source(bin, source_map)
                     .map_err(|e| format!("{}: {}", C::ITEM, e))?;
 
@@ -208,23 +215,21 @@ impl Evm {
             _ => None,
         };
 
-        let result = self.deploy_code(code, call, entry_source);
+        let result = self.deploy_code(code, call, entry_source, &linker);
 
         // Register all linker information used for debugging.
         match result.as_ref() {
             Ok(result) => {
-                self.linker
-                    .register_item(C::ITEM.to_string(), result.address);
+                linker.register_item(C::ITEM.to_string(), result.address);
 
                 if let (Some(bin), Some(source_map)) =
                     (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())
                 {
-                    let source = self.linker
+                    let source = linker
                         .source(bin, source_map)
                         .map_err(|e| format!("{}: {}", C::ITEM, e))?;
 
-                    self.linker
-                        .register_runtime_source(C::ITEM.to_string(), source);
+                    linker.register_runtime_source(C::ITEM.to_string(), source);
                 }
             }
             // ignore
@@ -236,104 +241,95 @@ impl Evm {
 
     /// Deploy the contract with the given code.
     pub fn deploy_code(
-        &mut self,
+        &self,
         code: Vec<u8>,
         call: call::Call,
         entry_source: Option<Arc<linker::Source>>,
+        linker: &linker::Linker,
     ) -> Result<CreateResult, CallError<CreateResult>> {
         self.action(
             Action::Create,
             code,
             call,
             entry_source,
+            linker,
             Self::create_result,
         ).map(|(_, result)| result)
-    }
-
-    /// Perform a call against the given contract function.
-    pub fn call<F>(
-        &mut self,
-        address: Address,
-        f: F,
-        call: call::Call,
-    ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
-    where
-        F: abi::ContractFunction,
-    {
-        let params = f.encoded(&self.linker)
-            .map_err(|e| format!("failed to encode input: {}", e))?;
-
-        let (output, result) =
-            self.action(Action::Call(address), params, call, None, Self::call_result)?;
-
-        let output = f.output(output)
-            .map_err(|e| format!("VM output conversion failed: {}", e))?;
-
-        Ok(CallOutput { output, result })
     }
 
     /// Perform a call against the given address' fallback function.
     ///
     /// This is the same as a straight up transfer.
     pub fn call_default(
-        &mut self,
+        &self,
         address: Address,
         call: call::Call,
     ) -> Result<CallResult, CallError<CallResult>> {
+        let linker = self.borrow_linker()?;
+
         self.action(
             Action::Call(address),
             Vec::new(),
             call,
             None,
+            &linker,
             Self::call_result,
         ).map(|(_, result)| result)
     }
 
     /// Setup a log drainer that drains the specified logs.
-    pub fn logs<'a, P>(&'a mut self, log: P) -> LogDrainer<'a, P>
+    pub fn logs<'a, P>(&'a self, log: P) -> LogDrainer<'a, P>
     where
         P: abi::ParseLog + abi::LogFilter,
     {
         LogDrainer::new(self, log)
     }
 
-    /// Access all raw logs.
-    pub fn raw_logs(&self) -> &HashMap<ethabi::Hash, Vec<LogEntry>> {
-        &self.logs
+    /// Access raw underlying logs.
+    ///
+    /// Note: it is important that the Ref is released as soon as possible since this would
+    /// otherwise cause borrowing issues for other operations.
+    pub fn raw_logs(&self) -> Result<Ref<HashMap<ethabi::Hash, Vec<LogEntry>>>, Error> {
+        self.borrow_logs()
     }
 
     /// Check if we still have unclaimed logs.
-    pub fn has_logs(&self) -> bool {
-        self.logs.values().any(|v| !v.is_empty())
+    pub fn has_logs(&self) -> Result<bool, Error> {
+        let logs = self.borrow_logs()?;
+        Ok(logs.values().any(|v| !v.is_empty()))
     }
 
     /// Query the balance of the given account.
     pub fn balance(&self, address: Address) -> Result<U256, Error> {
-        Ok(self.state.balance(&address).map_err(|_| BalanceError)?)
+        let state = self.borrow_state()?;
+        Ok(state.balance(&address).map_err(|_| BalanceError)?)
     }
 
     /// Add the given number of wei to the provided account.
-    pub fn add_balance<W: Into<U256>>(&mut self, address: Address, wei: W) -> Result<(), Error> {
-        Ok(self.state
+    pub fn add_balance<W: Into<U256>>(&self, address: Address, wei: W) -> Result<(), Error> {
+        let mut state = self.borrow_mut_state()?;
+
+        Ok(state
             .add_balance(&address, &wei.into(), state::CleanupMode::ForceCreate)
             .map_err(|_| BalanceError)?)
     }
 
     /// Execute the given action.
     fn action<F, E>(
-        &mut self,
+        &self,
         action: Action,
         data: Vec<u8>,
         call: call::Call,
         entry_source: Option<Arc<linker::Source>>,
+        linker: &linker::Linker,
         map: F,
     ) -> Result<(Vec<u8>, E), CallError<E>>
     where
-        F: FnOnce(&mut Evm, &SignedTransaction, &receipt::Receipt) -> E,
+        F: FnOnce(&Evm, &SignedTransaction, &receipt::Receipt) -> E,
     {
-        let nonce = self.state
-            .nonce(&call.get_sender())
-            .map_err(|_| NonceError)?;
+        let mut state = self.borrow_mut_state()?;
+
+        let nonce = state.nonce(&call.get_sender()).map_err(|_| NonceError)?;
 
         let tx = Transaction {
             nonce,
@@ -345,10 +341,10 @@ impl Evm {
         };
 
         let tx = tx.fake_sign(call.get_sender().into());
-        self.run_transaction(tx, entry_source, map)
+        self.run_transaction(&mut state, tx, entry_source, linker, map)
     }
 
-    fn call_result(_: &mut Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
+    fn call_result(_: &Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
         let gas_used = receipt.gas_used;
         let gas_price = tx.gas_price;
 
@@ -360,7 +356,7 @@ impl Evm {
     }
 
     fn create_result(
-        evm: &mut Evm,
+        evm: &Evm,
         tx: &SignedTransaction,
         receipt: &receipt::Receipt,
     ) -> CreateResult {
@@ -382,13 +378,15 @@ impl Evm {
 
     /// Run the specified transaction.
     fn run_transaction<F, E>(
-        &mut self,
+        &self,
+        state: &mut state::State<state_db::StateDB>,
         tx: SignedTransaction,
         entry_source: Option<Arc<linker::Source>>,
+        linker: &linker::Linker,
         map: F,
     ) -> Result<(Vec<u8>, E), CallError<E>>
     where
-        F: FnOnce(&mut Evm, &SignedTransaction, &receipt::Receipt) -> E,
+        F: FnOnce(&Evm, &SignedTransaction, &receipt::Receipt) -> E,
     {
         // Verify transaction
         tx.verify_basic(
@@ -400,23 +398,21 @@ impl Evm {
         let frame_info = Mutex::new(trace::FrameInfo::None);
 
         // Apply transaction
-        let result = self.state.apply_with_tracing(
+        let result = state.apply_with_tracing(
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(&self.linker, entry_source.clone(), &frame_info),
-            trace::TxVmTracer::new(&self.linker, entry_source.clone(), &frame_info),
+            trace::TxTracer::new(linker, entry_source.clone(), &frame_info),
+            trace::TxVmTracer::new(linker, entry_source.clone(), &frame_info),
         );
 
         let result = result.map_err(|e| format!("vm: {}", e))?;
 
-        self.state.commit().ok();
+        state.commit().ok();
 
         let execution = map(self, &tx, &result.receipt);
 
-        if let Err(message) = self.add_logs(result.receipt.logs) {
-            return Err(CallError::SyncLogs { execution, message });
-        }
+        self.add_logs(result.receipt.logs)?;
 
         if !result.trace.is_empty() {
             let reverted = result.trace.iter().any(|e| e.is_reverted());
@@ -449,23 +445,98 @@ impl Evm {
     }
 
     /// Add logs, partitioned by topic.
-    fn add_logs(&mut self, logs: Vec<LogEntry>) -> Result<(), &'static str> {
-        for log in logs {
+    fn add_logs(&self, new_logs: Vec<LogEntry>) -> Result<(), Error> {
+        let mut logs = self.borrow_mut_logs()?;
+
+        for log in new_logs {
             let topic = match log.topics.iter().next() {
                 Some(first) => *first,
-                None => return Err("expected at least one topic"),
+                None => return Err("expected at least one topic".into()),
             };
 
-            self.logs.entry(topic).or_insert_with(Vec::new).push(log);
+            logs.entry(topic).or_insert_with(Vec::new).push(log);
         }
 
         Ok(())
+    }
+
+    /// Access all raw logs.
+    fn borrow_logs(&self) -> Result<Ref<HashMap<ethabi::Hash, Vec<LogEntry>>>, Error> {
+        self.logs
+            .try_borrow()
+            .map_err(|e| format!("cannot borrow logs: {}", e).into())
+    }
+
+    /// Mutably access all raw logs.
+    fn borrow_mut_logs(&self) -> Result<RefMut<HashMap<ethabi::Hash, Vec<LogEntry>>>, Error> {
+        self.logs
+            .try_borrow_mut()
+            .map_err(|e| format!("cannot borrow logs mutably: {}", e).into())
+    }
+
+    /// Access linker.
+    fn borrow_linker(&self) -> Result<Ref<linker::Linker>, Error> {
+        self.linker
+            .try_borrow()
+            .map_err(|e| format!("cannot borrow linker: {}", e).into())
+    }
+
+    /// Mutably access linker.
+    fn borrow_mut_linker(&self) -> Result<RefMut<linker::Linker>, Error> {
+        self.linker
+            .try_borrow_mut()
+            .map_err(|e| format!("cannot borrow linker mutably: {}", e).into())
+    }
+
+    /// Access underlying state.
+    fn borrow_state(&self) -> Result<Ref<state::State<state_db::StateDB>>, Error> {
+        self.state
+            .try_borrow()
+            .map_err(|e| format!("cannot borrow state: {}", e).into())
+    }
+
+    /// Mutably access underlying state.
+    fn borrow_mut_state(&self) -> Result<RefMut<state::State<state_db::StateDB>>, Error> {
+        self.state
+            .try_borrow_mut()
+            .map_err(|e| format!("cannot borrow state mutably: {}", e).into())
+    }
+}
+
+impl abi::Vm for Evm {
+    fn call<F>(
+        &self,
+        address: Address,
+        f: F,
+        call: call::Call,
+    ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
+    where
+        F: abi::ContractFunction,
+    {
+        let linker = self.borrow_linker()?;
+
+        let params = f.encoded(&linker)
+            .map_err(|e| format!("failed to encode input: {}", e))?;
+
+        let (output, result) = self.action(
+            Action::Call(address),
+            params,
+            call,
+            None,
+            &linker,
+            Self::call_result,
+        )?;
+
+        let output = f.output(output)
+            .map_err(|e| format!("VM output conversion failed: {}", e))?;
+
+        Ok(CallOutput { output, result })
     }
 }
 
 #[derive(Debug)]
 pub struct LogDrainer<'a, P> {
-    evm: &'a mut Evm,
+    evm: &'a Evm,
     log: P,
     filter: ethabi::TopicFilter,
 }
@@ -474,7 +545,7 @@ impl<'a, P> LogDrainer<'a, P>
 where
     P: abi::ParseLog + abi::LogFilter,
 {
-    pub fn new(evm: &'a mut Evm, log: P) -> Self {
+    pub fn new(evm: &'a Evm, log: P) -> Self {
         let filter = log.wildcard_filter();
 
         Self { evm, log, filter }
@@ -569,7 +640,9 @@ where
             mat.all(|m| *m == ethabi::Topic::Any)
         };
 
-        match evm.logs.entry(topic) {
+        let mut logs = evm.borrow_mut_logs()?;
+
+        match logs.entry(topic) {
             hash_map::Entry::Vacant(_) => return Ok(out),
             hash_map::Entry::Occupied(mut e) => {
                 let remove = {
