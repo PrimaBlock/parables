@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["new_context",""]],"mod":[["simple_contract",""],["simple_lib",""]]});
+initSidebarItems({"fn":[["new_context",""]],"mod":[["simple_contract",""],["simple_ledger",""],["simple_lib",""]]});

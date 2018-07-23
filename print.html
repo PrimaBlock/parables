@@ -18,7 +18,7 @@
         <link rel="shortcut icon" href="favicon.png">
 
         <!-- Font Awesome -->
-        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
@@ -291,7 +291,7 @@ fn main() -&gt; Result&lt;()&gt; {
 
     // Set up a new virtual machine with a default (null) foundation.
     let foundation = Spec::new_null();
-    let mut evm = Evm::new(&amp;foundation, new_context())?;
+    let evm = Evm::new(&amp;foundation, new_context())?;
 
     // Deploy the SimpleContract.
     let simple = evm.deploy(simple_contract::constructor(0), call)?.address;
@@ -303,21 +303,21 @@ fn main() -&gt; Result&lt;()&gt; {
     let mut tests = TestRunner::new();
 
     tests.test(&quot;get and increment value a couple of times&quot;, || {
-        use simple_contract::events as ev;
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&amp;evm, simple, call);
 
         let mut expected = U256::from(0);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
 
         // change value
         expected = 1.into();
 
-        evm.call(simple, f::set_value(expected), call)?;
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        contract.set_value(expected)?;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
 
         Ok(())
@@ -358,7 +358,7 @@ our calls.</p>
 #fn main() {
 let foundation = Spec::new_null();
 let context = new_context();
-let mut evm = Evm::new(&amp;foundation, context)?;
+let evm = Evm::new(&amp;foundation, context)?;
 #}</code></pre></pre>
 <p>Time to set up our <em>foundation</em> and our <em>contract context</em>. A foundation determines the parameters of the blockchain.
 The <code>null</code> foundation is the default foundation, which makes it operate like your modern Ethereum
@@ -392,18 +392,17 @@ The Snapshot class provides us with a convenient <code>get()</code> function tha
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-use simple_contract::events as ev;
-use simple_contract::functions as f;
+use simple_contract::simple_contract;
 #}</code></pre></pre>
 <p>We start out by importing all relevant functions into scope for the test.</p>
-<p>Using these we can access all events being emitted by the contract through <code>ev::SomeEvent</code>, and all
-the functions being exposed as <code>f::some_function</code>.
-Note that the function names are converted from lower camel (solidity standard) to lower snake case
+<p>Using these we can access all events being emitted by the contract through
+<code>simple_contract::events::some_event</code>.</p>
+<p>Note that the function names are converted from lower camel (solidity standard) to lower snake case
 (rust standard).</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-let mut evm = evm.get()?;
+let evm = evm.get()?;
 #}</code></pre></pre>
 <p>This line takes a snapshot of the virtual machine.
 The snapshot is guaranteed to be isolated from all other snapshots, letting us run many tests in
@@ -411,16 +410,24 @@ isolation without worrying about trampling on each others feets.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
+let contract = simple_contract::contract(&amp;evm, simple, call);
+#}</code></pre></pre>
+<p>This line sets up the simple contract abstraction as <code>contract</code>.
+Through this you can easily call methods on the contract using the specified <code>evm</code>, <code>address</code>, and
+<code>call</code> as you'll see later.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
 let mut expected = 0;
 
-let out = evm.call(simple, f::get_value(), call)?.output;
+let out = contract.get_value()?.output;
 assert_eq!(expected, out);
 
 // change value
 expected = 1;
 
-evm.call(simple, f::set_value(expected), call)?;
-let out = evm.call(simple, f::get_value(), call)?.output;
+contract.set_value(expected)?;
+let out = contract.get_value()?.output;
 assert_eq!(expected, out);
 #}</code></pre></pre>
 <p>This final snippet is the complete test case.
@@ -440,17 +447,18 @@ well-defined numeric values, we test a wide range of values.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
         let x = U256::from(x);
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&amp;evm, simple, call);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(U256::from(0), out);
 
-        evm.call(simple, f::set_value(x), call)?;
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        contract.set_value(x)?;
+        let out = contract.get_value()?.output;
         assert_eq!(x, out);
     }
 });
@@ -494,16 +502,17 @@ the assert to expect the revert to happen for some specific input.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
         let x = U256::from(x);
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&amp;evm, simple, call);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(U256::from(0), out);
 
-        let result = evm.call(simple, f::set_value(x), call);
+        let result = contract.set_value(x);
 
         // expect that the transaction is reverted if we try to update the value to a value larger
         // or equal to 1 million.
@@ -515,7 +524,7 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
             x
         };
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
     }
 });
@@ -536,7 +545,7 @@ to it and any gas being used.</p>
 # #![allow(unused_variables)]
 #fn main() {
 let foundation = Spec::new_null();
-let mut evm = Evm::new(&amp;foundation);
+let evm = Evm::new(&amp;foundation, new_context());
 
 let a = Address::random();
 let b = Address::random();
@@ -559,6 +568,124 @@ let res = evm.call_default(b, call)?;
 assert_ne!(evm.balance(a), wei::from_ether(90));
 assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_total());
 assert_eq!(evm.balance(b), wei::from_ether(10));
+#}</code></pre></pre>
+<a class="header" href="print.html#ledger" id="ledger"><h2>Ledger</h2></a>
+<p>If you want a more streamlined way of testing that a various set of account balances are as you
+expect, you can use a <code>Ledger</code>.</p>
+<p>The above would then be written as:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let foundation = Spec::new_null();
+let evm = Evm::new(&amp;foundation, new_context());
+let mut ledger = Ledger::empty(&amp;evm);
+
+let a = Address::random();
+let b = Address::random();
+
+// sync the initial state of the accounts we are interested in.
+ledger.sync(a)?;
+ledger.sync(b)?;
+
+evm.add_balance(a, wei::from_ether(100));
+ledger.add(a, wei::from_ether(100));
+
+let call = Call::new(a).gas(21000).gas_price(10);
+let res = evm.call_default(b, call)?;
+// we expect the bas price to be deducted.
+ledger.sub(a, res.gas_total());
+
+// consume the ledger and verify all expected stated.
+ledger.verify()?;
+#}</code></pre></pre>
+<a class="header" href="print.html#advanced-bookkeeping-with-the-ledger" id="advanced-bookkeeping-with-the-ledger"><h2>Advanced bookkeeping with the Ledger</h2></a>
+<p>Suppose we have the following contract:</p>
+<pre><code class="language-solidity">pragma solidity 0.4.24;
+
+contract SimpleLedger {
+    mapping(address =&gt; uint) ledger;
+
+    function add(address account) payable {
+        ledger[account] += msg.value;
+    }
+
+    // used for testing
+    function get(address account) returns(uint) {
+        return ledger[account];
+    }
+}
+</code></pre>
+<p>The contract has a state which is stored per address.</p>
+<p>A <code>Ledger</code> can be taught how to use this using a custom <code>LedgerState</code>.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+use simple_ledger::simple_ledger;
+
+let a = Address::random();
+let b = Address::random();
+
+let call = call.sender(a);
+
+let evm = evm.get()?;
+
+let simple = evm.deploy(simple_ledger::constructor(), call)?.address;
+let simple = simple_ledger::contract(&amp;evm, simple, call.gas_price(10));
+
+let mut ledger = Ledger::new(&amp;evm, State(simple.address));
+
+evm.add_balance(a, wei!(100 eth))?;
+
+ledger.sync(a)?;
+ledger.sync(b)?;
+
+// add to a account
+let res = simple.value(wei!(42 eth)).add(a)?;
+ledger.sub(a, res.gas_total() + wei!(42 eth));
+*ledger.state(a) = wei!(42 eth).into();
+
+// add to b account
+let res = simple.value(wei!(12 eth)).add(b)?;
+ledger.sub(a, res.gas_total() + wei!(12 eth));
+*ledger.state(b) = wei!(12 eth).into();
+
+ledger.verify()?;
+
+return Ok(());
+
+pub struct State(Address);
+
+impl State {
+    /// Helper to get the current value stored on the blockchain.
+    fn get_value(&amp;self, evm: &amp;Evm, address: Address) -&gt; Result&lt;U256&gt; {
+        use simple_ledger::simple_ledger::functions as f;
+        let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
+        Ok(evm.call(self.0, f::get(address), call)?.output)
+    }
+}
+
+impl LedgerState for State {
+    type Instance = U256;
+
+    fn new_instance(&amp;self) -&gt; Self::Instance {
+        U256::default()
+    }
+
+    fn sync(&amp;self, evm: &amp;Evm, address: Address, instance: &amp;mut U256) -&gt; Result&lt;()&gt; {
+        *instance = self.get_value(evm, address)?;
+        Ok(())
+    }
+
+    fn verify(&amp;self, evm: &amp;Evm, address: Address, expected: U256) -&gt; Result&lt;()&gt; {
+        let value = self.get_value(evm, address)?;
+
+        if value != expected {
+            return Err(format!(&quot;value: expected {} but got {}&quot;, expected, value).into());
+        }
+
+        Ok(())
+    }
+}
 #}</code></pre></pre>
 <a class="header" href="print.html#accounts" id="accounts"><h1>Accounts</h1></a>
 <p>Parables provides a helper to set up an account.</p>
@@ -589,9 +716,10 @@ a specific set of events have been emitted.</p>
 # #![allow(unused_variables)]
 #fn main() {
 let evm = evm.get();
+let contract = simple_contract::contract(&amp;evm, simple, call);
 
-evm.call(simple, f::set_value(100), call)?;
-evm.call(simple, f::set_value(200), call)?;
+contract.set_value(100)?;
+contract.set_value(200)?;
 
 for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
     assert_eq!(U256::from(100), e.value);
@@ -629,14 +757,6 @@ operation since it needs to decode all events.</p>
         
 
         
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() {
-                window.print();
-            })
-        </script>
-        
-
-        
 
         
         <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
@@ -652,6 +772,16 @@ operation since it needs to decode all events.</p>
         <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
         
 
     </body>

@@ -18,7 +18,7 @@
         <link rel="shortcut icon" href="favicon.png">
 
         <!-- Font Awesome -->
-        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
@@ -144,7 +144,7 @@ to it and any gas being used.</p>
 # #![allow(unused_variables)]
 #fn main() {
 let foundation = Spec::new_null();
-let mut evm = Evm::new(&amp;foundation);
+let evm = Evm::new(&amp;foundation, new_context());
 
 let a = Address::random();
 let b = Address::random();
@@ -167,6 +167,124 @@ let res = evm.call_default(b, call)?;
 assert_ne!(evm.balance(a), wei::from_ether(90));
 assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_total());
 assert_eq!(evm.balance(b), wei::from_ether(10));
+#}</code></pre></pre>
+<a class="header" href="06_account_balances.html#ledger" id="ledger"><h2>Ledger</h2></a>
+<p>If you want a more streamlined way of testing that a various set of account balances are as you
+expect, you can use a <code>Ledger</code>.</p>
+<p>The above would then be written as:</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+let foundation = Spec::new_null();
+let evm = Evm::new(&amp;foundation, new_context());
+let mut ledger = Ledger::empty(&amp;evm);
+
+let a = Address::random();
+let b = Address::random();
+
+// sync the initial state of the accounts we are interested in.
+ledger.sync(a)?;
+ledger.sync(b)?;
+
+evm.add_balance(a, wei::from_ether(100));
+ledger.add(a, wei::from_ether(100));
+
+let call = Call::new(a).gas(21000).gas_price(10);
+let res = evm.call_default(b, call)?;
+// we expect the bas price to be deducted.
+ledger.sub(a, res.gas_total());
+
+// consume the ledger and verify all expected stated.
+ledger.verify()?;
+#}</code></pre></pre>
+<a class="header" href="06_account_balances.html#advanced-bookkeeping-with-the-ledger" id="advanced-bookkeeping-with-the-ledger"><h2>Advanced bookkeeping with the Ledger</h2></a>
+<p>Suppose we have the following contract:</p>
+<pre><code class="language-solidity">pragma solidity 0.4.24;
+
+contract SimpleLedger {
+    mapping(address =&gt; uint) ledger;
+
+    function add(address account) payable {
+        ledger[account] += msg.value;
+    }
+
+    // used for testing
+    function get(address account) returns(uint) {
+        return ledger[account];
+    }
+}
+</code></pre>
+<p>The contract has a state which is stored per address.</p>
+<p>A <code>Ledger</code> can be taught how to use this using a custom <code>LedgerState</code>.</p>
+<pre><pre class="playpen"><code class="language-rust">
+# #![allow(unused_variables)]
+#fn main() {
+use simple_ledger::simple_ledger;
+
+let a = Address::random();
+let b = Address::random();
+
+let call = call.sender(a);
+
+let evm = evm.get()?;
+
+let simple = evm.deploy(simple_ledger::constructor(), call)?.address;
+let simple = simple_ledger::contract(&amp;evm, simple, call.gas_price(10));
+
+let mut ledger = Ledger::new(&amp;evm, State(simple.address));
+
+evm.add_balance(a, wei!(100 eth))?;
+
+ledger.sync(a)?;
+ledger.sync(b)?;
+
+// add to a account
+let res = simple.value(wei!(42 eth)).add(a)?;
+ledger.sub(a, res.gas_total() + wei!(42 eth));
+*ledger.state(a) = wei!(42 eth).into();
+
+// add to b account
+let res = simple.value(wei!(12 eth)).add(b)?;
+ledger.sub(a, res.gas_total() + wei!(12 eth));
+*ledger.state(b) = wei!(12 eth).into();
+
+ledger.verify()?;
+
+return Ok(());
+
+pub struct State(Address);
+
+impl State {
+    /// Helper to get the current value stored on the blockchain.
+    fn get_value(&amp;self, evm: &amp;Evm, address: Address) -&gt; Result&lt;U256&gt; {
+        use simple_ledger::simple_ledger::functions as f;
+        let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
+        Ok(evm.call(self.0, f::get(address), call)?.output)
+    }
+}
+
+impl LedgerState for State {
+    type Instance = U256;
+
+    fn new_instance(&amp;self) -&gt; Self::Instance {
+        U256::default()
+    }
+
+    fn sync(&amp;self, evm: &amp;Evm, address: Address, instance: &amp;mut U256) -&gt; Result&lt;()&gt; {
+        *instance = self.get_value(evm, address)?;
+        Ok(())
+    }
+
+    fn verify(&amp;self, evm: &amp;Evm, address: Address, expected: U256) -&gt; Result&lt;()&gt; {
+        let value = self.get_value(evm, address)?;
+
+        if value != expected {
+            return Err(format!(&quot;value: expected {} but got {}&quot;, expected, value).into());
+        }
+
+        Ok(())
+    }
+}
 #}</code></pre></pre>
 
                     </main>
@@ -213,8 +331,6 @@ assert_eq!(evm.balance(b), wei::from_ether(10));
         
 
         
-
-        
         <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
         
         
@@ -228,6 +344,8 @@ assert_eq!(evm.balance(b), wei::from_ether(10));
         <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
+        
+
         
 
     </body>

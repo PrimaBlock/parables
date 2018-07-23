@@ -18,7 +18,7 @@
         <link rel="shortcut icon" href="favicon.png">
 
         <!-- Font Awesome -->
-        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
@@ -143,17 +143,18 @@ well-defined numeric values, we test a wide range of values.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
         let x = U256::from(x);
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&amp;evm, simple, call);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(U256::from(0), out);
 
-        evm.call(simple, f::set_value(x), call)?;
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        contract.set_value(x)?;
+        let out = contract.get_value()?.output;
         assert_eq!(x, out);
     }
 });
@@ -227,8 +228,6 @@ a binary search through all the inputs.</p>
         
 
         
-
-        
         <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
         
         
@@ -242,6 +241,8 @@ a binary search through all the inputs.</p>
         <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
+        
+
         
 
     </body>

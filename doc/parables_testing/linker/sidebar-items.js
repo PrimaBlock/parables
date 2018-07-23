@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Push",""],["Section",""]],"struct":[["BadHex",""],["Decoder",""],["HexDecode",""],["Linker","A solidity bytecode linker."]]});
+initSidebarItems({"enum":[["Push",""],["Section",""]],"struct":[["BadHex",""],["Decoder",""],["HexDecode",""],["Linker","A solidity bytecode linker."],["Source","All necessary source information to perform tracing."]]});

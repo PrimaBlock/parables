@@ -18,7 +18,7 @@
         <link rel="shortcut icon" href="favicon.png">
 
         <!-- Font Awesome -->
-        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
@@ -148,16 +148,17 @@ the assert to expect the revert to happen for some specific input.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
         let x = U256::from(x);
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&amp;evm, simple, call);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(U256::from(0), out);
 
-        let result = evm.call(simple, f::set_value(x), call);
+        let result = contract.set_value(x);
 
         // expect that the transaction is reverted if we try to update the value to a value larger
         // or equal to 1 million.
@@ -169,7 +170,7 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
             x
         };
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
     }
 });
@@ -224,8 +225,6 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
         
 
         
-
-        
         <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
         
         
@@ -239,6 +238,8 @@ tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
         <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
+        
+
         
 
     </body>

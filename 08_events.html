@@ -18,7 +18,7 @@
         <link rel="shortcut icon" href="favicon.png">
 
         <!-- Font Awesome -->
-        <link rel="stylesheet" href="_FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
@@ -141,9 +141,10 @@ a specific set of events have been emitted.</p>
 # #![allow(unused_variables)]
 #fn main() {
 let evm = evm.get();
+let contract = simple_contract::contract(&amp;evm, simple, call);
 
-evm.call(simple, f::set_value(100), call)?;
-evm.call(simple, f::set_value(200), call)?;
+contract.set_value(100)?;
+contract.set_value(200)?;
 
 for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
     assert_eq!(U256::from(100), e.value);
@@ -191,8 +192,6 @@ operation since it needs to decode all events.</p>
         
 
         
-
-        
         <script src="searchindex.js" type="text/javascript" charset="utf-8"></script>
         
         
@@ -206,6 +205,8 @@ operation since it needs to decode all events.</p>
         <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
+        
+
         
 
     </body>

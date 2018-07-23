@@ -183,6 +183,22 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">U256</span>;
 <span class="kw">use</span> <span class="ident">evm</span>::{<span class="ident">CallResult</span>, <span class="ident">CreateResult</span>};
@@ -205,7 +221,7 @@
     },
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;call error: {}&quot;</span>, <span class="ident">message</span>)]</span>
     <span class="ident">Call</span> { <span class="ident">message</span>: <span class="ident">String</span> },
-    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;error: {}&quot;</span>, <span class="ident">message</span>)]</span>
+    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;{}&quot;</span>, <span class="ident">message</span>)]</span>
     <span class="ident">Other</span> { <span class="ident">message</span>: <span class="ident">String</span> },
 }
 
@@ -223,6 +239,14 @@
     }
 }
 
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">fmt</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">fmt</span>::<span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Error</span>::<span class="ident">Other</span> {
+            <span class="ident">message</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
+        }
+    }
+}
+
 <span class="doccomment">/// Error when we fail to decode input.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DecodingError</span>;
 
@@ -230,6 +254,14 @@
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">DecodingError</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">Error</span>::<span class="ident">Other</span> {
             <span class="ident">message</span>: <span class="string">&quot;failed to decode input&quot;</span>.<span class="ident">to_string</span>(),
+        }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">CallError</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">CallError</span>::<span class="ident">Other</span> {
+            <span class="ident">message</span>: <span class="ident">error</span>.<span class="ident">to_string</span>(),
         }
     }
 }
@@ -268,7 +300,7 @@
     <span class="ident">Status</span> { <span class="ident">execution</span>: <span class="ident">E</span>, <span class="ident">status</span>: <span class="ident">u8</span> },
     <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;sync logs: {}&quot;</span>, <span class="ident">message</span>)]</span>
     <span class="ident">SyncLogs</span> { <span class="ident">execution</span>: <span class="ident">E</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> },
-    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;other call error: {}&quot;</span>, <span class="ident">message</span>)]</span>
+    <span class="attribute">#[<span class="ident">fail</span>(<span class="ident">display</span> <span class="op">=</span> <span class="string">&quot;{}&quot;</span>, <span class="ident">message</span>)]</span>
     <span class="ident">Other</span> { <span class="ident">message</span>: <span class="ident">String</span> },
 }
 
