@@ -237,16 +237,19 @@ evm.add_balance(a, wei!(100 eth))?;
 
 ledger.sync(a)?;
 ledger.sync(b)?;
+ledger.sync(simple.address)?;
 
-// add to a account
+// add to a
 let res = simple.value(wei!(42 eth)).add(a)?;
 ledger.sub(a, res.gas_total() + wei!(42 eth));
-*ledger.state(a) = wei!(42 eth).into();
+ledger.add(simple.address, wei!(42 eth));
+*ledger.state(a) = wei!(42 eth);
 
-// add to b account
+// add to b
 let res = simple.value(wei!(12 eth)).add(b)?;
 ledger.sub(a, res.gas_total() + wei!(12 eth));
-*ledger.state(b) = wei!(12 eth).into();
+ledger.add(simple.address, wei!(12 eth));
+*ledger.state(b) = wei!(12 eth);
 
 ledger.verify()?;
 

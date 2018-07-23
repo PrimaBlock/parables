@@ -109,6 +109,7 @@ ALIASES['parables_example'] = {};
 ALIASES['parables_example'] = {};
 ALIASES['parables_example'] = {};
 ALIASES['parables_example'] = {};
+ALIASES['parables_example'] = {};
 ALIASES['parables_testing'] = {};
 ALIASES['parables_testing'] = {};
 ALIASES['parables_testing'] = {};
