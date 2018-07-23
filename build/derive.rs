@@ -233,9 +233,10 @@ fn impl_contract_abi(
 
     fn impl_wrapper(impl_functions: Vec<quote::Tokens>) -> quote::Tokens {
         quote! {
+            #[allow(unused)]
             pub struct Contract<'a, VM: 'a> {
                 vm: &'a VM,
-                address: ethabi::Address,
+                pub address: ethabi::Address,
                 call: ::parables_testing::call::Call,
             }
 
@@ -252,7 +253,7 @@ fn impl_contract_abi(
                 #(#impl_functions)*
 
                 /// Modify the call for the contract.
-                pub fn with_call(self, call: ::parables_testing::call::Call) -> Self {
+                pub fn call(self, call: ::parables_testing::call::Call) -> Self {
                     Self {
                         call: call,
                         ..self
@@ -260,7 +261,7 @@ fn impl_contract_abi(
                 }
 
                 /// Modify the default sender for the contract.
-                pub fn with_sender(self, sender: ethabi::Address) -> Self {
+                pub fn sender(self, sender: ethabi::Address) -> Self {
                     Self {
                         call: self.call.sender(sender),
                         ..self
@@ -268,7 +269,7 @@ fn impl_contract_abi(
                 }
 
                 /// Modify the default value for a copy of the current contract.
-                pub fn with_value<V>(self, value: V) -> Self
+                pub fn value<V>(self, value: V) -> Self
                     where V: Into<::parables_testing::ethereum_types::U256>
                 {
                     Self {
@@ -510,7 +511,6 @@ fn get_output_kinds(outputs: &Vec<Param>) -> quote::Tokens {
 }
 
 fn impl_contract_function(function: &Function) -> (quote::Tokens, quote::Tokens) {
-    let name = syn::Ident::from(function.name.to_snake_case());
     let function_input_wrapper_name =
         syn::Ident::from(format!("{}WithInput", function.name.to_camel_case()));
 
@@ -560,6 +560,8 @@ fn impl_contract_function(function: &Function) -> (quote::Tokens, quote::Tokens)
 
     let output_kinds = get_output_kinds(&function.outputs);
 
+    let name = syn::Ident::from(function.name.to_snake_case());
+
     let static_function = quote! {
         /// Sets the input (arguments) for this contract function
         pub fn #name<#(#template_params),*>(#(#params),*) -> #function_input_wrapper_name {
@@ -568,9 +570,18 @@ fn impl_contract_function(function: &Function) -> (quote::Tokens, quote::Tokens)
         }
     };
 
+    let impl_function_name = match function.name.as_str() {
+        "address" => syn::Ident::from("_address"),
+        "sender" => syn::Ident::from("_sender"),
+        "value" => syn::Ident::from("_value"),
+        "gas" => syn::Ident::from("_gas"),
+        "gas_price" => syn::Ident::from("_gas_price"),
+        value => syn::Ident::from(value.to_snake_case()),
+    };
+
     let impl_function = quote! {
         /// Sets the input (arguments) for this contract function
-        pub fn #name<#(#template_params),*>(&self, #(#params),*)
+        pub fn #impl_function_name<#(#template_params),*>(&self, #(#params),*)
             -> ::std::result::Result<
                 ::parables_testing::evm::CallOutput<#output_kinds>,
                 ::parables_testing::error::CallError<::parables_testing::evm::CallResult>

@@ -19,7 +19,7 @@ use std::fmt;
 use std::mem;
 use std::sync::{Arc, Mutex};
 use trace;
-use {abi, call, journaldb, kvdb, kvdb_memorydb, linker};
+use {abi, account, call, crypto, journaldb, kvdb, kvdb_memorydb, linker};
 
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -78,6 +78,13 @@ pub struct CallOutput<T> {
     pub result: CallResult,
 }
 
+impl<T> CallOutput<T> {
+    /// Access the total amount of gas used.
+    pub fn gas_total(&self) -> U256 {
+        self.result.gas_total()
+    }
+}
+
 // Primary EVM abstraction.
 //
 // Most state is guarded by runtime checks (e.g. RefCell) to simplify how we can interact with the
@@ -91,6 +98,8 @@ pub struct Evm {
     logs: RefCell<HashMap<ethabi::Hash, Vec<LogEntry>>>,
     /// Linker used, if available it can be used to perform source-map lookups.
     linker: RefCell<linker::Linker>,
+    /// Default crypto implementation.
+    crypto: RefCell<crypto::Crypto>,
 }
 
 impl fmt::Debug for Evm {
@@ -118,9 +127,16 @@ impl Evm {
             engine,
             logs: RefCell::new(HashMap::new()),
             linker: RefCell::new(linker),
+            crypto: RefCell::new(crypto::Crypto::new()),
         };
 
         Ok(evm)
+    }
+
+    /// Create a new account.
+    pub fn account(&self) -> Result<account::Account, Error> {
+        account::Account::new(&self.crypto)
+            .map_err(|e| format!("failed to setup account: {}", e).into())
     }
 
     /// Get the current block number.
@@ -329,18 +345,18 @@ impl Evm {
     {
         let mut state = self.borrow_mut_state()?;
 
-        let nonce = state.nonce(&call.get_sender()).map_err(|_| NonceError)?;
+        let nonce = state.nonce(&call.sender).map_err(|_| NonceError)?;
 
         let tx = Transaction {
             nonce,
-            gas_price: call.get_gas_price(),
-            gas: call.get_gas(),
+            gas_price: call.gas_price,
+            gas: call.gas,
             action: action,
-            value: call.get_value(),
+            value: call.value,
             data: data,
         };
 
-        let tx = tx.fake_sign(call.get_sender().into());
+        let tx = tx.fake_sign(call.sender.into());
         self.run_transaction(&mut state, tx, entry_source, linker, map)
     }
 

@@ -31,7 +31,7 @@ fn main() -> Result<()> {
 
     // Set up a new virtual machine with a default (null) foundation.
     let foundation = Spec::new_null();
-    let mut evm = Evm::new(&foundation, new_context())?;
+    let evm = Evm::new(&foundation, new_context())?;
 
     // Deploy the SimpleContract.
     let simple = evm.deploy(simple_contract::constructor(0), call)?.address;
@@ -43,21 +43,21 @@ fn main() -> Result<()> {
     let mut tests = TestRunner::new();
 
     tests.test("get and increment value a couple of times", || {
-        use simple_contract::events as ev;
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&evm, simple, call);
 
         let mut expected = U256::from(0);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
 
         // change value
         expected = 1.into();
 
-        evm.call(simple, f::set_value(expected), call)?;
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        contract.set_value(expected)?;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
 
         Ok(())
@@ -100,7 +100,7 @@ our calls.
 ```rust
 let foundation = Spec::new_null();
 let context = new_context();
-let mut evm = Evm::new(&foundation, context)?;
+let evm = Evm::new(&foundation, context)?;
 ```
 
 Time to set up our _foundation_ and our _contract context_. A foundation determines the parameters of the blockchain.
@@ -137,19 +137,19 @@ The Snapshot class provides us with a convenient `get()` function that handles t
 Next we enter the code for the test case.
 
 ```rust
-use simple_contract::events as ev;
-use simple_contract::functions as f;
+use simple_contract::simple_contract;
 ```
 
 We start out by importing all relevant functions into scope for the test.
 
-Using these we can access all events being emitted by the contract through `ev::SomeEvent`, and all
-the functions being exposed as `f::some_function`.
+Using these we can access all events being emitted by the contract through
+`simple_contract::events::some_event`.
+
 Note that the function names are converted from lower camel (solidity standard) to lower snake case
 (rust standard).
 
 ```rust
-let mut evm = evm.get()?;
+let evm = evm.get()?;
 ```
 
 This line takes a snapshot of the virtual machine.
@@ -157,16 +157,24 @@ The snapshot is guaranteed to be isolated from all other snapshots, letting us r
 isolation without worrying about trampling on each others feets.
 
 ```rust
+let contract = simple_contract::contract(&evm, simple, call);
+```
+
+This line sets up the simple contract abstraction as `contract`.
+Through this you can easily call methods on the contract using the specified `evm`, `address`, and
+`call` as you'll see later.
+
+```rust
 let mut expected = 0;
 
-let out = evm.call(simple, f::get_value(), call)?.output;
+let out = contract.get_value()?.output;
 assert_eq!(expected, out);
 
 // change value
 expected = 1;
 
-evm.call(simple, f::set_value(expected), call)?;
-let out = evm.call(simple, f::get_value(), call)?.output;
+contract.set_value(expected)?;
+let out = contract.get_value()?.output;
 assert_eq!(expected, out);
 ```
 

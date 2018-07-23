@@ -1,6 +1,6 @@
 pub use abi::Vm;
 #[cfg(feature = "account")]
-pub use account::{Account, Crypto};
+pub use account::Account;
 pub use call::Call;
 pub use error::{CallError, Error, ResultCallErrorExt, ResultExt};
 pub use ethabi;
@@ -16,6 +16,7 @@ pub use snapshot::Snapshot;
 pub use test_runner::TestRunner;
 pub use wei;
 // re-export property testing prelude.
+pub use ledger::{Ledger, LedgerState};
 pub use proptest::prelude::*;
 
 pub type Result<T> = ::std::result::Result<T, Error>;

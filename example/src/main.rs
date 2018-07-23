@@ -75,7 +75,7 @@ fn main() -> Result<()> {
 
             // add a value to the call, this value will be sent to the contract.
             contract
-                .with_value(wei::from_ether(1))
+                .value(wei::from_ether(1))
                 .set_value(out + 1.into())?;
 
             current += 1;
@@ -84,7 +84,7 @@ fn main() -> Result<()> {
         let not_owner = Address::random();
 
         // non-owner is not allowed to set value.
-        let non_owned_res = contract.with_sender(not_owner).set_value(0);
+        let non_owned_res = contract.sender(not_owner).set_value(0);
         assert!(non_owned_res.is_reverted());
 
         let balance = evm.balance(owner)?;
@@ -126,6 +126,78 @@ fn main() -> Result<()> {
         assert_eq!(evm.balance(a)?, wei::from_ether(90) - r.gas_total());
         assert_eq!(evm.balance(b)?, wei::from_ether(10));
         Ok(())
+    });
+
+    runner.test("test ledger state", || {
+        use simple_ledger::simple_ledger;
+
+        let a = Address::random();
+        let b = Address::random();
+
+        let call = call.sender(a);
+
+        let evm = evm.get()?;
+
+        let simple = evm.deploy(simple_ledger::constructor(), call)?.address;
+        let simple = simple_ledger::contract(&evm, simple, call.gas_price(10));
+
+        let mut ledger = Ledger::new(&evm, State(simple.address));
+
+        evm.add_balance(a, wei!(100 eth))?;
+
+        ledger.sync(a)?;
+        ledger.sync(b)?;
+        ledger.sync(simple.address)?;
+
+        // add to a
+        let res = simple.value(wei!(42 eth)).add(a)?;
+        ledger.sub(a, res.gas_total() + wei!(42 eth));
+        ledger.add(simple.address, wei!(42 eth));
+        *ledger.state(a) = wei!(42 eth);
+
+        // add to b
+        let res = simple.value(wei!(12 eth)).add(b)?;
+        ledger.sub(a, res.gas_total() + wei!(12 eth));
+        ledger.add(simple.address, wei!(12 eth));
+        *ledger.state(b) = wei!(12 eth);
+
+        ledger.verify()?;
+
+        return Ok(());
+
+        pub struct State(Address);
+
+        impl State {
+            /// Helper to get the current value stored on the blockchain.
+            fn get_value(&self, evm: &Evm, address: Address) -> Result<U256> {
+                use simple_ledger::simple_ledger::functions as f;
+                let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
+                Ok(evm.call(self.0, f::get(address), call)?.output)
+            }
+        }
+
+        impl LedgerState for State {
+            type Instance = U256;
+
+            fn new_instance(&self) -> Self::Instance {
+                U256::default()
+            }
+
+            fn sync(&self, evm: &Evm, address: Address, instance: &mut U256) -> Result<()> {
+                *instance = self.get_value(evm, address)?;
+                Ok(())
+            }
+
+            fn verify(&self, evm: &Evm, address: Address, expected: U256) -> Result<()> {
+                let value = self.get_value(evm, address)?;
+
+                if value != expected {
+                    return Err(format!("value: expected {} but got {}", expected, value).into());
+                }
+
+                Ok(())
+            }
+        }
     });
 
     let reporter = StdoutReporter::new();

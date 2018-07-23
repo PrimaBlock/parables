@@ -17,16 +17,17 @@ We do that by changing the test case to this:
 ```rust
 tests.test("get and increment value randomly within constraints", pt!{
     |(x in any::<u64>())| {
-        use simple_contract::functions as f;
+        use simple_contract::simple_contract;
 
         let x = U256::from(x);
 
-        let mut evm = evm.get()?;
+        let evm = evm.get()?;
+        let contract = simple_contract::contract(&evm, simple, call);
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(U256::from(0), out);
 
-        let result = evm.call(simple, f::set_value(x), call);
+        let result = contract.set_value(x);
 
         // expect that the transaction is reverted if we try to update the value to a value larger
         // or equal to 1 million.
@@ -38,7 +39,7 @@ tests.test("get and increment value randomly within constraints", pt!{
             x
         };
 
-        let out = evm.call(simple, f::get_value(), call)?.output;
+        let out = contract.get_value()?.output;
         assert_eq!(expected, out);
     }
 });

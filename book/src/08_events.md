@@ -7,9 +7,10 @@ A typical test would do something like the following.
 
 ```rust
 let evm = evm.get();
+let contract = simple_contract::contract(&evm, simple, call);
 
-evm.call(simple, f::set_value(100), call)?;
-evm.call(simple, f::set_value(200), call)?;
+contract.set_value(100)?;
+contract.set_value(200)?;
 
 for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
     assert_eq!(U256::from(100), e.value);

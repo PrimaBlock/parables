@@ -19,7 +19,7 @@ extern crate rayon;
 #[macro_use]
 extern crate proptest;
 #[cfg(feature = "account")]
-extern crate crypto;
+extern crate crypto as rust_crypto;
 #[cfg(feature = "account")]
 extern crate rand;
 #[cfg(feature = "account")]
@@ -32,8 +32,10 @@ pub mod abi;
 #[cfg(feature = "account")]
 pub mod account;
 pub mod call;
+mod crypto;
 pub mod error;
 pub mod evm;
+pub mod ledger;
 pub mod linker;
 mod macros;
 pub mod prelude;

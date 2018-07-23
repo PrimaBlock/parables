@@ -1,10 +1,10 @@
-use crypto::digest::Digest;
-use crypto::sha3::Sha3;
+use crypto::Crypto;
 use error;
 use ethereum_types::{Address, H160, H256, U256};
-use rand::{Rng, XorShiftRng};
-use secp256k1;
-use secp256k1::{key, Secp256k1};
+use rust_crypto::digest::Digest;
+use rust_crypto::sha3::Sha3;
+use secp256k1::{self, key};
+use std::cell::RefCell;
 use std::fmt;
 
 fn keccak256(bytes: &[u8]) -> [u8; 32] {
@@ -20,6 +20,7 @@ pub enum Error {
     DerivePublicKeyError(secp256k1::Error),
     SignError(secp256k1::Error),
     MessageError(secp256k1::Error),
+    BorrowError,
 }
 
 impl fmt::Display for Error {
@@ -30,77 +31,92 @@ impl fmt::Display for Error {
             DerivePublicKeyError(e) => write!(fmt, "failed to derive public key: {}", e),
             SignError(e) => write!(fmt, "failed to sign: {}", e),
             MessageError(e) => write!(fmt, "failed to build signature message: {}", e),
+            BorrowError => write!(fmt, "failed to borrow"),
         }
     }
 }
 
-#[derive(Debug)]
-pub struct Account {
+pub struct Account<'a> {
+    crypto: &'a RefCell<Crypto>,
+    pub address: Address,
     secret: key::SecretKey,
     public: key::PublicKey,
-    address: Address,
 }
 
-impl Account {
+impl<'a> Account<'a> {
     /// Create a new address with the give rng implementation.
-    pub fn new(crypto: &mut Crypto) -> Result<Self, Error> {
-        let secp = Secp256k1::new();
-        let secret = key::SecretKey::new(&secp, &mut crypto.rng);
-        let public =
-            key::PublicKey::from_secret_key(&secp, &secret).map_err(Error::DerivePublicKeyError)?;
+    pub fn new(crypto: &'a RefCell<Crypto>) -> Result<Account<'a>, Error> {
+        let (secret, public, address) = {
+            let mut lock = crypto.try_borrow_mut().map_err(|_| Error::BorrowError)?;
 
-        let address = {
-            let serialized = public.serialize_vec(&secp, false);
-            // NB: important that we convert from H256 since `H256 -> H160` trims the leading bits.
-            // i.e.: 00 00 00 af ff ff ff ff -> af ff ff ff ff
-            let hash = H256::from(keccak256(&serialized[1..]));
-            Address::from(H160::from(hash))
+            let Crypto {
+                ref secp,
+                ref mut rng,
+            } = *lock;
+
+            let secret = key::SecretKey::new(secp, rng);
+            let public = key::PublicKey::from_secret_key(secp, &secret)
+                .map_err(Error::DerivePublicKeyError)?;
+
+            let address = {
+                let serialized = public.serialize_vec(secp, false);
+                // NB: important that we convert from H256 since `H256 -> H160` trims the leading bits.
+                // i.e.: 00 00 00 af ff ff ff ff -> af ff ff ff ff
+                let hash = H256::from(keccak256(&serialized[1..]));
+                Address::from(H160::from(hash))
+            };
+
+            (secret, public, address)
         };
 
         Ok(Self {
+            crypto,
+            address,
             secret,
             public,
-            address,
         })
     }
 
     /// Create a new signer.
-    pub fn signer<'a>(&'a self, crypto: &'a Crypto) -> Signer<'a> {
-        Signer::new(self, crypto)
-    }
-
-    /// Access the address part of the full address.
-    pub fn address(&self) -> Address {
-        self.address
+    pub fn sign<'s>(&'s self) -> Signer<'s, 'a> {
+        Signer::new(self)
     }
 }
 
-pub struct Signer<'a> {
-    address: &'a Account,
-    crypto: &'a Crypto,
+impl<'a> fmt::Debug for Account<'a> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Account")
+            .field("address", &self.address)
+            .field("secret", &self.secret)
+            .field("public", &self.public)
+            .finish()
+    }
+}
+
+pub struct Signer<'s, 'a: 's> {
+    account: &'s Account<'a>,
     checksum: Sha3,
 }
 
-impl<'a> Signer<'a> {
-    pub fn new(address: &'a Account, crypto: &'a Crypto) -> Self {
+impl<'s, 'a> Signer<'s, 'a> {
+    pub fn new(account: &'s Account<'a>) -> Self {
         Self {
-            address,
-            crypto,
+            account,
             checksum: Sha3::keccak256(),
         }
     }
 
     /// Input the given set of bytes.
-    pub fn input<D: Digestable>(&mut self, digestable: D) {
+    pub fn input<D: Digestable>(mut self, digestable: D) -> Self {
         let digested = digestable.digest();
         self.checksum.input(&digested);
+        self
     }
 
     /// Finish the signature.
     pub fn finish(self) -> Result<Signature, Error> {
         let Signer {
-            address,
-            crypto,
+            account,
             mut checksum,
         } = self;
 
@@ -111,7 +127,7 @@ impl<'a> Signer<'a> {
         };
 
         let hash = Self::to_rpc_hash(&hash);
-        Self::to_secp_signature(address, crypto, &hash)
+        Self::to_secp_signature(account, &hash)
     }
 
     /// Convert the given message into an rpc hash, with the expected envelope.
@@ -128,16 +144,14 @@ impl<'a> Signer<'a> {
     }
 
     /// Build a secp256k1 signature.
-    fn to_secp_signature(
-        address: &Account,
-        crypto: &Crypto,
-        message: &[u8],
-    ) -> Result<Signature, Error> {
+    fn to_secp_signature(account: &Account, message: &[u8]) -> Result<Signature, Error> {
+        let crypto = account.crypto.try_borrow().map_err(|_| Error::BorrowError)?;
+
         let message = secp256k1::Message::from_slice(message).map_err(Error::MessageError)?;
 
         let sig = crypto
             .secp
-            .sign_recoverable(&message, &address.secret)
+            .sign_recoverable(&message, &account.secret)
             .map_err(Error::SignError)?;
 
         let (rec_id, data) = sig.serialize_compact(&crypto.secp);
@@ -146,22 +160,6 @@ impl<'a> Signer<'a> {
         output.extend(&data[..]);
         output.push(rec_id.to_i32() as u8);
         Ok(Signature(output))
-    }
-}
-
-/// Context for all cryptography functions.
-pub struct Crypto {
-    rng: Box<dyn Rng + Sync>,
-    secp: Secp256k1,
-}
-
-impl Crypto {
-    /// Build a new crypto context.
-    pub fn new() -> Self {
-        Self {
-            rng: Box::new(XorShiftRng::new_unseeded()),
-            secp: Secp256k1::new(),
-        }
     }
 }
 

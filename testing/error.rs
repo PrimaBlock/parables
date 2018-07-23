@@ -19,7 +19,7 @@ pub enum Error {
     },
     #[fail(display = "call error: {}", message)]
     Call { message: String },
-    #[fail(display = "error: {}", message)]
+    #[fail(display = "{}", message)]
     Other { message: String },
 }
 
@@ -34,6 +34,14 @@ impl From<&'static str> for Error {
 impl From<String> for Error {
     fn from(value: String) -> Self {
         Error::Other { message: value }
+    }
+}
+
+impl From<fmt::Error> for Error {
+    fn from(error: fmt::Error) -> Self {
+        Error::Other {
+            message: error.to_string(),
+        }
     }
 }
 
@@ -90,7 +98,7 @@ pub enum CallError<E> {
     Status { execution: E, status: u8 },
     #[fail(display = "sync logs: {}", message)]
     SyncLogs { execution: E, message: &'static str },
-    #[fail(display = "other call error: {}", message)]
+    #[fail(display = "{}", message)]
     Other { message: String },
 }
 
