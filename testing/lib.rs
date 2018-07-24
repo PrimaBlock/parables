@@ -15,6 +15,7 @@ extern crate kvdb;
 extern crate kvdb_memorydb;
 #[cfg(feature = "rayon")]
 extern crate rayon;
+#[cfg(feature = "proptest")]
 #[allow(unused_imports)]
 #[macro_use]
 extern crate proptest;
@@ -24,8 +25,13 @@ extern crate crypto as rust_crypto;
 extern crate rand;
 #[cfg(feature = "account")]
 extern crate secp256k1;
+#[cfg(feature = "term")]
+extern crate term;
+#[cfg(feature = "isatty")]
+extern crate isatty;
 
 pub use ethabi_derive::*;
+#[cfg(feature = "proptest")]
 pub use proptest::*;
 
 pub mod abi;

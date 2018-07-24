@@ -60,6 +60,7 @@ impl<T> Outcome<T> {
 
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[must_use]
 pub struct Call<T> {
     /// The outcome of a call.
     pub outcome: Outcome<T>,

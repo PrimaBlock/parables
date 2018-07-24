@@ -13,7 +13,7 @@ pub use reporter::{Reporter, StdoutReporter};
 #[cfg(feature = "test-runner")]
 pub use snapshot::Snapshot;
 #[cfg(feature = "test-runner")]
-pub use test_runner::TestRunner;
+pub use test_runner::{Suite, TestRunner};
 pub use wei;
 // re-export property testing prelude.
 pub use ledger::{Ledger, LedgerState};

@@ -6,15 +6,9 @@ use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::panic;
-use std::sync::{Arc, Mutex};
+use std::sync::{atomic, Arc, Mutex};
 use std::thread;
 use std::time;
-
-/// A scaffolding that runs tests very efficiently.
-#[derive(Debug)]
-pub struct TestRunner<'a> {
-    tests: Vec<Test<'a>>,
-}
 
 /// Convert into a result.
 pub trait IntoResult<T>: Send {
@@ -58,10 +52,13 @@ impl TestEntry for () {
 
 /// A single test.
 pub struct Test<'a> {
-    name: Cow<'a, str>,
+    /// Module of the test.
+    pub(crate) module: Option<Cow<'a, str>>,
+    /// Name of the test.
+    pub(crate) name: Cow<'a, str>,
     /// Entry-point to the test. Must be guarded against panics, since that is how Rust asserts
     /// work.
-    entry: Box<'a + TestEntry>,
+    pub(crate) entry: Box<'a + TestEntry>,
 }
 
 impl<'a> Test<'a> {
@@ -80,22 +77,16 @@ impl<'a> fmt::Debug for Test<'a> {
 /// Information about a panic.
 #[derive(Clone, Default, Hash, PartialEq, Eq)]
 pub struct PanicInfo {
-    location: Option<Location>,
-    message: Option<String>,
+    pub(crate) location: Option<Location>,
+    pub(crate) message: Option<String>,
 }
 
 /// Location of a panic.
 #[derive(Clone, Hash, PartialEq, Eq)]
-struct Location {
-    file: String,
-    line: u32,
-    column: u32,
-}
-
-impl fmt::Debug for Location {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "{}:{}:{}", self.file, self.line, self.column)
-    }
+pub struct Location {
+    pub(crate) file: String,
+    pub(crate) line: u32,
+    pub(crate) column: u32,
 }
 
 impl<'a, 'b: 'a> From<&'a panic::Location<'b>> for Location {
@@ -119,36 +110,16 @@ pub enum Outcome {
     Ok,
 }
 
-impl fmt::Debug for Outcome {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Outcome::Failed(ref info) => {
-                match info.location {
-                    Some(ref location) => write!(fmt, "failed at {:?}", location)?,
-                    None => write!(fmt, "failed at unknown location")?,
-                }
-
-                if let Some(ref message) = info.message {
-                    writeln!(fmt, "")?;
-                    write!(fmt, "{}", message)?;
-                }
-
-                Ok(())
-            }
-            Outcome::Errored(ref e) => write!(fmt, "error: {}", e),
-            Outcome::Ok => write!(fmt, "ok"),
-        }
-    }
-}
-
 /// The result from a single test.
 pub struct TestResult<'a> {
+    /// The module that the test belonged to.
+    pub(crate) module: Option<Cow<'a, str>>,
     /// Name of the test the result refers to.
-    name: Cow<'a, str>,
+    pub(crate) name: Cow<'a, str>,
     /// The outcome of the test.
-    outcome: Outcome,
+    pub(crate) outcome: Outcome,
     /// Duration that the test was running for.
-    duration: time::Duration,
+    pub(crate) duration: time::Duration,
 }
 
 impl<'a> TestResult<'a> {
@@ -168,34 +139,19 @@ impl<'a> TestResult<'a> {
     }
 }
 
-impl<'a> fmt::Debug for TestResult<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            fmt,
-            "{} in {}: {:?}",
-            self.name,
-            DurationFormat(&self.duration),
-            self.outcome
-        )
-    }
+/// Helper trait to register tests.
+pub trait Suite<'a> {
+    /// Register a single test, with a human-readable `name`.
+    fn test<N: Into<Cow<'a, str>>, F: 'a, T>(&mut self, name: N, entry: F)
+    where
+        F: Fn() -> T + Send,
+        T: IntoResult<()>;
 }
 
-/// Format a duration as a human-readable time duration.
-struct DurationFormat<'a>(&'a time::Duration);
-
-impl<'a> fmt::Display for DurationFormat<'a> {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "{}", self.0.as_secs())?;
-
-        let nanos = self.0.subsec_nanos();
-
-        if nanos > 1_000_000 {
-            write!(fmt, ".{}", (nanos / 1_000_000) % 1_000)?;
-        }
-
-        write!(fmt, "s")?;
-        Ok(())
-    }
+/// A scaffolding that runs tests very efficiently.
+#[derive(Debug)]
+pub struct TestRunner<'a> {
+    tests: Vec<Test<'a>>,
 }
 
 impl<'a> TestRunner<'a> {
@@ -204,15 +160,12 @@ impl<'a> TestRunner<'a> {
         Self { tests: Vec::new() }
     }
 
-    pub fn test<N: Into<Cow<'a, str>>, F: 'a, T>(&mut self, name: N, entry: F)
-    where
-        F: Fn() -> T + Send,
-        T: IntoResult<()>,
-    {
-        self.tests.push(Test {
+    /// Create a module runner.
+    pub fn module<'m>(&'m mut self, name: impl Into<Cow<'a, str>>) -> ModuleRunner<'m, 'a> {
+        ModuleRunner {
+            test_runner: self,
             name: name.into(),
-            entry: Box::new(entry),
-        })
+        }
     }
 
     /// Run by reading filters from argv.
@@ -225,19 +178,8 @@ impl<'a> TestRunner<'a> {
         self.run_with_filters(args.collect::<HashSet<String>>(), reporter)
     }
 
-    /// Run all registered tests, while applying the given filter on their name.
-    ///
-    /// All strings specified in the filter must be apart of the name of a test to include it.
-    ///
-    /// Note: this installs a panic hook, so mixing this with another component that fiddles with
-    /// the hook will cause unexpected results.
-    pub fn run_with_filters<F>(self, filters: F, reporter: &Reporter<'a>) -> Result<(), Error>
-    where
-        F: IntoIterator<Item = String>,
-    {
+    fn run_in_parallel(reporter: &Reporter<'a>, tests: Vec<Test<'a>>, done: impl FnOnce()) {
         use rayon::prelude::*;
-
-        let filters = filters.into_iter().collect::<HashSet<_>>();
 
         let catch = Arc::new(Mutex::new(HashMap::new()));
         let local_catch = catch.clone();
@@ -252,28 +194,27 @@ impl<'a> TestRunner<'a> {
             catch.message = payload_to_message(info.payload());
         }));
 
-        let mut tests = Vec::new();
+        let index = atomic::AtomicUsize::new(0usize);
 
-        for test in self.tests {
-            if filters.iter().all(|f| test.name.contains(f)) {
-                tests.push(test);
-            } else {
-                reporter.report_skipped(test)?;
+        let results = tests.into_par_iter().map(|test| {
+            let index = index.fetch_add(1usize, atomic::Ordering::Relaxed);
+
+            match reporter.report_started(index, &test.name) {
+                Err(e) => println!("error in reporting: {}", e),
+                Ok(()) => {}
             }
-        }
 
-        let results = tests
-            .into_par_iter()
-            .map(|test| Self::run_one_test(test, catch.clone()));
+            (index, Self::run_one_test(test, catch.clone()))
+        });
 
-        results.for_each(|r| match reporter.report(r) {
+        results.for_each(|(index, r)| match reporter.report(index, r) {
             Err(e) => println!("error in reporting: {}", e),
             Ok(()) => {}
         });
 
         let _ = panic::take_hook();
 
-        return Ok(());
+        done();
 
         /// downcast the info payload to a string message.
         fn payload_to_message(any: &any::Any) -> Option<String> {
@@ -289,13 +230,89 @@ impl<'a> TestRunner<'a> {
         }
     }
 
+    /// Run all registered tests, while applying the given filter on their name.
+    ///
+    /// All strings specified in the filter must be apart of the name of a test to include it.
+    ///
+    /// Note: this installs a panic hook, so mixing this with another component that fiddles with
+    /// the hook will cause unexpected results.
+    pub fn run_with_filters<F>(self, filters: F, reporter: &Reporter<'a>) -> Result<(), Error>
+    where
+        F: IntoIterator<Item = String>,
+    {
+        use rayon;
+
+        let filters = filters.into_iter().collect::<HashSet<_>>();
+
+        let mut tests = Vec::new();
+
+        for test in self.tests {
+            let matches_module =
+                |test: &Test, f| test.module.as_ref().map(|m| m == f).unwrap_or(false);
+
+            if filters
+                .iter()
+                .all(|f| test.name.contains(f) || matches_module(&test, f))
+            {
+                tests.push(test);
+            } else {
+                reporter.report_skipped(test)?;
+            }
+        }
+
+        let done = atomic::AtomicBool::new(false);
+
+        if reporter.supports_animation()? {
+            rayon::scope(|s| {
+                s.spawn(|s| {
+                    s.spawn(|_| {
+                        while !done.load(atomic::Ordering::Acquire) {
+                            thread::sleep(time::Duration::from_millis(100));
+                            reporter.animate().expect("animation failed");
+                        }
+                    });
+
+                    Self::run_in_parallel(reporter, tests, || {
+                        done.store(true, atomic::Ordering::Release)
+                    });
+                });
+            });
+        } else {
+            Self::run_in_parallel(reporter, tests, || {});
+        }
+
+        reporter.end()?;
+        return Ok(());
+    }
+
+    /// Internal function to register a test.
+    fn internal_test<N: Into<Cow<'a, str>>, F: 'a, T>(
+        &mut self,
+        module: Option<Cow<'a, str>>,
+        name: N,
+        entry: F,
+    ) where
+        F: Fn() -> T + Send,
+        T: IntoResult<()>,
+    {
+        self.tests.push(Test {
+            module,
+            name: name.into(),
+            entry: Box::new(entry),
+        })
+    }
+
     /// Run a single test.
     fn run_one_test(
         test: Test<'a>,
         catch: Arc<Mutex<HashMap<thread::ThreadId, PanicInfo>>>,
     ) -> TestResult<'a> {
-        let name = test.name;
-        let entry = test.entry;
+        let Test {
+            module,
+            name,
+            entry,
+            ..
+        } = test;
         let start = time::Instant::now();
         let res = panic::catch_unwind(panic::AssertUnwindSafe(move || entry.run()));
         let end = time::Instant::now();
@@ -309,18 +326,21 @@ impl<'a> TestRunner<'a> {
                 let mut catch = catch.remove(&id).unwrap_or_else(PanicInfo::default);
 
                 TestResult {
-                    name: name,
+                    module,
+                    name,
                     outcome: Outcome::Failed(catch),
                     duration,
                 }
             }
             Ok(Err(e)) => TestResult {
-                name: name,
+                module,
+                name,
                 outcome: Outcome::Errored(e),
                 duration,
             },
             Ok(Ok(())) => TestResult {
-                name: name,
+                module,
+                name,
                 outcome: Outcome::Ok,
                 duration,
             },
@@ -330,8 +350,35 @@ impl<'a> TestRunner<'a> {
     }
 }
 
+impl<'a> Suite<'a> for TestRunner<'a> {
+    fn test<N: Into<Cow<'a, str>>, F: 'a, T>(&mut self, name: N, entry: F)
+    where
+        F: Fn() -> T + Send,
+        T: IntoResult<()>,
+    {
+        self.internal_test(None, name, entry)
+    }
+}
+
+pub struct ModuleRunner<'m, 'a: 'm> {
+    test_runner: &'m mut TestRunner<'a>,
+    name: Cow<'a, str>,
+}
+
+impl<'m, 'a: 'm> Suite<'a> for ModuleRunner<'m, 'a> {
+    fn test<N: Into<Cow<'a, str>>, F: 'a, T>(&mut self, name: N, entry: F)
+    where
+        F: Fn() -> T + Send,
+        T: IntoResult<()>,
+    {
+        self.test_runner
+            .internal_test(Some(self.name.clone()), name, entry)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::Suite;
     use super::{Outcome, TestRunner};
     use reporter::CollectingReporter;
     use std::collections::HashMap;
@@ -376,6 +423,15 @@ mod tests {
 
         fn my_success() {
             assert!(true);
+        }
+    }
+
+    #[test]
+    pub fn test_module() {
+        let mut runner = TestRunner::new();
+
+        {
+            let m = runner.module("deposit");
         }
     }
 }

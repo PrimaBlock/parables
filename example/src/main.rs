@@ -202,7 +202,7 @@ fn main() -> Result<()> {
         }
     });
 
-    let reporter = StdoutReporter::new();
+    let reporter = StdoutReporter::new()?;
     runner.run(&reporter)?;
     reporter.close()?;
 
