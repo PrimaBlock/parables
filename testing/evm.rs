@@ -1,11 +1,10 @@
-use error::{BalanceError, CallError, Error, NonceError};
+use error::{BalanceError, Error, NonceError};
 use ethabi;
 use ethcore::db;
 use ethcore::engines;
 use ethcore::executive;
 use ethcore::log_entry::LogEntry;
 use ethcore::receipt;
-use ethcore::receipt::TransactionOutcome;
 use ethcore::spec;
 use ethcore::state;
 use ethcore::state_db;
@@ -21,9 +20,49 @@ use std::sync::{Arc, Mutex};
 use trace;
 use {abi, account, call, crypto, journaldb, kvdb, kvdb_memorydb, linker};
 
+/// The outcome of a transaction.
+///
+/// Even when transactions fail, they might be using gas.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Outcome<T> {
+    Ok(T),
+    Reverted { error_info: trace::ErrorInfo },
+    Errored { error_info: trace::ErrorInfo },
+    Status { status: u8 },
+}
+
+impl<T> Outcome<T> {
+    /// Check if the outcome is OK.
+    pub fn is_ok(&self) -> bool {
+        use self::Outcome::*;
+
+        match *self {
+            Ok(..) => true,
+            _ => false,
+        }
+    }
+
+    /// Check if outcome is errored.
+    pub fn is_err(&self) -> bool {
+        !self.is_ok()
+    }
+
+    /// Check if the outcome is reverted.
+    pub fn is_reverted(&self) -> bool {
+        use self::Outcome::*;
+
+        match *self {
+            Reverted { .. } => true,
+            _ => false,
+        }
+    }
+}
+
 /// The result of executing a call transaction.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CallResult {
+pub struct Call<T> {
+    /// The outcome of a call.
+    pub outcome: Outcome<T>,
     /// Gas used to perform call.
     pub gas_used: U256,
     /// The price payed for each gas.
@@ -32,56 +71,46 @@ pub struct CallResult {
     pub sender: Address,
 }
 
-impl CallResult {
+impl<T> Call<T> {
     /// Access the total amount of gas used.
     pub fn gas_total(&self) -> U256 {
         self.gas_used * self.gas_price
     }
+
+    /// Check if the outcome is OK.
+    pub fn is_ok(&self) -> bool {
+        self.outcome.is_ok()
+    }
+
+    /// Check if outcome is errored.
+    pub fn is_err(&self) -> bool {
+        self.outcome.is_err()
+    }
+
+    /// Check if the outcome is reverted.
+    pub fn is_reverted(&self) -> bool {
+        self.outcome.is_reverted()
+    }
+
+    /// Convert the outcome into a result.
+    pub fn ok(self) -> Result<T, Error> {
+        use self::Outcome::*;
+
+        match self.outcome {
+            Ok(value) => Result::Ok(value),
+            Reverted { error_info } => Err(format!("call reverted: {}", error_info).into()),
+            Errored { error_info } => Err(format!("call errored: {}", error_info).into()),
+            Status { status } => Err(format!("call returned status: {}", status).into()),
+        }
+    }
 }
 
-impl fmt::Display for CallResult {
+impl<T> fmt::Display for Call<T>
+where
+    T: fmt::Debug,
+{
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self, fmt)
-    }
-}
-
-/// The result of executing a create transaction.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CreateResult {
-    /// Address the code was created on.
-    pub address: Address,
-    /// Gas used to create contract.
-    pub gas_used: U256,
-    /// The price payed for each gas.
-    pub gas_price: U256,
-    /// The sender of the transaction.
-    pub sender: Address,
-}
-
-impl CreateResult {
-    /// Access the total amount of gas used.
-    pub fn gas_total(&self) -> U256 {
-        self.gas_used * self.gas_price
-    }
-}
-
-impl fmt::Display for CreateResult {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self, fmt)
-    }
-}
-
-/// Decoded output and call result in one.
-#[derive(Debug, Clone)]
-pub struct CallOutput<T> {
-    pub output: T,
-    pub result: CallResult,
-}
-
-impl<T> CallOutput<T> {
-    /// Access the total amount of gas used.
-    pub fn gas_total(&self) -> U256 {
-        self.result.gas_total()
     }
 }
 
@@ -205,11 +234,7 @@ impl Evm {
     }
 
     /// Deploy the contract with the given code.
-    pub fn deploy<C>(
-        &self,
-        constructor: C,
-        call: call::Call,
-    ) -> Result<CreateResult, CallError<CreateResult>>
+    pub fn deploy<C>(&self, constructor: C, call: call::Call) -> Result<Call<Address>, Error>
     where
         C: abi::ContractFunction<Output = Address> + abi::Constructor,
     {
@@ -231,28 +256,24 @@ impl Evm {
             _ => None,
         };
 
-        let result = self.deploy_code(code, call, entry_source, &linker);
+        let result = self.deploy_code(code, call, entry_source, &linker)?;
 
         // Register all linker information used for debugging.
-        match result.as_ref() {
-            Ok(result) => {
-                linker.register_item(C::ITEM.to_string(), result.address);
+        if let Outcome::Ok(ref address) = result.outcome {
+            linker.register_item(C::ITEM.to_string(), *address);
 
-                if let (Some(bin), Some(source_map)) =
-                    (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())
-                {
-                    let source = linker
-                        .source(bin, source_map)
-                        .map_err(|e| format!("{}: {}", C::ITEM, e))?;
+            if let (Some(bin), Some(source_map)) =
+                (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())
+            {
+                let source = linker
+                    .source(bin, source_map)
+                    .map_err(|e| format!("{}: {}", C::ITEM, e))?;
 
-                    linker.register_runtime_source(C::ITEM.to_string(), source);
-                }
+                linker.register_runtime_source(C::ITEM.to_string(), source);
             }
-            // ignore
-            Err(_) => {}
         }
 
-        result
+        Ok(result)
     }
 
     /// Deploy the contract with the given code.
@@ -262,25 +283,29 @@ impl Evm {
         call: call::Call,
         entry_source: Option<Arc<linker::Source>>,
         linker: &linker::Linker,
-    ) -> Result<CreateResult, CallError<CreateResult>> {
+    ) -> Result<Call<Address>, Error> {
         self.action(
             Action::Create,
             code,
             call,
             entry_source,
             linker,
-            Self::create_result,
-        ).map(|(_, result)| result)
+            |evm, tx, _| {
+                let scheme = evm.engine
+                    .machine()
+                    .create_address_scheme(evm.env_info.number);
+
+                let address =
+                    executive::contract_address(scheme, &tx.sender(), &tx.nonce, &tx.data).0;
+                Ok(address)
+            },
+        )
     }
 
     /// Perform a call against the given address' fallback function.
     ///
     /// This is the same as a straight up transfer.
-    pub fn call_default(
-        &self,
-        address: Address,
-        call: call::Call,
-    ) -> Result<CallResult, CallError<CallResult>> {
+    pub fn call_default(&self, address: Address, call: call::Call) -> Result<Call<()>, Error> {
         let linker = self.borrow_linker()?;
 
         self.action(
@@ -289,8 +314,8 @@ impl Evm {
             call,
             None,
             &linker,
-            Self::call_result,
-        ).map(|(_, result)| result)
+            |_evm, _tx, _output| Ok(()),
+        )
     }
 
     /// Setup a log drainer that drains the specified logs.
@@ -331,18 +356,15 @@ impl Evm {
     }
 
     /// Execute the given action.
-    fn action<F, E>(
+    fn action<T>(
         &self,
         action: Action,
         data: Vec<u8>,
         call: call::Call,
         entry_source: Option<Arc<linker::Source>>,
         linker: &linker::Linker,
-        map: F,
-    ) -> Result<(Vec<u8>, E), CallError<E>>
-    where
-        F: FnOnce(&Evm, &SignedTransaction, &receipt::Receipt) -> E,
-    {
+        decode: impl FnOnce(&Evm, &SignedTransaction, Vec<u8>) -> Result<T, Error>,
+    ) -> Result<Call<T>, Error> {
         let mut state = self.borrow_mut_state()?;
 
         let nonce = state.nonce(&call.sender).map_err(|_| NonceError)?;
@@ -357,53 +379,18 @@ impl Evm {
         };
 
         let tx = tx.fake_sign(call.sender.into());
-        self.run_transaction(&mut state, tx, entry_source, linker, map)
-    }
-
-    fn call_result(_: &Evm, tx: &SignedTransaction, receipt: &receipt::Receipt) -> CallResult {
-        let gas_used = receipt.gas_used;
-        let gas_price = tx.gas_price;
-
-        CallResult {
-            gas_used,
-            gas_price,
-            sender: tx.sender(),
-        }
-    }
-
-    fn create_result(
-        evm: &Evm,
-        tx: &SignedTransaction,
-        receipt: &receipt::Receipt,
-    ) -> CreateResult {
-        let scheme = evm.engine
-            .machine()
-            .create_address_scheme(evm.env_info.number);
-
-        let address = executive::contract_address(scheme, &tx.sender(), &tx.nonce, &tx.data).0;
-        let gas_used = receipt.gas_used;
-        let gas_price = tx.gas_price;
-
-        CreateResult {
-            address,
-            gas_used,
-            gas_price,
-            sender: tx.sender(),
-        }
+        self.run_transaction(&mut state, tx, entry_source, linker, decode)
     }
 
     /// Run the specified transaction.
-    fn run_transaction<F, E>(
+    fn run_transaction<T>(
         &self,
         state: &mut state::State<state_db::StateDB>,
         tx: SignedTransaction,
         entry_source: Option<Arc<linker::Source>>,
         linker: &linker::Linker,
-        map: F,
-    ) -> Result<(Vec<u8>, E), CallError<E>>
-    where
-        F: FnOnce(&Evm, &SignedTransaction, &receipt::Receipt) -> E,
-    {
+        decode: impl FnOnce(&Evm, &SignedTransaction, Vec<u8>) -> Result<T, Error>,
+    ) -> Result<Call<T>, Error> {
         // Verify transaction
         tx.verify_basic(
             true,
@@ -422,46 +409,57 @@ impl Evm {
             trace::TxVmTracer::new(linker, entry_source.clone(), &frame_info),
         );
 
-        let result = result.map_err(|e| format!("vm: {}", e))?;
+        let mut result = result.map_err(|e| format!("vm: {}", e))?;
 
         state.commit().ok();
+        self.add_logs(result.receipt.logs.drain(..))?;
 
-        let execution = map(self, &tx, &result.receipt);
+        let gas_used = result.receipt.gas_used;
+        let gas_price = tx.gas_price;
+        let sender = tx.sender();
+        let outcome = self.outcome(result, tx, decode)?;
 
-        self.add_logs(result.receipt.logs)?;
+        Ok(Call {
+            outcome,
+            gas_used,
+            gas_price,
+            sender,
+        })
+    }
 
+    /// Convert into an outcome.
+    fn outcome<T>(
+        &self,
+        result: state::ApplyOutcome<trace::ErrorInfo, ()>,
+        tx: SignedTransaction,
+        decode: impl FnOnce(&Evm, &SignedTransaction, Vec<u8>) -> Result<T, Error>,
+    ) -> Result<Outcome<T>, Error> {
         if !result.trace.is_empty() {
             let reverted = result.trace.iter().any(|e| e.is_reverted());
 
             if reverted {
-                return Err(CallError::Reverted {
-                    execution,
+                return Ok(Outcome::Reverted {
                     error_info: trace::ErrorInfo::new_root(result.trace),
                 });
             } else {
-                return Err(CallError::Errored {
-                    execution,
+                return Ok(Outcome::Errored {
                     error_info: trace::ErrorInfo::new_root(result.trace),
                 });
             }
         }
 
-        match result.receipt.outcome {
-            TransactionOutcome::Unknown | TransactionOutcome::StateRoot(_) => {
-                // OK
-            }
-            TransactionOutcome::StatusCode(status) => {
-                if status != 1 {
-                    return Err(CallError::Status { execution, status });
-                }
+        if let receipt::TransactionOutcome::StatusCode(status) = result.receipt.outcome {
+            if status != 1 {
+                return Ok(Outcome::Status { status });
             }
         }
 
-        Ok((result.output, execution))
+        let output = decode(&self, &tx, result.output)?;
+        Ok(Outcome::Ok(output))
     }
 
     /// Add logs, partitioned by topic.
-    fn add_logs(&self, new_logs: Vec<LogEntry>) -> Result<(), Error> {
+    fn add_logs(&self, new_logs: impl Iterator<Item = LogEntry>) -> Result<(), Error> {
         let mut logs = self.borrow_mut_logs()?;
 
         for log in new_logs {
@@ -520,12 +518,7 @@ impl Evm {
 }
 
 impl abi::Vm for Evm {
-    fn call<F>(
-        &self,
-        address: Address,
-        f: F,
-        call: call::Call,
-    ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
+    fn call<F>(&self, address: Address, f: F, call: call::Call) -> Result<Call<F::Output>, Error>
     where
         F: abi::ContractFunction,
     {
@@ -534,19 +527,17 @@ impl abi::Vm for Evm {
         let params = f.encoded(&linker)
             .map_err(|e| format!("failed to encode input: {}", e))?;
 
-        let (output, result) = self.action(
+        self.action(
             Action::Call(address),
             params,
             call,
             None,
             &linker,
-            Self::call_result,
-        )?;
-
-        let output = f.output(output)
-            .map_err(|e| format!("VM output conversion failed: {}", e))?;
-
-        Ok(CallOutput { output, result })
+            move |_evm, _tx, output| {
+                f.output(output)
+                    .map_err(|e| format!("VM output conversion failed: {}", e).into())
+            },
+        )
     }
 }
 

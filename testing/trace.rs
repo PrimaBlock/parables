@@ -1,3 +1,4 @@
+use std::cmp;
 use ethcore::trace;
 use ethcore::trace::trace::{Call, Create};
 use ethereum_types::{H160, U256};
@@ -12,17 +13,19 @@ use std::sync::{Arc, Mutex};
 use utils;
 
 /// Last known frame.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FrameInfo {
     Some(usize),
     None,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ErrorKind {
     Root,
     Error(trace::TraceError),
 }
+
+impl cmp::Eq for ErrorKind {}
 
 impl ErrorKind {
     /// Check if kind is reverted.
@@ -34,7 +37,7 @@ impl ErrorKind {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ErrorInfo {
     pub kind: ErrorKind,
     pub line_info: Option<LineInfo>,
@@ -262,7 +265,7 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LineInfo {
     path: PathBuf,
     line_string: String,

@@ -583,8 +583,8 @@ fn impl_contract_function(function: &Function) -> (quote::Tokens, quote::Tokens)
         /// Sets the input (arguments) for this contract function
         pub fn #impl_function_name<#(#template_params),*>(&self, #(#params),*)
             -> ::std::result::Result<
-                ::parables_testing::evm::CallOutput<#output_kinds>,
-                ::parables_testing::error::CallError<::parables_testing::evm::CallResult>
+                ::parables_testing::evm::Call<#output_kinds>,
+                ::parables_testing::error::Error,
             >
             where VM: ::parables_testing::abi::Vm
         {

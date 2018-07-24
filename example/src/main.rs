@@ -19,7 +19,7 @@ fn main() -> Result<()> {
 
     // set up simple lib
     evm.deploy(simple_lib::constructor(), call)?;
-    let simple = evm.deploy(simple_contract::constructor(42), call)?.address;
+    let simple = evm.deploy(simple_contract::constructor(42), call)?.ok()?;
 
     let evm = Snapshot::new(evm);
 
@@ -36,12 +36,12 @@ fn main() -> Result<()> {
 
                 let contract = simple_contract::contract(&evm, simple, call);
 
-                let out = contract.get_value()?.output;
+                let out = contract.get_value()?.ok()?;
                 assert_eq!(out, 42.into());
 
                 contract.set_value(x)?;
 
-                let out = contract.get_value()?.output;
+                let out = contract.get_value()?.ok()?;
                 assert_eq!(out, x.into());
 
                 for e in evm.logs(ev::value_updated()).filter(|e| e.filter(Some(100.into()))).iter()? {
@@ -63,14 +63,14 @@ fn main() -> Result<()> {
 
         let contract = simple_contract::contract(&evm, simple, call);
 
-        let out = contract.get_value()?.output;
+        let out = contract.get_value()?.ok()?;
         assert_eq!(out, current.into());
 
         contract.test_add(10, 20)?;
         current = 30u64;
 
         for _ in 0..1000 {
-            let out = contract.get_value()?.output;
+            let out = contract.get_value()?.ok()?;
             assert_eq!(out, current.into());
 
             // add a value to the call, this value will be sent to the contract.
@@ -84,7 +84,7 @@ fn main() -> Result<()> {
         let not_owner = Address::random();
 
         // non-owner is not allowed to set value.
-        let non_owned_res = contract.sender(not_owner).set_value(0);
+        let non_owned_res = contract.sender(not_owner).set_value(0)?;
         assert!(non_owned_res.is_reverted());
 
         let balance = evm.balance(owner)?;
@@ -138,7 +138,7 @@ fn main() -> Result<()> {
 
         let evm = evm.get()?;
 
-        let simple = evm.deploy(simple_ledger::constructor(), call)?.address;
+        let simple = evm.deploy(simple_ledger::constructor(), call)?.ok()?;
         let simple = simple_ledger::contract(&evm, simple, call.gas_price(10));
 
         let mut balances = Ledger::account_balance(&evm);
@@ -174,7 +174,7 @@ fn main() -> Result<()> {
             fn get_value(&self, address: Address) -> Result<U256> {
                 use simple_ledger::simple_ledger::functions as f;
                 let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
-                Ok(self.0.call(self.1, f::get(address), call)?.output)
+                Ok(self.0.call(self.1, f::get(address), call)?.ok()?)
             }
         }
 

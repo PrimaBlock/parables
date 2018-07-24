@@ -1,12 +1,11 @@
 //! Contract ABI helpers.
 
-use call::Call;
-use error::{CallError, Error};
+use error::Error;
 use ethabi::{Bytes, RawLog, TopicFilter};
 use ethereum_types::Address;
-use evm::{CallOutput, CallResult};
 use linker::Linker;
 use std::path::PathBuf;
+use {call, evm};
 
 /// Context for all loaded contracts.
 pub struct ContractContext {
@@ -64,8 +63,8 @@ pub trait Vm {
         &self,
         address: Address,
         f: F,
-        call: Call,
-    ) -> Result<CallOutput<F::Output>, CallError<CallResult>>
+        call: call::Call,
+    ) -> Result<evm::Call<F::Output>, Error>
     where
         F: ContractFunction;
 }
