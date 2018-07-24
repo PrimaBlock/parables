@@ -509,7 +509,7 @@ mod tests {
     fn test_decode_runtime_simple() {
         let linker = Linker::new();
 
-        let decoded = linker
+        let _decoded = linker
             .decode_offsets(include_str!("tests/runtime_simple.bin").trim())
             .expect("bad decode");
     }
@@ -518,7 +518,7 @@ mod tests {
     fn test_decode_runtime_big() {
         let linker = Linker::new();
 
-        let decoded = linker
+        let _decoded = linker
             .decode_offsets(include_str!("tests/runtime_big.bin").trim())
             .expect("bad decode");
     }

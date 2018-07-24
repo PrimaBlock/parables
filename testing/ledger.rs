@@ -7,53 +7,55 @@ use std::collections::{hash_map, HashMap};
 use {error, evm};
 
 #[derive(Debug)]
-pub struct Ledger<'a, S>
+pub struct Ledger<S>
 where
     S: LedgerState,
 {
-    evm: &'a evm::Evm,
     state: S,
-    instances: HashMap<Address, S::Instance>,
-    balances: HashMap<Address, U256>,
+    entries: HashMap<Address, S::Entry>,
 }
 
-impl<'a> Ledger<'a, ()> {
+impl<'a> Ledger<AccountBalance<'a>> {
     /// Construct a new empty ledger that doesn't have any specialized state.
-    pub fn empty(evm: &'a evm::Evm) -> Ledger<'a, ()> {
-        Self::new(evm, ())
+    pub fn account_balance(evm: &'a evm::Evm) -> Ledger<AccountBalance<'a>> {
+        Self::new(AccountBalance(evm))
     }
 }
 
-impl<'a, S> Ledger<'a, S>
+impl<S> Ledger<S>
 where
     S: LedgerState,
 {
     /// Construct a new ledger.
     ///
     /// To construct a ledger without state, use `Ledger::empty()`.
-    pub fn new(evm: &'a evm::Evm, state: S) -> Ledger<S> {
+    pub fn new(state: S) -> Ledger<S> {
         Ledger {
-            evm,
             state,
-            instances: HashMap::new(),
-            balances: HashMap::new(),
+            entries: HashMap::new(),
         }
     }
 
     /// Synchronize the ledger against the current state of the virtual machine.
     pub fn sync(&mut self, address: Address) -> Result<(), error::Error> {
-        let balance = self.balances.entry(address).or_insert_with(U256::default);
-        *balance = self.evm.balance(address)?;
-
-        match self.instances.entry(address) {
+        match self.entries.entry(address) {
             hash_map::Entry::Vacant(entry) => {
                 let mut state = self.state.new_instance();
-                self.state.sync(self.evm, address, &mut state)?;
+                self.state.sync(address, &mut state)?;
                 entry.insert(state);
             }
             hash_map::Entry::Occupied(entry) => {
-                self.state.sync(self.evm, address, entry.into_mut())?;
+                self.state.sync(address, entry.into_mut())?;
             }
+        }
+
+        Ok(())
+    }
+
+    /// Sync multiple addresses.
+    pub fn sync_all(&mut self, addresses: Vec<Address>) -> Result<(), error::Error> {
+        for a in addresses {
+            self.sync(a)?;
         }
 
         Ok(())
@@ -67,23 +69,9 @@ where
 
         let state = self.state;
 
-        for (address, expected_balance) in self.balances {
-            let actual_balance = self.evm.balance(address)?;
-
-            if expected_balance != actual_balance {
-                errors.push((
-                    address,
-                    error::Error::from(format!(
-                        "expected account wei balance {}, but was {}",
-                        expected_balance, actual_balance
-                    )),
-                ));
-            }
-        }
-
-        // Check that all verifiable states and balances are matching expectations.
-        for (address, s) in self.instances {
-            if let Err(e) = state.verify(self.evm, address, s) {
+        // Check that all verifiable entries are matching expectations.
+        for (address, s) in self.entries {
+            if let Err(e) = state.verify(address, s) {
                 errors.push((address, e));
             }
         }
@@ -103,12 +91,28 @@ where
         Ok(())
     }
 
+    /// Access the mutable state for the given address.
+    pub fn entry(&mut self, address: Address) -> &mut S::Entry {
+        match self.entries.entry(address) {
+            hash_map::Entry::Vacant(entry) => {
+                let mut state = self.state.new_instance();
+                entry.insert(state)
+            }
+            hash_map::Entry::Occupied(entry) => entry.into_mut(),
+        }
+    }
+}
+
+impl<S> Ledger<S>
+where
+    S: LedgerState<Entry = U256>,
+{
     /// Add to the balance for the given address.
     pub fn add<V>(&mut self, address: Address, value: V)
     where
         V: Into<U256>,
     {
-        let current = self.balances.entry(address).or_insert_with(U256::default);
+        let current = self.entries.entry(address).or_insert_with(U256::default);
         let value = value.into();
 
         match current.checked_add(value) {
@@ -129,7 +133,7 @@ where
     where
         V: Into<U256>,
     {
-        let current = self.balances.entry(address).or_insert_with(U256::default);
+        let current = self.entries.entry(address).or_insert_with(U256::default);
         let value = value.into();
 
         match current.checked_sub(value) {
@@ -144,65 +148,104 @@ where
             }
         }
     }
-
-    /// Access the mutable state for the given address.
-    pub fn state(&mut self, address: Address) -> &mut S::Instance {
-        match self.instances.entry(address) {
-            hash_map::Entry::Vacant(entry) => {
-                let mut state = self.state.new_instance();
-                entry.insert(state)
-            }
-            hash_map::Entry::Occupied(entry) => entry.into_mut(),
-        }
-    }
 }
 
 /// A state that can be verified with a virtual machine.
 pub trait LedgerState {
-    type Instance;
+    type Entry;
 
     /// Construct a new instance.
-    fn new_instance(&self) -> Self::Instance;
+    fn new_instance(&self) -> Self::Entry;
 
     /// Verify the given state.
-    fn verify(
-        &self,
-        evm: &evm::Evm,
-        address: Address,
-        instance: Self::Instance,
-    ) -> Result<(), error::Error>;
+    fn verify(&self, address: Address, instance: Self::Entry) -> Result<(), error::Error>;
 
     /// Synchronize the given state.
-    fn sync(
-        &self,
-        evm: &evm::Evm,
-        address: Address,
-        instance: &mut Self::Instance,
-    ) -> Result<(), error::Error>;
+    fn sync(&self, address: Address, instance: &mut Self::Entry) -> Result<(), error::Error>;
 }
 
-impl LedgerState for () {
-    type Instance = ();
+/// A ledger state checking account balances against the EVM.
+pub struct AccountBalance<'a>(&'a evm::Evm);
 
-    fn new_instance(&self) -> () {
-        ()
+impl<'a> LedgerState for AccountBalance<'a> {
+    type Entry = U256;
+
+    fn new_instance(&self) -> U256 {
+        U256::default()
     }
 
-    fn verify(
-        &self,
-        _evm: &evm::Evm,
-        _address: Address,
-        _instance: Self::Instance,
-    ) -> Result<(), error::Error> {
+    fn verify(&self, address: Address, expected_balance: Self::Entry) -> Result<(), error::Error> {
+        let actual_balance = self.0.balance(address)?;
+
+        if expected_balance != actual_balance {
+            return Err(format!(
+                "expected account wei balance {}, but was {}",
+                expected_balance, actual_balance
+            ).into());
+        }
+
         Ok(())
     }
 
-    fn sync(
-        &self,
-        _evm: &evm::Evm,
-        _address: Address,
-        _instance: &mut Self::Instance,
-    ) -> Result<(), error::Error> {
+    fn sync(&self, address: Address, balance: &mut Self::Entry) -> Result<(), error::Error> {
+        *balance = self.0.balance(address)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Ledger, LedgerState};
+    use error;
+    use ethereum_types::{Address, U256};
+
+    #[test]
+    fn simple_u256_ledger() {
+        let mut ledger = Ledger::new(Simple(0.into(), 42.into()));
+
+        let a = Address::random();
+
+        ledger.sync(a).expect("bad sync");
+
+        ledger.add(a, 10);
+        ledger.add(a, 32);
+
+        ledger.verify().expect("ledger not balanced");
+
+        pub struct Simple(U256, U256);
+
+        impl LedgerState for Simple {
+            type Entry = U256;
+
+            fn new_instance(&self) -> U256 {
+                U256::default()
+            }
+
+            fn verify(
+                &self,
+                _address: Address,
+                expected_balance: Self::Entry,
+            ) -> Result<(), error::Error> {
+                let actual_balance = self.1;
+
+                if expected_balance != actual_balance {
+                    return Err(format!(
+                        "expected account wei balance {}, but was {}",
+                        expected_balance, actual_balance
+                    ).into());
+                }
+
+                Ok(())
+            }
+
+            fn sync(
+                &self,
+                _address: Address,
+                balance: &mut Self::Entry,
+            ) -> Result<(), error::Error> {
+                *balance = self.0;
+                Ok(())
+            }
+        }
     }
 }

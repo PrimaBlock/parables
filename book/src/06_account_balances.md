@@ -47,7 +47,7 @@ The above would then be written as:
 ```rust
 let foundation = Spec::new_null();
 let evm = Evm::new(&foundation, new_context());
-let mut ledger = Ledger::empty(&evm);
+let mut ledger = Ledger::account_balance(&evm);
 
 let a = Address::random();
 let b = Address::random();
@@ -106,55 +106,57 @@ let evm = evm.get()?;
 let simple = evm.deploy(simple_ledger::constructor(), call)?.address;
 let simple = simple_ledger::contract(&evm, simple, call.gas_price(10));
 
-let mut ledger = Ledger::new(&evm, State(simple.address));
+let mut balances = Ledger::account_balance(&evm);
+let mut states = Ledger::new(State(&evm, simple.address));
 
 evm.add_balance(a, wei!(100 eth))?;
 
-ledger.sync(a)?;
-ledger.sync(b)?;
-ledger.sync(simple.address)?;
+// sync all addresses to initial states.
+balances.sync_all(vec![a, b, simple.address])?;
+states.sync_all(vec![a, b, simple.address])?;
 
 // add to a
 let res = simple.value(wei!(42 eth)).add(a)?;
-ledger.sub(a, res.gas_total() + wei!(42 eth));
-ledger.add(simple.address, wei!(42 eth));
-*ledger.state(a) = wei!(42 eth);
+balances.sub(a, res.gas_total() + wei!(42 eth));
+balances.add(simple.address, wei!(42 eth));
+states.add(a, wei!(42 eth));
 
 // add to b
 let res = simple.value(wei!(12 eth)).add(b)?;
-ledger.sub(a, res.gas_total() + wei!(12 eth));
-ledger.add(simple.address, wei!(12 eth));
-*ledger.state(b) = wei!(12 eth);
+balances.sub(a, res.gas_total() + wei!(12 eth));
+balances.add(simple.address, wei!(12 eth));
+states.add(b, wei!(12 eth));
 
-ledger.verify()?;
+balances.verify()?;
+states.verify()?;
 
 return Ok(());
 
-pub struct State(Address);
+pub struct State<'a>(&'a Evm, Address);
 
-impl State {
+impl<'a> State<'a> {
     /// Helper to get the current value stored on the blockchain.
-    fn get_value(&self, evm: &Evm, address: Address) -> Result<U256> {
+    fn get_value(&self, address: Address) -> Result<U256> {
         use simple_ledger::simple_ledger::functions as f;
         let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
-        Ok(evm.call(self.0, f::get(address), call)?.output)
+        Ok(self.0.call(self.1, f::get(address), call)?.output)
     }
 }
 
-impl LedgerState for State {
-    type Instance = U256;
+impl<'a> LedgerState for State<'a> {
+    type Entry = U256;
 
-    fn new_instance(&self) -> Self::Instance {
+    fn new_instance(&self) -> Self::Entry {
         U256::default()
     }
 
-    fn sync(&self, evm: &Evm, address: Address, instance: &mut U256) -> Result<()> {
-        *instance = self.get_value(evm, address)?;
+    fn sync(&self, address: Address, instance: &mut Self::Entry) -> Result<()> {
+        *instance = self.get_value(address)?;
         Ok(())
     }
 
-    fn verify(&self, evm: &Evm, address: Address, expected: U256) -> Result<()> {
-        let value = self.get_value(evm, address)?;
+    fn verify(&self, address: Address, expected: Self::Entry) -> Result<()> {
+        let value = self.get_value(address)?;
 
         if value != expected {
             return Err(format!("value: expected {} but got {}", expected, value).into());
