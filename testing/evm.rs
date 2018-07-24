@@ -92,6 +92,18 @@ impl<T> Call<T> {
         self.outcome.is_reverted()
     }
 
+    /// Check that a revert happened with the specified statement.
+    pub fn is_reverted_with(&self, stmt: impl AsRef<str> + Copy) -> bool {
+        use self::Outcome::*;
+
+        match self.outcome {
+            Reverted { ref error_info } => {
+                error_info.is_reverted() && error_info.is_failed_with(stmt)
+            }
+            _ => false,
+        }
+    }
+
     /// Convert the outcome into a result.
     pub fn ok(self) -> Result<T, Error> {
         use self::Outcome::*;

@@ -1,4 +1,3 @@
-use std::cmp;
 use ethcore::trace;
 use ethcore::trace::trace::{Call, Create};
 use ethereum_types::{H160, U256};
@@ -6,6 +5,7 @@ use linker;
 use parity_bytes::Bytes;
 use parity_evm;
 use parity_vm;
+use std::cmp;
 use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
@@ -82,6 +82,21 @@ impl ErrorInfo {
         }
 
         self.subs.iter().any(|e| e.is_reverted())
+    }
+
+    /// Check if error info contains a line that caused it to be reverted.
+    ///
+    /// This recursively looks through all sub-traces to find a match.
+    pub fn is_failed_with(&self, stmt: impl AsRef<str> + Copy) -> bool {
+        let stmt = stmt.as_ref();
+
+        if let Some(ref line_info) = self.line_info {
+            if line_info.line_string.trim() == stmt {
+                return true;
+            }
+        }
+
+        self.subs.iter().any(|e| e.is_failed_with(stmt))
     }
 }
 
