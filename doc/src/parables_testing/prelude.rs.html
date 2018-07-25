@@ -25,7 +25,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;account&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">account</span>::<span class="ident">Account</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">call</span>::<span class="ident">Call</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">CallError</span>, <span class="ident">Error</span>, <span class="ident">ResultCallErrorExt</span>, <span class="ident">ResultExt</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ethabi</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ethcore</span>::<span class="ident">spec</span>::<span class="ident">Spec</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="kw-2">*</span>;
@@ -36,7 +36,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-runner&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">snapshot</span>::<span class="ident">Snapshot</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-runner&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">test_runner</span>::<span class="ident">TestRunner</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">test_runner</span>::{<span class="ident">Suite</span>, <span class="ident">TestRunner</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wei</span>;
 <span class="comment">// re-export property testing prelude.</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ledger</span>::{<span class="ident">Ledger</span>, <span class="ident">LedgerState</span>};

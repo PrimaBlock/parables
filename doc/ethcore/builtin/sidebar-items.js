@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["ethereum_builtin","Ethereum built-in factory."]],"struct":[["Builtin","Pricing scheme, execution definition, and activation block for a built-in contract."],["Error","Execution error."]],"trait":[["Impl","Native implementation of a built-in contract."],["Pricer","A gas pricing scheme for built-in contracts."]]});

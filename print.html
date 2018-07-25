@@ -171,13 +171,12 @@ parables-testing = {git = &quot;https://github.com/primablock/parables&quot;}
 [build-dependencies]
 parables-build = {git = &quot;https://github.com/primablock/parables&quot;}
 </code></pre>
-<p>If you want parables to try to build your contracts automatically, add the following <code>build.rs</code>.</p>
-<pre><pre class="playpen"><code class="language-rust">extern crate parables_build;
-
-fn main() {
-    if let Err(e) = parables_build::compile(concat!(env!(&quot;CARGO_MANIFEST_DIR&quot;), &quot;/contracts&quot;)) {
-        panic!(&quot;failed to compile contracts: {:?}&quot;, e);
-    }
+<p>If you want parables to rebuild your project when you change a contract, add the following
+<code>build.rs</code>.</p>
+<pre><pre class="playpen"><code class="language-rust">fn main() {
+    println!(&quot;cargo:rerun-if-changed=contracts/SimpleContract.sol&quot;);
+    println!(&quot;cargo:rerun-if-changed=contracts/SimpleLib.sol&quot;);
+    println!(&quot;cargo:rerun-if-changed=contracts/SimpleLedger.sol&quot;);
 }
 </code></pre></pre>
 <p>Finally you should set up a main method that uses <code>TestRunner</code> to schedule tests in <code>src/main.rs</code>.</p>
@@ -243,15 +242,15 @@ contract SimpleContract {
 }
 </code></pre>
 <p>Compile the contract using <code>solcjs</code>.</p>
-<pre><code class="language-bash">(cd contracts &amp;&amp; solcjs *.sol --bin --abi)
-</code></pre>
 <p>We then load it by adding the <code>contracts!</code> macro to the top of our file.</p>
 <pre><pre class="playpen"><code class="language-rust">#[macro_use]
 extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts! {
+    simple_contract =&gt; &quot;SimpleContract.sol:SimpleContract&quot;,
+};
 
 fn main() -&gt; Result&lt;()&gt; {
     let mut tests = TestRunner::new();
@@ -270,19 +269,15 @@ fn main() -&gt; Result&lt;()&gt; {
 <a class="header" href="print.html#testing-smart-contracts" id="testing-smart-contracts"><h1>Testing Smart Contracts</h1></a>
 <p>To test a smart contract, we run it on top of the Ethereum Virtual Machine (EVM) built by <a href="https://github.com/paritytech/parity">parity</a>.</p>
 <p>Parables provides a wrapper for this using the <code>Evm</code> type.</p>
-<p>But before we start testing our contracts, we need to make sure that they are <em>compiled</em> into
-bytecode and abi.</p>
-<p>To do this, we use solc.</p>
-<pre><code class="language-bash">(cd contracts &amp;&amp; solc *.sol --combined-json bin,abi,srcmap,bin-runtime)
-</code></pre>
-<p>After this, you can put the following in <code>src/main.rs</code>.
-Don't worry, we will walk you through line-by-line what it is below.</p>
+<p>Don't worry, we will walk you through line-by-line what it is below.</p>
 <pre><pre class="playpen"><code class="language-rust">#[macro_use]
 extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts! {
+    simple_contract =&gt; &quot;SimpleContract.sol:SimpleContract&quot;,
+};
 
 fn main() -&gt; Result&lt;()&gt; {
     // Set up a template call with a default amount of gas.
@@ -303,8 +298,6 @@ fn main() -&gt; Result&lt;()&gt; {
     let mut tests = TestRunner::new();
 
     tests.test(&quot;get and increment value a couple of times&quot;, || {
-        use simple_contract::simple_contract;
-
         let evm = evm.get()?;
         let contract = simple_contract::contract(&amp;evm, simple, call);
 
@@ -392,16 +385,6 @@ The Snapshot class provides us with a convenient <code>get()</code> function tha
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-use simple_contract::simple_contract;
-#}</code></pre></pre>
-<p>We start out by importing all relevant functions into scope for the test.</p>
-<p>Using these we can access all events being emitted by the contract through
-<code>simple_contract::events::some_event</code>.</p>
-<p>Note that the function names are converted from lower camel (solidity standard) to lower snake case
-(rust standard).</p>
-<pre><pre class="playpen"><code class="language-rust">
-# #![allow(unused_variables)]
-#fn main() {
 let evm = evm.get()?;
 #}</code></pre></pre>
 <p>This line takes a snapshot of the virtual machine.
@@ -447,8 +430,6 @@ well-defined numeric values, we test a wide range of values.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::simple_contract;
-
         let x = U256::from(x);
 
         let evm = evm.get()?;
@@ -502,8 +483,6 @@ the assert to expect the revert to happen for some specific input.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly within constraints&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::simple_contract;
-
         let x = U256::from(x);
 
         let evm = evm.get()?;
@@ -578,7 +557,7 @@ expect, you can use a <code>Ledger</code>.</p>
 #fn main() {
 let foundation = Spec::new_null();
 let evm = Evm::new(&amp;foundation, new_context());
-let mut ledger = Ledger::empty(&amp;evm);
+let mut ledger = Ledger::account_balance(&amp;evm);
 
 let a = Address::random();
 let b = Address::random();
@@ -620,8 +599,6 @@ contract SimpleLedger {
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
-use simple_ledger::simple_ledger;
-
 let a = Address::random();
 let b = Address::random();
 
@@ -632,55 +609,57 @@ let evm = evm.get()?;
 let simple = evm.deploy(simple_ledger::constructor(), call)?.address;
 let simple = simple_ledger::contract(&amp;evm, simple, call.gas_price(10));
 
-let mut ledger = Ledger::new(&amp;evm, State(simple.address));
+let mut balances = Ledger::account_balance(&amp;evm);
+let mut states = Ledger::new(State(&amp;evm, simple.address));
 
 evm.add_balance(a, wei!(100 eth))?;
 
-ledger.sync(a)?;
-ledger.sync(b)?;
-ledger.sync(simple.address)?;
+// sync all addresses to initial states.
+balances.sync_all(vec![a, b, simple.address])?;
+states.sync_all(vec![a, b, simple.address])?;
 
 // add to a
 let res = simple.value(wei!(42 eth)).add(a)?;
-ledger.sub(a, res.gas_total() + wei!(42 eth));
-ledger.add(simple.address, wei!(42 eth));
-*ledger.state(a) = wei!(42 eth);
+balances.sub(a, res.gas_total() + wei!(42 eth));
+balances.add(simple.address, wei!(42 eth));
+states.add(a, wei!(42 eth));
 
 // add to b
 let res = simple.value(wei!(12 eth)).add(b)?;
-ledger.sub(a, res.gas_total() + wei!(12 eth));
-ledger.add(simple.address, wei!(12 eth));
-*ledger.state(b) = wei!(12 eth);
+balances.sub(a, res.gas_total() + wei!(12 eth));
+balances.add(simple.address, wei!(12 eth));
+states.add(b, wei!(12 eth));
 
-ledger.verify()?;
+balances.verify()?;
+states.verify()?;
 
 return Ok(());
 
-pub struct State(Address);
+pub struct State&lt;'a&gt;(&amp;'a Evm, Address);
 
-impl State {
+impl&lt;'a&gt; State&lt;'a&gt; {
     /// Helper to get the current value stored on the blockchain.
-    fn get_value(&amp;self, evm: &amp;Evm, address: Address) -&gt; Result&lt;U256&gt; {
+    fn get_value(&amp;self, address: Address) -&gt; Result&lt;U256&gt; {
         use simple_ledger::simple_ledger::functions as f;
         let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
-        Ok(evm.call(self.0, f::get(address), call)?.output)
+        Ok(self.0.call(self.1, f::get(address), call)?.output)
     }
 }
 
-impl LedgerState for State {
-    type Instance = U256;
+impl&lt;'a&gt; LedgerState for State&lt;'a&gt; {
+    type Entry = U256;
 
-    fn new_instance(&amp;self) -&gt; Self::Instance {
+    fn new_instance(&amp;self) -&gt; Self::Entry {
         U256::default()
     }
 
-    fn sync(&amp;self, evm: &amp;Evm, address: Address, instance: &amp;mut U256) -&gt; Result&lt;()&gt; {
-        *instance = self.get_value(evm, address)?;
+    fn sync(&amp;self, address: Address, instance: &amp;mut Self::Entry) -&gt; Result&lt;()&gt; {
+        *instance = self.get_value(address)?;
         Ok(())
     }
 
-    fn verify(&amp;self, evm: &amp;Evm, address: Address, expected: U256) -&gt; Result&lt;()&gt; {
-        let value = self.get_value(evm, address)?;
+    fn verify(&amp;self, address: Address, expected: Self::Entry) -&gt; Result&lt;()&gt; {
+        let value = self.get_value(address)?;
 
         if value != expected {
             return Err(format!(&quot;value: expected {} but got {}&quot;, expected, value).into());

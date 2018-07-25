@@ -32,12 +32,35 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
 </pre><pre class="rust ">
 <span class="doccomment">/// Include the generated contracts directory.</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">contracts</span> {
-    () <span class="op">=&gt;</span> {
-        <span class="macro">include</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/contracts.rs&quot;</span>));
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">path</span>:<span class="ident">expr</span>, {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">module</span>:<span class="ident">ident</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">entry</span>:<span class="ident">expr</span>,)<span class="kw-2">*</span>}) <span class="op">=&gt;</span> {
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">ParablesContracts</span>)]</span>
+        <span class="attribute">#[<span class="ident">parables</span>(<span class="ident">path</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">path</span>)]</span>
+        <span class="attribute">#[<span class="ident">parables_contract</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">module</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">entry</span>,)<span class="kw-2">*</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">_ParablesContracts</span>;
+    };
+
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">module</span>:<span class="ident">ident</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">entry</span>:<span class="ident">expr</span>,)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+        <span class="macro">contracts</span><span class="macro">!</span>{<span class="string">&quot;contracts&quot;</span>, {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">module</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">entry</span>,)<span class="kw-2">*</span>}}
     };
 }
 
@@ -54,17 +77,26 @@
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span>) <span class="op">=&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">ethereum_types</span>::<span class="ident">U256</span>::<span class="ident">from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
     };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">mwei</span>) <span class="op">=&gt;</span> {
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_mewi</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
+    };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">kwei</span>) <span class="op">=&gt;</span> {
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_kewi</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
+    };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">gwei</span>) <span class="op">=&gt;</span> {
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_gewi</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
+    };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">szabo</span>) <span class="op">=&gt;</span> {
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_szabo</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
+    };
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">finney</span>) <span class="op">=&gt;</span> {
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_finney</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
+    };
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">ether</span>) <span class="op">=&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_ether</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
     };
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">eth</span>) <span class="op">=&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_ether</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
-    };
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">finney</span>) <span class="op">=&gt;</span> {
-        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_finney</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
-    };
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>:<span class="ident">tt</span> <span class="ident">szabo</span>) <span class="op">=&gt;</span> {
-        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">wei</span>::<span class="ident">from_szabo</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">value</span>)
     };
 }
 </pre>

@@ -1056,7 +1056,7 @@
     <span class="kw">fn</span> <span class="ident">test_decode_runtime_simple</span>() {
         <span class="kw">let</span> <span class="ident">linker</span> <span class="op">=</span> <span class="ident">Linker</span>::<span class="ident">new</span>();
 
-        <span class="kw">let</span> <span class="ident">decoded</span> <span class="op">=</span> <span class="ident">linker</span>
+        <span class="kw">let</span> <span class="ident">_decoded</span> <span class="op">=</span> <span class="ident">linker</span>
             .<span class="ident">decode_offsets</span>(<span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;tests/runtime_simple.bin&quot;</span>).<span class="ident">trim</span>())
             .<span class="ident">expect</span>(<span class="string">&quot;bad decode&quot;</span>);
     }
@@ -1065,7 +1065,7 @@
     <span class="kw">fn</span> <span class="ident">test_decode_runtime_big</span>() {
         <span class="kw">let</span> <span class="ident">linker</span> <span class="op">=</span> <span class="ident">Linker</span>::<span class="ident">new</span>();
 
-        <span class="kw">let</span> <span class="ident">decoded</span> <span class="op">=</span> <span class="ident">linker</span>
+        <span class="kw">let</span> <span class="ident">_decoded</span> <span class="op">=</span> <span class="ident">linker</span>
             .<span class="ident">decode_offsets</span>(<span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;tests/runtime_big.bin&quot;</span>).<span class="ident">trim</span>())
             .<span class="ident">expect</span>(<span class="string">&quot;bad decode&quot;</span>);
     }

@@ -68,17 +68,15 @@
 <span id="68">68</span>
 <span id="69">69</span>
 <span id="70">70</span>
-<span id="71">71</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Contract ABI helpers.</span>
 
-<span class="kw">use</span> <span class="ident">call</span>::<span class="ident">Call</span>;
-<span class="kw">use</span> <span class="ident">error</span>::{<span class="ident">CallError</span>, <span class="ident">Error</span>};
+<span class="kw">use</span> <span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">ethabi</span>::{<span class="ident">Bytes</span>, <span class="ident">RawLog</span>, <span class="ident">TopicFilter</span>};
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::<span class="ident">Address</span>;
-<span class="kw">use</span> <span class="ident">evm</span>::{<span class="ident">CallOutput</span>, <span class="ident">CallResult</span>};
 <span class="kw">use</span> <span class="ident">linker</span>::<span class="ident">Linker</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
+<span class="kw">use</span> {<span class="ident">call</span>, <span class="ident">evm</span>};
 
 <span class="doccomment">/// Context for all loaded contracts.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContractContext</span> {
@@ -136,8 +134,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">address</span>: <span class="ident">Address</span>,
         <span class="ident">f</span>: <span class="ident">F</span>,
-        <span class="ident">call</span>: <span class="ident">Call</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CallOutput</span><span class="op">&lt;</span><span class="ident">F</span>::<span class="ident">Output</span><span class="op">&gt;</span>, <span class="ident">CallError</span><span class="op">&lt;</span><span class="ident">CallResult</span><span class="op">&gt;&gt;</span>
+        <span class="ident">call</span>: <span class="ident">call</span>::<span class="ident">Call</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">evm</span>::<span class="ident">Call</span><span class="op">&lt;</span><span class="ident">F</span>::<span class="ident">Output</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">ContractFunction</span>;
 }

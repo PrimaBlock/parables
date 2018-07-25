@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["simple_lib",""]]});
+initSidebarItems({"fn":[["constructor",""],["contract",""]],"mod":[["functions",""],["outputs","Contract functions (for decoding output)"]],"struct":[["Constructor",""],["Contract",""]]});

@@ -145,13 +145,12 @@ parables-testing = {git = &quot;https://github.com/primablock/parables&quot;}
 [build-dependencies]
 parables-build = {git = &quot;https://github.com/primablock/parables&quot;}
 </code></pre>
-<p>If you want parables to try to build your contracts automatically, add the following <code>build.rs</code>.</p>
-<pre><pre class="playpen"><code class="language-rust">extern crate parables_build;
-
-fn main() {
-    if let Err(e) = parables_build::compile(concat!(env!(&quot;CARGO_MANIFEST_DIR&quot;), &quot;/contracts&quot;)) {
-        panic!(&quot;failed to compile contracts: {:?}&quot;, e);
-    }
+<p>If you want parables to rebuild your project when you change a contract, add the following
+<code>build.rs</code>.</p>
+<pre><pre class="playpen"><code class="language-rust">fn main() {
+    println!(&quot;cargo:rerun-if-changed=contracts/SimpleContract.sol&quot;);
+    println!(&quot;cargo:rerun-if-changed=contracts/SimpleLib.sol&quot;);
+    println!(&quot;cargo:rerun-if-changed=contracts/SimpleLedger.sol&quot;);
 }
 </code></pre></pre>
 <p>Finally you should set up a main method that uses <code>TestRunner</code> to schedule tests in <code>src/main.rs</code>.</p>
@@ -217,15 +216,15 @@ contract SimpleContract {
 }
 </code></pre>
 <p>Compile the contract using <code>solcjs</code>.</p>
-<pre><code class="language-bash">(cd contracts &amp;&amp; solcjs *.sol --bin --abi)
-</code></pre>
 <p>We then load it by adding the <code>contracts!</code> macro to the top of our file.</p>
 <pre><pre class="playpen"><code class="language-rust">#[macro_use]
 extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts! {
+    simple_contract =&gt; &quot;SimpleContract.sol:SimpleContract&quot;,
+};
 
 fn main() -&gt; Result&lt;()&gt; {
     let mut tests = TestRunner::new();

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/miner/src/pool/verifier.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verifier.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/1b1941a/miner/src/pool/verifier.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verifier.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -320,6 +320,9 @@
 <span id="320">320</span>
 <span id="321">321</span>
 <span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -366,6 +369,8 @@
 	<span class="kw">pub</span> <span class="ident">block_gas_limit</span>: <span class="ident">U256</span>,
 	<span class="doccomment">/// Maximal gas limit for a single transaction.</span>
 	<span class="kw">pub</span> <span class="ident">tx_gas_limit</span>: <span class="ident">U256</span>,
+	<span class="doccomment">/// Skip checks for early rejection, to make sure that local transactions are always imported.</span>
+	<span class="kw">pub</span> <span class="ident">no_early_reject</span>: <span class="ident">bool</span>,
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -375,6 +380,7 @@
 			<span class="ident">minimal_gas_price</span>: <span class="number">0</span>.<span class="ident">into</span>(),
 			<span class="ident">block_gas_limit</span>: <span class="ident">U256</span>::<span class="ident">max_value</span>(),
 			<span class="ident">tx_gas_limit</span>: <span class="ident">U256</span>::<span class="ident">max_value</span>(),
+			<span class="ident">no_early_reject</span>: <span class="bool-val">false</span>,
 		}
 	}
 }
@@ -527,7 +533,7 @@
 		<span class="comment">//</span>
 		<span class="comment">// We&#39;re checking if the transaction is below configured minimal gas price</span>
 		<span class="comment">// or the effective minimal gas price in case the pool is full.</span>
-		<span class="kw">if</span>  <span class="op">!</span><span class="ident">tx</span>.<span class="ident">gas_price</span>().<span class="ident">is_zero</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_own</span> {
+		<span class="kw">if</span> <span class="op">!</span><span class="ident">tx</span>.<span class="ident">gas_price</span>().<span class="ident">is_zero</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_own</span> {
 			<span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">gas_price</span>() <span class="op">&lt;</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">options</span>.<span class="ident">minimal_gas_price</span> {
 				<span class="macro">trace</span><span class="macro">!</span>(
 					<span class="ident">target</span>: <span class="string">&quot;txqueue&quot;</span>,

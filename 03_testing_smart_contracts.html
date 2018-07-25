@@ -136,19 +136,15 @@
                         <a class="header" href="03_testing_smart_contracts.html#testing-smart-contracts" id="testing-smart-contracts"><h1>Testing Smart Contracts</h1></a>
 <p>To test a smart contract, we run it on top of the Ethereum Virtual Machine (EVM) built by <a href="https://github.com/paritytech/parity">parity</a>.</p>
 <p>Parables provides a wrapper for this using the <code>Evm</code> type.</p>
-<p>But before we start testing our contracts, we need to make sure that they are <em>compiled</em> into
-bytecode and abi.</p>
-<p>To do this, we use solc.</p>
-<pre><code class="language-bash">(cd contracts &amp;&amp; solc *.sol --combined-json bin,abi,srcmap,bin-runtime)
-</code></pre>
-<p>After this, you can put the following in <code>src/main.rs</code>.
-Don't worry, we will walk you through line-by-line what it is below.</p>
+<p>Don't worry, we will walk you through line-by-line what it is below.</p>
 <pre><pre class="playpen"><code class="language-rust">#[macro_use]
 extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts! {
+    simple_contract =&gt; &quot;SimpleContract.sol:SimpleContract&quot;,
+};
 
 fn main() -&gt; Result&lt;()&gt; {
     // Set up a template call with a default amount of gas.
@@ -169,8 +165,6 @@ fn main() -&gt; Result&lt;()&gt; {
     let mut tests = TestRunner::new();
 
     tests.test(&quot;get and increment value a couple of times&quot;, || {
-        use simple_contract::simple_contract;
-
         let evm = evm.get()?;
         let contract = simple_contract::contract(&amp;evm, simple, call);
 
@@ -255,16 +249,6 @@ The virtual machine has some state that needs to be synchronized when shared acr
 is clonable.
 The Snapshot class provides us with a convenient <code>get()</code> function that handles the cloning for us.</p>
 <p>Next we enter the code for the test case.</p>
-<pre><pre class="playpen"><code class="language-rust">
-# #![allow(unused_variables)]
-#fn main() {
-use simple_contract::simple_contract;
-#}</code></pre></pre>
-<p>We start out by importing all relevant functions into scope for the test.</p>
-<p>Using these we can access all events being emitted by the contract through
-<code>simple_contract::events::some_event</code>.</p>
-<p>Note that the function names are converted from lower camel (solidity standard) to lower snake case
-(rust standard).</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {

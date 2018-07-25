@@ -143,8 +143,6 @@ well-defined numeric values, we test a wide range of values.</p>
 #fn main() {
 tests.test(&quot;get and increment value randomly&quot;, pt!{
     |(x in any::&lt;u64&gt;())| {
-        use simple_contract::simple_contract;
-
         let x = U256::from(x);
 
         let evm = evm.get()?;

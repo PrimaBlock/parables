@@ -17,7 +17,7 @@
 curl https://sh.rustup.rs -sSf | sh
 
 # download and build parity
-git clone https://github.com/paritytech/parity
+git clone https://github.com/paritytech/parity-ethereum
 cd parity
 cargo build --release
 </code></pre>
@@ -29,7 +29,7 @@ brew update
 curl https://sh.rustup.rs -sSf | sh
 
 # download and build parity
-git clone https://github.com/paritytech/parity
+git clone https://github.com/paritytech/parity-ethereum
 cd parity
 cargo build --release
 </code></pre>
@@ -51,6 +51,14 @@ cargo build --release
                                   title='mod ethcore::block'>block</a></td>
                            <td class='docblock-short'>
                                 <p>Base data structure of this module is <code>Block</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="builtin/index.html"
+                                  title='mod ethcore::builtin'>builtin</a></td>
+                           <td class='docblock-short'>
+                                <p>Standard built-in contracts.</p>
 
                            </td>
                        </tr>

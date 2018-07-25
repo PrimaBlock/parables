@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["add","Returns the decoded output for this contract function"],["get","Returns the decoded output for this contract function"]]});

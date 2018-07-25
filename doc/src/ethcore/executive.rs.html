@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/b914912/ethcore/src/executive.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>executive.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/udoprog/.cargo/git/checkouts/parity-dc9825eb65b3adf1/1b1941a/ethcore/src/executive.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>executive.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1640,6 +1640,28 @@
 <span id="1640">1640</span>
 <span id="1641">1641</span>
 <span id="1642">1642</span>
+<span id="1643">1643</span>
+<span id="1644">1644</span>
+<span id="1645">1645</span>
+<span id="1646">1646</span>
+<span id="1647">1647</span>
+<span id="1648">1648</span>
+<span id="1649">1649</span>
+<span id="1650">1650</span>
+<span id="1651">1651</span>
+<span id="1652">1652</span>
+<span id="1653">1653</span>
+<span id="1654">1654</span>
+<span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
+<span id="1659">1659</span>
+<span id="1660">1660</span>
+<span id="1661">1661</span>
+<span id="1662">1662</span>
+<span id="1663">1663</span>
+<span id="1664">1664</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2018 Parity Technologies (UK) Ltd.</span>
 <span class="comment">// This file is part of Parity.</span>
@@ -1664,11 +1686,11 @@
 <span class="kw">use</span> <span class="ident">ethereum_types</span>::{<span class="ident">H256</span>, <span class="ident">U256</span>, <span class="ident">U512</span>, <span class="ident">Address</span>};
 <span class="kw">use</span> <span class="ident">bytes</span>::{<span class="ident">Bytes</span>, <span class="ident">BytesRef</span>};
 <span class="kw">use</span> <span class="ident">state</span>::{<span class="ident">Backend</span> <span class="kw">as</span> <span class="ident">StateBackend</span>, <span class="ident">State</span>, <span class="ident">Substate</span>, <span class="ident">CleanupMode</span>};
-<span class="kw">use</span> <span class="ident">machine</span>::<span class="ident">EthereumMachine</span> <span class="kw">as</span> <span class="ident">Machine</span>;
 <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">ExecutionError</span>;
+<span class="kw">use</span> <span class="ident">machine</span>::<span class="ident">EthereumMachine</span> <span class="kw">as</span> <span class="ident">Machine</span>;
 <span class="kw">use</span> <span class="ident">evm</span>::{<span class="ident">CallType</span>, <span class="ident">Finalize</span>, <span class="ident">FinalizationResult</span>};
 <span class="kw">use</span> <span class="ident">vm</span>::{
-	<span class="self">self</span>, <span class="ident">Ext</span>, <span class="ident">EnvInfo</span>, <span class="ident">CreateContractAddress</span>, <span class="ident">ReturnData</span>, <span class="ident">CleanDustMode</span>, <span class="ident">ActionParams</span>,
+	<span class="self">self</span>, <span class="ident">EnvInfo</span>, <span class="ident">CreateContractAddress</span>, <span class="ident">ReturnData</span>, <span class="ident">CleanDustMode</span>, <span class="ident">ActionParams</span>,
 	<span class="ident">ActionValue</span>, <span class="ident">Schedule</span>,
 };
 <span class="kw">use</span> <span class="ident">externalities</span>::<span class="kw-2">*</span>;
@@ -1810,28 +1832,31 @@
 	<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
 	<span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">EnvInfo</span>,
 	<span class="ident">machine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Machine</span>,
+	<span class="ident">schedule</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Schedule</span>,
 	<span class="ident">depth</span>: <span class="ident">usize</span>,
 	<span class="ident">static_flag</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">StateBackend</span><span class="op">&gt;</span> <span class="ident">Executive</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span><span class="op">&gt;</span> {
 	<span class="doccomment">/// Basic constructor.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">EnvInfo</span>, <span class="ident">machine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Machine</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">EnvInfo</span>, <span class="ident">machine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Machine</span>, <span class="ident">schedule</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Schedule</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="ident">Executive</span> {
 			<span class="ident">state</span>: <span class="ident">state</span>,
 			<span class="ident">info</span>: <span class="ident">info</span>,
 			<span class="ident">machine</span>: <span class="ident">machine</span>,
+			<span class="ident">schedule</span>: <span class="ident">schedule</span>,
 			<span class="ident">depth</span>: <span class="number">0</span>,
 			<span class="ident">static_flag</span>: <span class="bool-val">false</span>,
 		}
 	}
 
 	<span class="doccomment">/// Populates executive from parent properties. Increments executive depth.</span>
-	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_parent</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">EnvInfo</span>, <span class="ident">machine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Machine</span>, <span class="ident">parent_depth</span>: <span class="ident">usize</span>, <span class="ident">static_flag</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+	<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_parent</span>(<span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">EnvInfo</span>, <span class="ident">machine</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Machine</span>, <span class="ident">schedule</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Schedule</span>, <span class="ident">parent_depth</span>: <span class="ident">usize</span>, <span class="ident">static_flag</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
 		<span class="ident">Executive</span> {
 			<span class="ident">state</span>: <span class="ident">state</span>,
 			<span class="ident">info</span>: <span class="ident">info</span>,
 			<span class="ident">machine</span>: <span class="ident">machine</span>,
+			<span class="ident">schedule</span>: <span class="ident">schedule</span>,
 			<span class="ident">depth</span>: <span class="ident">parent_depth</span> <span class="op">+</span> <span class="number">1</span>,
 			<span class="ident">static_flag</span>: <span class="ident">static_flag</span>,
 		}
@@ -1848,7 +1873,7 @@
 		<span class="ident">static_call</span>: <span class="ident">bool</span>,
 	) <span class="op">-&gt;</span> <span class="ident">Externalities</span><span class="op">&lt;</span><span class="lifetime">&#39;any</span>, <span class="ident">T</span>, <span class="ident">V</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Tracer</span>, <span class="ident">V</span>: <span class="ident">VMTracer</span> {
 		<span class="kw">let</span> <span class="ident">is_static</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">static_flag</span> <span class="op">||</span> <span class="ident">static_call</span>;
-		<span class="ident">Externalities</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">state</span>, <span class="self">self</span>.<span class="ident">info</span>, <span class="self">self</span>.<span class="ident">machine</span>, <span class="self">self</span>.<span class="ident">depth</span>, <span class="ident">origin_info</span>, <span class="ident">substate</span>, <span class="ident">output</span>, <span class="ident">tracer</span>, <span class="ident">vm_tracer</span>, <span class="ident">is_static</span>)
+		<span class="ident">Externalities</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">state</span>, <span class="self">self</span>.<span class="ident">info</span>, <span class="self">self</span>.<span class="ident">machine</span>, <span class="self">self</span>.<span class="ident">schedule</span>, <span class="self">self</span>.<span class="ident">depth</span>, <span class="ident">origin_info</span>, <span class="ident">substate</span>, <span class="ident">output</span>, <span class="ident">tracer</span>, <span class="ident">vm_tracer</span>, <span class="ident">is_static</span>)
 	}
 
 	<span class="doccomment">/// This function should be used to execute transaction.</span>
@@ -1887,7 +1912,7 @@
 		<span class="kw">let</span> <span class="ident">sender</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">sender</span>();
 		<span class="kw">let</span> <span class="ident">nonce</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">nonce</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>)<span class="question-mark">?</span>;
 
-		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="self">self</span>.<span class="ident">info</span>.<span class="ident">number</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>;
 		<span class="kw">let</span> <span class="ident">base_gas_required</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="ident">t</span>.<span class="ident">gas_required</span>(<span class="kw-2">&amp;</span><span class="ident">schedule</span>));
 
 		<span class="kw">if</span> <span class="ident">t</span>.<span class="ident">gas</span> <span class="op">&lt;</span> <span class="ident">base_gas_required</span> {
@@ -1979,7 +2004,6 @@
 
 	<span class="kw">fn</span> <span class="ident">exec_vm</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">V</span><span class="op">&gt;</span>(
 		<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-		<span class="ident">schedule</span>: <span class="ident">Schedule</span>,
 		<span class="ident">params</span>: <span class="ident">ActionParams</span>,
 		<span class="ident">unconfirmed_substate</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Substate</span>,
 		<span class="ident">output_policy</span>: <span class="ident">OutputPolicy</span>,
@@ -1993,19 +2017,22 @@
 		<span class="comment">// Ordinary execution - keep VM in same thread</span>
 		<span class="kw">if</span> <span class="self">self</span>.<span class="ident">depth</span> <span class="op">!=</span> <span class="ident">depth_threshold</span> {
 			<span class="kw">let</span> <span class="ident">vm_factory</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">vm_factory</span>();
+			<span class="kw">let</span> <span class="ident">wasm</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>.<span class="ident">wasm</span>.<span class="ident">is_some</span>();
+			<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;executive&quot;</span>, <span class="string">&quot;ext.schedule.have_delegate_call: {}&quot;</span>, <span class="self">self</span>.<span class="ident">schedule</span>.<span class="ident">have_delegate_call</span>);
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ext</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">as_externalities</span>(<span class="ident">OriginInfo</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>), <span class="ident">unconfirmed_substate</span>, <span class="ident">output_policy</span>, <span class="ident">tracer</span>, <span class="ident">vm_tracer</span>, <span class="ident">static_call</span>);
-			<span class="macro">trace</span><span class="macro">!</span>(<span class="ident">target</span>: <span class="string">&quot;executive&quot;</span>, <span class="string">&quot;ext.schedule.have_delegate_call: {}&quot;</span>, <span class="ident">ext</span>.<span class="ident">schedule</span>().<span class="ident">have_delegate_call</span>);
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">vm_factory</span>.<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">vm_factory</span>.<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>, <span class="ident">wasm</span>);
 			<span class="kw">return</span> <span class="ident">vm</span>.<span class="ident">exec</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ext</span>).<span class="ident">finalize</span>(<span class="ident">ext</span>);
 		}
 
 		<span class="comment">// Start in new thread with stack size needed up to max depth</span>
 		<span class="ident">crossbeam</span>::<span class="ident">scope</span>(<span class="op">|</span><span class="ident">scope</span><span class="op">|</span> {
 			<span class="kw">let</span> <span class="ident">vm_factory</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">vm_factory</span>();
+			<span class="kw">let</span> <span class="ident">max_depth</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>.<span class="ident">max_depth</span>;
+			<span class="kw">let</span> <span class="ident">wasm</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>.<span class="ident">wasm</span>.<span class="ident">is_some</span>();
 			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ext</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">as_externalities</span>(<span class="ident">OriginInfo</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>), <span class="ident">unconfirmed_substate</span>, <span class="ident">output_policy</span>, <span class="ident">tracer</span>, <span class="ident">vm_tracer</span>, <span class="ident">static_call</span>);
 
-			<span class="ident">scope</span>.<span class="ident">builder</span>().<span class="ident">stack_size</span>(::<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">schedule</span>.<span class="ident">max_depth</span>.<span class="ident">saturating_sub</span>(<span class="ident">depth_threshold</span>) <span class="op">*</span> <span class="ident">STACK_SIZE_PER_DEPTH</span>, <span class="ident">local_stack_size</span>)).<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
-				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">vm_factory</span>.<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
+			<span class="ident">scope</span>.<span class="ident">builder</span>().<span class="ident">stack_size</span>(::<span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">max_depth</span>.<span class="ident">saturating_sub</span>(<span class="ident">depth_threshold</span>) <span class="op">*</span> <span class="ident">STACK_SIZE_PER_DEPTH</span>, <span class="ident">local_stack_size</span>)).<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
+				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm</span> <span class="op">=</span> <span class="ident">vm_factory</span>.<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>, <span class="ident">wasm</span>);
 				<span class="ident">vm</span>.<span class="ident">exec</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ext</span>).<span class="ident">finalize</span>(<span class="ident">ext</span>)
 			}).<span class="ident">expect</span>(<span class="string">&quot;Sub-thread creation cannot fail; the host might run out of resources; qed&quot;</span>)
 		}).<span class="ident">join</span>()
@@ -2035,7 +2062,7 @@
 		<span class="comment">// backup used in case of running out of gas</span>
 		<span class="self">self</span>.<span class="ident">state</span>.<span class="ident">checkpoint</span>();
 
-		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="self">self</span>.<span class="ident">info</span>.<span class="ident">number</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>;
 
 		<span class="comment">// at first, transfer value to destination</span>
 		<span class="kw">if</span> <span class="kw">let</span> <span class="ident">ActionValue</span>::<span class="ident">Transfer</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">params</span>.<span class="ident">value</span> {
@@ -2122,7 +2149,7 @@
 				<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">subvmtracer</span> <span class="op">=</span> <span class="ident">vm_tracer</span>.<span class="ident">prepare_subtrace</span>(<span class="ident">params</span>.<span class="ident">code</span>.<span class="ident">as_ref</span>().<span class="ident">expect</span>(<span class="string">&quot;scope is conditional on params.code.is_some(); qed&quot;</span>));
 
 				<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> {
-					<span class="self">self</span>.<span class="ident">exec_vm</span>(<span class="ident">schedule</span>, <span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">unconfirmed_substate</span>, <span class="ident">OutputPolicy</span>::<span class="ident">Return</span>(<span class="ident">output</span>, <span class="ident">trace_output</span>.<span class="ident">as_mut</span>()), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">subtracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">subvmtracer</span>)
+					<span class="self">self</span>.<span class="ident">exec_vm</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">unconfirmed_substate</span>, <span class="ident">OutputPolicy</span>::<span class="ident">Return</span>(<span class="ident">output</span>, <span class="ident">trace_output</span>.<span class="ident">as_mut</span>()), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">subtracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">subvmtracer</span>)
 				};
 
 				<span class="ident">vm_tracer</span>.<span class="ident">done_subtrace</span>(<span class="ident">subvmtracer</span>);
@@ -2195,7 +2222,7 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unconfirmed_substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="comment">// create contract and transfer value to it if necessary</span>
-		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="self">self</span>.<span class="ident">info</span>.<span class="ident">number</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>;
 		<span class="kw">let</span> <span class="ident">nonce_offset</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">schedule</span>.<span class="ident">no_empty</span> {<span class="number">1</span>} <span class="kw">else</span> {<span class="number">0</span>}.<span class="ident">into</span>();
 		<span class="kw">let</span> <span class="ident">prev_bal</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">balance</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">address</span>)<span class="question-mark">?</span>;
 		<span class="kw">if</span> <span class="kw">let</span> <span class="ident">ActionValue</span>::<span class="ident">Transfer</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">params</span>.<span class="ident">value</span> {
@@ -2214,7 +2241,6 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">subvmtracer</span> <span class="op">=</span> <span class="ident">vm_tracer</span>.<span class="ident">prepare_subtrace</span>(<span class="ident">params</span>.<span class="ident">code</span>.<span class="ident">as_ref</span>().<span class="ident">expect</span>(<span class="string">&quot;two ways into create (Externalities::create and Executive::transact_with_tracer); both place `Some(...)` `code` in `params`; qed&quot;</span>));
 
 		<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">exec_vm</span>(
-			<span class="ident">schedule</span>,
 			<span class="ident">params</span>,
 			<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">unconfirmed_substate</span>,
 			<span class="ident">OutputPolicy</span>::<span class="ident">InitContract</span>(<span class="ident">output</span>.<span class="ident">as_mut</span>().<span class="ident">or</span>(<span class="ident">trace_output</span>.<span class="ident">as_mut</span>())),
@@ -2250,7 +2276,7 @@
 		<span class="ident">trace</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 		<span class="ident">vm_trace</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>
 	) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Executed</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">V</span><span class="op">&gt;</span>, <span class="ident">ExecutionError</span><span class="op">&gt;</span> {
-		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="self">self</span>.<span class="ident">info</span>.<span class="ident">number</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">schedule</span>;
 
 		<span class="comment">// refunds from SSTORE nonzero -&gt; zero</span>
 		<span class="kw">let</span> <span class="ident">sstore_refunds</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="ident">schedule</span>.<span class="ident">sstore_refund_gas</span>) <span class="op">*</span> <span class="ident">substate</span>.<span class="ident">sstore_clears_count</span>;
@@ -2399,10 +2425,11 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">0x100u64</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">create</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -2456,10 +2483,11 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">create</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -2498,11 +2526,12 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_byzantium_machine</span>(<span class="number">5</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tracer</span> <span class="op">=</span> <span class="ident">ExecutiveTracer</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm_tracer</span> <span class="op">=</span> <span class="ident">ExecutiveVMTracer</span>::<span class="ident">toplevel</span>();
 
-		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 		<span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span>[<span class="number">0u8</span>;<span class="number">0</span>]);
 		<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="ident">output</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vm_tracer</span>).<span class="ident">unwrap</span>();
 
@@ -2582,12 +2611,13 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">5</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tracer</span> <span class="op">=</span> <span class="ident">ExecutiveTracer</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm_tracer</span> <span class="op">=</span> <span class="ident">ExecutiveVMTracer</span>::<span class="ident">toplevel</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span>[<span class="number">0u8</span>;<span class="number">0</span>]);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="ident">output</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vm_tracer</span>).<span class="ident">unwrap</span>()
 		};
@@ -2698,12 +2728,13 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> ::<span class="ident">ethereum</span>::<span class="ident">new_byzantium_test_machine</span>();
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tracer</span> <span class="op">=</span> <span class="ident">ExecutiveTracer</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm_tracer</span> <span class="op">=</span> <span class="ident">ExecutiveVMTracer</span>::<span class="ident">toplevel</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span>[<span class="number">0u8</span>;<span class="number">0</span>]);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="ident">output</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vm_tracer</span>).<span class="ident">unwrap</span>()
 		};
@@ -2770,12 +2801,13 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">5</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tracer</span> <span class="op">=</span> <span class="ident">ExecutiveTracer</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vm_tracer</span> <span class="op">=</span> <span class="ident">ExecutiveVMTracer</span>::<span class="ident">toplevel</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">create</span>(<span class="ident">params</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">vm_tracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -2857,10 +2889,11 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">create</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -2908,10 +2941,11 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100</span>), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">1024</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		{
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">create</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>();
 		}
 
@@ -2968,10 +3002,11 @@
 
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> []), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -3012,10 +3047,11 @@
 		<span class="ident">state</span>.<span class="ident">init_code</span>(<span class="kw-2">&amp;</span><span class="ident">address</span>, <span class="ident">code</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> []), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -3045,9 +3081,10 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="ident">info</span>.<span class="ident">gas_limit</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100_000</span>);
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 
 		<span class="kw">let</span> <span class="ident">executed</span> <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">TransactOptions</span>::<span class="ident">with_no_tracing</span>();
 			<span class="ident">ex</span>.<span class="ident">transact</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>, <span class="ident">opts</span>).<span class="ident">unwrap</span>()
 		};
@@ -3082,9 +3119,10 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="ident">info</span>.<span class="ident">gas_limit</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100_000</span>);
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 
 		<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">TransactOptions</span>::<span class="ident">with_no_tracing</span>();
 			<span class="ident">ex</span>.<span class="ident">transact</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>, <span class="ident">opts</span>)
 		};
@@ -3115,9 +3153,10 @@
 		<span class="ident">info</span>.<span class="ident">gas_used</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">20_000</span>);
 		<span class="ident">info</span>.<span class="ident">gas_limit</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100_000</span>);
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 
 		<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">TransactOptions</span>::<span class="ident">with_no_tracing</span>();
 			<span class="ident">ex</span>.<span class="ident">transact</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>, <span class="ident">opts</span>)
 		};
@@ -3148,9 +3187,10 @@
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="ident">info</span>.<span class="ident">gas_limit</span> <span class="op">=</span> <span class="ident">U256</span>::<span class="ident">from</span>(<span class="number">100_000</span>);
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 
 		<span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">TransactOptions</span>::<span class="ident">with_no_tracing</span>();
 			<span class="ident">ex</span>.<span class="ident">transact</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>, <span class="ident">opts</span>)
 		};
@@ -3181,10 +3221,11 @@
 		<span class="ident">state</span>.<span class="ident">add_balance</span>(<span class="kw-2">&amp;</span><span class="ident">sender</span>, <span class="kw-2">&amp;</span><span class="ident">U256</span>::<span class="ident">from_str</span>(<span class="string">&quot;152d02c7e14af6800000&quot;</span>).<span class="ident">unwrap</span>(), <span class="ident">CleanupMode</span>::<span class="ident">NoEmpty</span>).<span class="ident">unwrap</span>();
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> <span class="ident">make_frontier_machine</span>(<span class="number">0</span>);
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">create</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>)
 		};
 
@@ -3214,11 +3255,12 @@
 		<span class="ident">params</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">ActionValue</span>::<span class="ident">Transfer</span>(<span class="ident">U256</span>::<span class="ident">zero</span>());
 		<span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">EnvInfo</span>::<span class="ident">default</span>();
 		<span class="kw">let</span> <span class="ident">machine</span> <span class="op">=</span> ::<span class="ident">ethereum</span>::<span class="ident">new_byzantium_test_machine</span>();
+		<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substate</span> <span class="op">=</span> <span class="ident">Substate</span>::<span class="ident">new</span>();
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">14</span>];
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>: <span class="ident">result</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">substate</span>, <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -3261,7 +3303,8 @@
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">20</span>];
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>: <span class="ident">result</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>.<span class="ident">clone</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Substate</span>::<span class="ident">new</span>(), <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
@@ -3274,7 +3317,8 @@
 
 		<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">20</span>];
 		<span class="kw">let</span> <span class="ident">FinalizationResult</span> { <span class="ident">gas_left</span>: <span class="ident">result</span>, .. } <span class="op">=</span> {
-			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>);
+			<span class="kw">let</span> <span class="ident">schedule</span> <span class="op">=</span> <span class="ident">machine</span>.<span class="ident">schedule</span>(<span class="ident">info</span>.<span class="ident">number</span>);
+			<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ex</span> <span class="op">=</span> <span class="ident">Executive</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">info</span>, <span class="kw-2">&amp;</span><span class="ident">machine</span>, <span class="kw-2">&amp;</span><span class="ident">schedule</span>);
 			<span class="ident">ex</span>.<span class="ident">call</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Substate</span>::<span class="ident">new</span>(), <span class="ident">BytesRef</span>::<span class="ident">Fixed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopTracer</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">NoopVMTracer</span>).<span class="ident">unwrap</span>()
 		};
 
