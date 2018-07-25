@@ -53,7 +53,10 @@ where
     }
 
     /// Sync multiple addresses.
-    pub fn sync_all(&mut self, addresses: Vec<Address>) -> Result<(), error::Error> {
+    pub fn sync_all(
+        &mut self,
+        addresses: impl IntoIterator<Item = Address>,
+    ) -> Result<(), error::Error> {
         for a in addresses {
             self.sync(a)?;
         }

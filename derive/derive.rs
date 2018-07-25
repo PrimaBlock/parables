@@ -287,6 +287,26 @@ fn impl_contract_abi(
                     }
                 }
 
+                /// Modify the default gas for a copy of the current contract.
+                pub fn gas<V>(self, gas: V) -> Self
+                    where V: Into<::parables_testing::ethereum_types::U256>
+                {
+                    Self {
+                        call: self.call.gas(gas),
+                        ..self
+                    }
+                }
+
+                /// Modify the default gas_price for a copy of the current contract.
+                pub fn gas_price<V>(self, gas_price: V) -> Self
+                    where V: Into<::parables_testing::ethereum_types::U256>
+                {
+                    Self {
+                        call: self.call.gas_price(gas_price),
+                        ..self
+                    }
+                }
+
                 /// Modify the default value for a copy of the current contract.
                 pub fn value<V>(self, value: V) -> Self
                     where V: Into<::parables_testing::ethereum_types::U256>

@@ -33,7 +33,7 @@ macro_rules! wei {
         $crate::wei::from_kewi($value)
     };
     ($value:tt gwei) => {
-        $crate::wei::from_gewi($value)
+        $crate::wei::from_gwei($value)
     };
     ($value:tt szabo) => {
         $crate::wei::from_szabo($value)
