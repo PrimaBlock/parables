@@ -17,8 +17,6 @@ We do that by changing the test case to this:
 ```rust
 tests.test("get and increment value randomly within constraints", pt!{
     |(x in any::<u64>())| {
-        use simple_contract::simple_contract;
-
         let x = U256::from(x);
 
         let evm = evm.get()?;

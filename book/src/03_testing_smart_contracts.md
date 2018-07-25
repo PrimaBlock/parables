@@ -4,16 +4,6 @@ To test a smart contract, we run it on top of the Ethereum Virtual Machine (EVM)
 
 Parables provides a wrapper for this using the `Evm` type.
 
-But before we start testing our contracts, we need to make sure that they are _compiled_ into
-bytecode and abi.
-
-To do this, we use solc.
-
-```bash
-(cd contracts && solc *.sol --combined-json bin,abi,srcmap,bin-runtime)
-```
-
-After this, you can put the following in `src/main.rs`.
 Don't worry, we will walk you through line-by-line what it is below.
 
 ```rust
@@ -22,7 +12,9 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts! {
+    simple_contract => "SimpleContract.sol:SimpleContract",
+};
 
 fn main() -> Result<()> {
     // Set up a template call with a default amount of gas.
@@ -43,8 +35,6 @@ fn main() -> Result<()> {
     let mut tests = TestRunner::new();
 
     tests.test("get and increment value a couple of times", || {
-        use simple_contract::simple_contract;
-
         let evm = evm.get()?;
         let contract = simple_contract::contract(&evm, simple, call);
 
@@ -135,18 +125,6 @@ is clonable.
 The Snapshot class provides us with a convenient `get()` function that handles the cloning for us.
 
 Next we enter the code for the test case.
-
-```rust
-use simple_contract::simple_contract;
-```
-
-We start out by importing all relevant functions into scope for the test.
-
-Using these we can access all events being emitted by the contract through
-`simple_contract::events::some_event`.
-
-Note that the function names are converted from lower camel (solidity standard) to lower snake case
-(rust standard).
 
 ```rust
 let evm = evm.get()?;

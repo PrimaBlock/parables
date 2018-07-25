@@ -17,15 +17,14 @@ parables-testing = {git = "https://github.com/primablock/parables"}
 parables-build = {git = "https://github.com/primablock/parables"}
 ```
 
-If you want parables to try to build your contracts automatically, add the following `build.rs`.
+If you want parables to rebuild your project when you change a contract, add the following
+`build.rs`.
 
 ```rust
-extern crate parables_build;
-
 fn main() {
-    if let Err(e) = parables_build::compile(concat!(env!("CARGO_MANIFEST_DIR"), "/contracts")) {
-        panic!("failed to compile contracts: {:?}", e);
-    }
+    println!("cargo:rerun-if-changed=contracts/SimpleContract.sol");
+    println!("cargo:rerun-if-changed=contracts/SimpleLib.sol");
+    println!("cargo:rerun-if-changed=contracts/SimpleLedger.sol");
 }
 ```
 
@@ -107,10 +106,6 @@ contract SimpleContract {
 
 Compile the contract using `solcjs`.
 
-```bash
-(cd contracts && solcjs *.sol --bin --abi)
-```
-
 We then load it by adding the `contracts!` macro to the top of our file.
 
 ```rust
@@ -119,7 +114,9 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts! {
+    simple_contract => "SimpleContract.sol:SimpleContract",
+};
 
 fn main() -> Result<()> {
     let mut tests = TestRunner::new();

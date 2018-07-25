@@ -3,12 +3,13 @@ extern crate parables_testing;
 
 use parables_testing::prelude::*;
 
-contracts!();
+contracts!{
+    simple_contract => "SimpleContract.sol:SimpleContract",
+    simple_lib => "SimpleLib.sol:SimpleLib",
+    simple_ledger => "SimpleLedger.sol:SimpleLedger",
+}
 
 fn main() -> Result<()> {
-    use simple_contract::simple_contract;
-    use simple_lib::simple_lib;
-
     let owner = Address::random();
     // template call
     let call = Call::new(owner).gas(1_000_000);
@@ -18,7 +19,7 @@ fn main() -> Result<()> {
     evm.add_balance(owner, wei::from_ether(1000))?;
 
     // set up simple lib
-    evm.deploy(simple_lib::constructor(), call)?;
+    evm.deploy(simple_lib::constructor(), call)?.ok()?;
     let simple = evm.deploy(simple_contract::constructor(42), call)?.ok()?;
 
     let evm = Snapshot::new(evm);
@@ -29,8 +30,7 @@ fn main() -> Result<()> {
         "any set value",
         pt!{
             |(x in any::<u64>())| {
-                use simple_contract::simple_contract;
-                use simple_contract::simple_contract::events as ev;
+                use simple_contract::events as ev;
 
                 let evm = evm.get()?;
 
@@ -39,7 +39,7 @@ fn main() -> Result<()> {
                 let out = contract.get_value()?.ok()?;
                 assert_eq!(out, 42.into());
 
-                contract.set_value(x)?;
+                contract.set_value(x)?.ok()?;
 
                 let out = contract.get_value()?.ok()?;
                 assert_eq!(out, x.into());
@@ -55,8 +55,7 @@ fn main() -> Result<()> {
     );
 
     runner.test("decrement step by step", || {
-        use simple_contract::simple_contract;
-        use simple_contract::simple_contract::events as ev;
+        use simple_contract::events as ev;
 
         let evm = evm.get()?;
         let mut current = 42u64;
@@ -66,7 +65,7 @@ fn main() -> Result<()> {
         let out = contract.get_value()?.ok()?;
         assert_eq!(out, current.into());
 
-        contract.test_add(10, 20)?;
+        contract.test_add(10, 20)?.ok()?;
         current = 30u64;
 
         for _ in 0..1000 {
@@ -76,7 +75,8 @@ fn main() -> Result<()> {
             // add a value to the call, this value will be sent to the contract.
             contract
                 .value(wei::from_ether(1))
-                .set_value(out + 1.into())?;
+                .set_value(out + 1.into())?
+                .ok()?;
 
             current += 1;
         }
@@ -129,8 +129,6 @@ fn main() -> Result<()> {
     });
 
     runner.test("test ledger state", || {
-        use simple_ledger::simple_ledger;
-
         let a = Address::random();
         let b = Address::random();
 
@@ -172,7 +170,7 @@ fn main() -> Result<()> {
         impl<'a> State<'a> {
             /// Helper to get the current value stored on the blockchain.
             fn get_value(&self, address: Address) -> Result<U256> {
-                use simple_ledger::simple_ledger::functions as f;
+                use simple_ledger::functions as f;
                 let call = Call::new(Address::random()).gas(10_000_000).gas_price(0);
                 Ok(self.0.call(self.1, f::get(address), call)?.ok()?)
             }

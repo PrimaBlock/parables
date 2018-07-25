@@ -8,9 +8,9 @@ license = "GPL-3.0"
 path = "lib.rs"
 
 [dependencies]
+parables-derive = {path = "../derive"}
 ethereum-types = "0.3"
 ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
-ethabi-derive = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
 ethash = { git = "https://github.com/paritytech/parity.git" }
 ethcore = { git = "https://github.com/paritytech/parity.git", features = ["test-helpers"] }
 ethcore-transaction = { git = "https://github.com/paritytech/parity.git" }

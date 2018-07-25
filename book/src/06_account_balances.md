@@ -94,8 +94,6 @@ The contract has a state which is stored per address.
 A `Ledger` can be taught how to use this using a custom `LedgerState`.
 
 ```rust
-use simple_ledger::simple_ledger;
-
 let a = Address::random();
 let b = Address::random();
 

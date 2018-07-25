@@ -10,8 +10,6 @@ well-defined numeric values, we test a wide range of values.
 ```rust
 tests.test("get and increment value randomly", pt!{
     |(x in any::<u64>())| {
-        use simple_contract::simple_contract;
-
         let x = U256::from(x);
 
         let evm = evm.get()?;

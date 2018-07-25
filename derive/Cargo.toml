@@ -1,11 +1,12 @@
 [package]
-name = "parables-build"
+name = "parables-derive"
 version = "0.1.0"
 authors = ["John-John Tedro <udoprog@tedro.se>"]
 license = "GPL-3.0"
 
 [lib]
 path = "lib.rs"
+proc-macro = true
 
 [dependencies]
 ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }

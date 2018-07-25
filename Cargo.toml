@@ -2,5 +2,5 @@
 members = [
     "testing",
     "example",
-    "build",
+    "derive",
 ]

@@ -1,7 +1,5 @@
-extern crate parables_build;
-
 fn main() {
-    if let Err(e) = parables_build::compile(concat!(env!("CARGO_MANIFEST_DIR"), "/contracts")) {
-        panic!("failed to compile contracts: {}", e);
-    }
+    println!("cargo:rerun-if-changed=contracts/SimpleLedger.sol");
+    println!("cargo:rerun-if-changed=contracts/SimpleContract.sol");
+    println!("cargo:rerun-if-changed=contracts/SimpleLib.sol");
 }

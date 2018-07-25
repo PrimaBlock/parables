@@ -11,7 +11,7 @@ use quote;
 use serde_json;
 use std::collections::HashMap;
 use std::fmt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use syn;
 
 const INTERNAL_ERR: &'static str = "`parables_testing` internal error";
@@ -52,8 +52,26 @@ impl fmt::Display for Name {
     }
 }
 
+/// Options provided through derive parameters.
+#[derive(Debug, Default)]
+pub struct Options {
+    pub path: PathBuf,
+    pub contracts: Vec<ParablesContract>,
+}
+
+#[derive(Debug)]
+pub struct ParablesContract {
+    pub item: String,
+    pub file: String,
+    pub entry: String,
+}
+
 /// Implement a module for the given output.
-pub fn impl_module(path: &Path, output: Output) -> Result<quote::Tokens> {
+pub fn impl_module(
+    path: &Path,
+    output: Output,
+    contracts: Vec<ParablesContract>,
+) -> Result<quote::Tokens> {
     let mut result = Vec::new();
 
     let mut map = HashMap::new();
@@ -61,31 +79,32 @@ pub fn impl_module(path: &Path, output: Output) -> Result<quote::Tokens> {
     for (name, contract) in output.contracts {
         let name = parse_name(&name)?;
 
-        map.entry(name.module_name.to_string())
-            .or_insert_with(Vec::new)
-            .push((name, contract));
+        map.insert(
+            (name.path.to_string(), name.type_name.to_string()),
+            (name, contract),
+        );
     }
 
-    for (module_name, values) in map.into_iter() {
-        let module_name = syn::Ident::from(module_name.as_str());
+    for contract in contracts {
+        let ParablesContract { item, file, entry } = contract;
 
-        let mut types = Vec::new();
+        let module_name = syn::Ident::from(item.as_str());
+        let key = (file.to_string(), entry.to_string());
 
-        for (name, contract) in values {
-            let contract = impl_contract_abi(&name, &contract, &contract.abi)?;
+        let (name, contract) = map.remove(&key).ok_or_else(|| {
+            format!(
+                "Missing solidity ABI for `{}:{}` in {}",
+                file,
+                entry,
+                path.display()
+            )
+        })?;
 
-            let type_module_name = syn::Ident::from(name.type_module_name.as_str());
-
-            types.push(quote! {
-                pub mod #type_module_name {
-                    #contract
-                }
-            });
-        }
+        let contract = impl_contract_abi(&name, &contract, &contract.abi)?;
 
         result.push(quote! {
             pub mod #module_name {
-                #(#types)*
+                #contract
             }
         });
     }
