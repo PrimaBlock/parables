@@ -623,7 +623,7 @@ fn impl_contract_function(function: &Function) -> (quote::Tokens, quote::Tokens)
         pub fn #impl_function_name<#(#template_params),*>(&self, #(#params),*)
             -> ::std::result::Result<
                 ::parables_testing::evm::Call<#output_kinds>,
-                ::parables_testing::error::Error,
+                ::parables_testing::Error,
             >
             where VM: ::parables_testing::abi::Vm
         {
@@ -735,7 +735,7 @@ fn impl_constructor(
             type Output = ethabi::Address;
 
             fn encoded(&self, linker: &::parables_testing::linker::Linker)
-                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::error::Error>
+                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::Error>
             {
                 let constructor = ethabi::Constructor {
                     inputs: #constructor_inputs
@@ -751,16 +751,16 @@ fn impl_constructor(
             }
 
             fn output(&self, output_bytes: ethabi::Bytes)
-                -> ::std::result::Result<ethabi::Address, ::parables_testing::error::Error>
+                -> ::std::result::Result<ethabi::Address, ::parables_testing::Error>
             {
                 let out = ethabi::decode(&vec![ethabi::ParamType::Address], &output_bytes)
-                    .map_err(|e| format!("failed to decode output: {}", e))?;
+                    .map_err(|e| format_err!("failed to decode output: {}", e))?;
 
                 let out = out.into_iter().next()
-                    .ok_or_else(|| "expected one parameter")?;
+                    .ok_or_else(|| format_err!("expected one parameter"))?;
 
                 let out = out.to_address()
-                    .ok_or_else(|| "failed to convert output to address")?;
+                    .ok_or_else(|| format_err!("failed to convert output to address"))?;
 
                 Ok(out)
             }
@@ -926,7 +926,7 @@ fn declare_events(event: &Event) -> quote::Tokens {
         0 => quote! {
             /// Parses log.
             fn parse_log(&self, _log: ethabi::RawLog)
-                -> ::std::result::Result<Self::Log, ::parables_testing::error::Error>
+                -> ::std::result::Result<Self::Log, ::parables_testing::Error>
             {
                 Ok(super::logs::#name { })
             }
@@ -934,10 +934,10 @@ fn declare_events(event: &Event) -> quote::Tokens {
         _ => quote! {
             /// Parses log.
             fn parse_log(&self, log: ethabi::RawLog)
-                -> ::std::result::Result<Self::Log, ::parables_testing::error::Error>
+                -> ::std::result::Result<Self::Log, ::parables_testing::Error>
             {
                 let log = self.event.parse_log(log)
-                    .map_err(|e| format!("failed to parse log: {}", e))?;
+                    .map_err(|e| format_err!("failed to parse log: {}", e))?;
 
                 let mut log = log.params.into_iter();
 
@@ -1010,10 +1010,10 @@ fn declare_functions(function: &Function) -> quote::Tokens {
                 let from_first = from_token(&function.outputs[0].kind, &o);
                 quote! {
                     let out = self.function.decode_output(output)
-                        .map_err(|e| format!("failed to decode output: {}", e))?;
+                        .map_err(|e| format_err!("failed to decode output: {}", e))?;
 
                     let out = out.into_iter().next()
-                        .ok_or_else(|| "expected one parameter")?;
+                        .ok_or_else(|| format_err!("expected one parameter"))?;
 
                     Ok(#from_first)
                 }
@@ -1028,7 +1028,7 @@ fn declare_functions(function: &Function) -> quote::Tokens {
 
                 quote! {
                     let mut out = self.function.decode_output(output)
-                        .map_err(|e| format!("failed to decode output: {}", e))?
+                        .map_err(|e| format_err!("failed to decode output: {}", e))?
                         .into_iter();
 
                     Ok(( #(#outs),* ))
@@ -1041,7 +1041,7 @@ fn declare_functions(function: &Function) -> quote::Tokens {
         quote! {
             #[allow(unused_variables)]
             pub fn decode_output(&self, output: &[u8])
-                -> ::std::result::Result<#output_kinds, ::parables_testing::error::Error>
+                -> ::std::result::Result<#output_kinds, ::parables_testing::Error>
             {
                 #o_impl
             }
@@ -1076,10 +1076,10 @@ fn declare_functions(function: &Function) -> quote::Tokens {
             #decode_output
 
             pub fn encode_input(&self, tokens: &[ethabi::Token])
-                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::error::Error>
+                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::Error>
             {
                 self.function.encode_input(tokens)
-                    .map_err(|e| format!("failed to encode input: {}", e).into())
+                    .map_err(|e| format_err!("failed to encode input: {}", e).into())
             }
         }
     }
@@ -1093,7 +1093,7 @@ fn declare_output_functions(function: &Function) -> quote::Tokens {
     quote! {
         /// Returns the decoded output for this contract function
         pub fn #name_snake(output_bytes : &[u8])
-            -> ::std::result::Result<#output_kinds, ::parables_testing::error::Error>
+            -> ::std::result::Result<#output_kinds, ::parables_testing::Error>
         {
             super::functions::#name_camel::default().decode_output(&output_bytes)
         }
@@ -1116,13 +1116,13 @@ fn declare_functions_input_wrappers(function: &Function) -> quote::Tokens {
             type Output = #output_kinds;
 
             fn encoded(&self, _linker: &::parables_testing::linker::Linker)
-                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::error::Error>
+                -> ::std::result::Result<ethabi::Bytes, ::parables_testing::Error>
             {
                 Ok(self.encoded_input.clone())
             }
 
             fn output(&self, _output_bytes: ethabi::Bytes)
-                -> ::std::result::Result<Self::Output, ::parables_testing::error::Error>
+                -> ::std::result::Result<Self::Output, ::parables_testing::Error>
             {
                 #output_fn_body
             }

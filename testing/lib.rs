@@ -30,6 +30,7 @@ extern crate secp256k1;
 #[cfg(feature = "term")]
 extern crate term;
 
+pub use failure::*;
 pub use parables_derive::*;
 #[cfg(feature = "proptest")]
 pub use proptest::*;
@@ -39,7 +40,6 @@ pub mod abi;
 pub mod account;
 pub mod call;
 mod crypto;
-pub mod error;
 pub mod evm;
 pub mod ledger;
 pub mod linker;

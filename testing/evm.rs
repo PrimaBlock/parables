@@ -1,4 +1,3 @@
-use error::{BalanceError, Error, NonceError};
 use ethabi;
 use ethcore::db;
 use ethcore::engines;
@@ -10,6 +9,7 @@ use ethcore::state;
 use ethcore::state_db;
 use ethcore_transaction::{Action, SignedTransaction, Transaction};
 use ethereum_types::{Address, U256};
+use failure::Error;
 use kvdb::KeyValueDB;
 use parity_vm;
 use std::cell::{Ref, RefCell, RefMut};
@@ -111,9 +111,9 @@ impl<T> Call<T> {
 
         match self.outcome {
             Ok(value) => Result::Ok(value),
-            Reverted { error_info } => Err(format!("call reverted: {}", error_info).into()),
-            Errored { error_info } => Err(format!("call errored: {}", error_info).into()),
-            Status { status } => Err(format!("call returned status: {}", status).into()),
+            Reverted { error_info } => Err(format_err!("call reverted: {}", error_info)),
+            Errored { error_info } => Err(format_err!("call errored: {}", error_info)),
+            Status { status } => Err(format_err!("call returned status: {}", status)),
         }
     }
 }
@@ -178,7 +178,7 @@ impl Evm {
     /// Create a new account.
     pub fn account(&self) -> Result<account::Account, Error> {
         account::Account::new(&self.crypto)
-            .map_err(|e| format!("failed to setup account: {}", e).into())
+            .map_err(|e| format_err!("failed to setup account: {}", e))
     }
 
     /// Get the current block number.
@@ -207,7 +207,7 @@ impl Evm {
         let mut state_db = state_db::StateDB::new(journal_db, 5 * 1024 * 1024);
 
         state_db = spec.ensure_db_good(state_db, &factories)
-            .map_err(|e| format!("bad database state: {}", e))?;
+            .map_err(|e| format_err!("bad database state: {}", e))?;
 
         let genesis = spec.genesis_header();
 
@@ -217,10 +217,10 @@ impl Evm {
 
             state_db
                 .journal_under(&mut batch, 0, &genesis.hash())
-                .map_err(|e| format!("failed to execute transaction: {}", e))?;
+                .map_err(|e| format_err!("failed to execute transaction: {}", e))?;
 
             db.write(batch)
-                .map_err(|e| format!("failed to set up database: {}", e))?;
+                .map_err(|e| format_err!("failed to set up database: {}", e))?;
         }
 
         let state = state::State::from_existing(
@@ -228,7 +228,7 @@ impl Evm {
             *genesis.state_root(),
             spec.engine.account_start_nonce(0),
             factories,
-        ).map_err(|e| format!("error setting up state: {}", e))?;
+        ).map_err(|e| format_err!("error setting up state: {}", e))?;
 
         Ok(state)
     }
@@ -255,14 +255,14 @@ impl Evm {
 
         let code = constructor
             .encoded(&linker)
-            .map_err(|e| format!("{}: failed to encode deployment: {}", C::ITEM, e))?;
+            .map_err(|e| format_err!("{}: failed to encode deployment: {}", C::ITEM, e))?;
 
         // when deploying, special source information should be used.
         let entry_source = match (C::BIN.clone(), C::SOURCE_MAP.clone()) {
             (bin, Some(source_map)) => {
                 let source = linker
                     .source(bin, source_map)
-                    .map_err(|e| format!("{}: {}", C::ITEM, e))?;
+                    .map_err(|e| format_err!("{}: {}", C::ITEM, e))?;
 
                 Some(Arc::new(source))
             }
@@ -280,7 +280,7 @@ impl Evm {
             {
                 let source = linker
                     .source(bin, source_map)
-                    .map_err(|e| format!("{}: {}", C::ITEM, e))?;
+                    .map_err(|e| format_err!("{}: {}", C::ITEM, e))?;
 
                 linker.register_runtime_source(C::ITEM.to_string(), source);
             }
@@ -356,7 +356,9 @@ impl Evm {
     /// Query the balance of the given account.
     pub fn balance(&self, address: Address) -> Result<U256, Error> {
         let state = self.borrow_state()?;
-        Ok(state.balance(&address).map_err(|_| BalanceError)?)
+        Ok(state
+            .balance(&address)
+            .map_err(|_| format_err!("failed to access balance"))?)
     }
 
     /// Add the given number of wei to the provided account.
@@ -365,7 +367,7 @@ impl Evm {
 
         Ok(state
             .add_balance(&address, &wei.into(), state::CleanupMode::ForceCreate)
-            .map_err(|_| BalanceError)?)
+            .map_err(|_| format_err!("failed to modify balance"))?)
     }
 
     /// Execute the given action.
@@ -380,7 +382,9 @@ impl Evm {
     ) -> Result<Call<T>, Error> {
         let mut state = self.borrow_mut_state()?;
 
-        let nonce = state.nonce(&call.sender).map_err(|_| NonceError)?;
+        let nonce = state
+            .nonce(&call.sender)
+            .map_err(|_| format_err!("error building nonce"))?;
 
         let tx = Transaction {
             nonce,
@@ -409,7 +413,7 @@ impl Evm {
             true,
             None,
             self.env_info.number >= self.engine.params().eip86_transition,
-        ).map_err(|e| format!("verify failed: {}", e))?;
+        ).map_err(|e| format_err!("verify failed: {}", e))?;
 
         let frame_info = Mutex::new(trace::FrameInfo::None);
 
@@ -422,7 +426,7 @@ impl Evm {
             trace::TxVmTracer::new(linker, entry_source.clone(), &frame_info),
         );
 
-        let mut result = result.map_err(|e| format!("vm: {}", e))?;
+        let mut result = result.map_err(|e| format_err!("vm: {}", e))?;
 
         state.commit().ok();
         self.add_logs(result.receipt.logs.drain(..))?;
@@ -478,7 +482,7 @@ impl Evm {
         for log in new_logs {
             let topic = match log.topics.iter().next() {
                 Some(first) => *first,
-                None => return Err("expected at least one topic".into()),
+                None => return Err(format_err!("expected at least one topic")),
             };
 
             logs.entry(topic).or_insert_with(Vec::new).push(log);
@@ -491,42 +495,42 @@ impl Evm {
     fn borrow_logs(&self) -> Result<Ref<HashMap<ethabi::Hash, Vec<LogEntry>>>, Error> {
         self.logs
             .try_borrow()
-            .map_err(|e| format!("cannot borrow logs: {}", e).into())
+            .map_err(|e| format_err!("cannot borrow logs: {}", e))
     }
 
     /// Mutably access all raw logs.
     fn borrow_mut_logs(&self) -> Result<RefMut<HashMap<ethabi::Hash, Vec<LogEntry>>>, Error> {
         self.logs
             .try_borrow_mut()
-            .map_err(|e| format!("cannot borrow logs mutably: {}", e).into())
+            .map_err(|e| format_err!("cannot borrow logs mutably: {}", e))
     }
 
     /// Access linker.
     fn borrow_linker(&self) -> Result<Ref<linker::Linker>, Error> {
         self.linker
             .try_borrow()
-            .map_err(|e| format!("cannot borrow linker: {}", e).into())
+            .map_err(|e| format_err!("cannot borrow linker: {}", e))
     }
 
     /// Mutably access linker.
     fn borrow_mut_linker(&self) -> Result<RefMut<linker::Linker>, Error> {
         self.linker
             .try_borrow_mut()
-            .map_err(|e| format!("cannot borrow linker mutably: {}", e).into())
+            .map_err(|e| format_err!("cannot borrow linker mutably: {}", e))
     }
 
     /// Access underlying state.
     fn borrow_state(&self) -> Result<Ref<state::State<state_db::StateDB>>, Error> {
         self.state
             .try_borrow()
-            .map_err(|e| format!("cannot borrow state: {}", e).into())
+            .map_err(|e| format_err!("cannot borrow state: {}", e))
     }
 
     /// Mutably access underlying state.
     fn borrow_mut_state(&self) -> Result<RefMut<state::State<state_db::StateDB>>, Error> {
         self.state
             .try_borrow_mut()
-            .map_err(|e| format!("cannot borrow state mutably: {}", e).into())
+            .map_err(|e| format_err!("cannot borrow state mutably: {}", e))
     }
 }
 
@@ -538,7 +542,7 @@ impl abi::Vm for Evm {
         let linker = self.borrow_linker()?;
 
         let params = f.encoded(&linker)
-            .map_err(|e| format!("failed to encode input: {}", e))?;
+            .map_err(|e| format_err!("failed to encode input: {}", e))?;
 
         self.action(
             Action::Call(address),
@@ -548,7 +552,7 @@ impl abi::Vm for Evm {
             &linker,
             move |_evm, _tx, output| {
                 f.output(output)
-                    .map_err(|e| format!("VM output conversion failed: {}", e).into())
+                    .map_err(|e| format_err!("VM output conversion failed: {}", e))
             },
         )
     }
@@ -678,7 +682,7 @@ where
                         let sender = entry.address;
 
                         let entry = log.parse_log((entry.topics, entry.data).into())
-                            .map_err(|e| format!("failed to parse log entry: {}", e))?;
+                            .map_err(|e| format_err!("failed to parse log entry: {}", e))?;
 
                         out.push(map(sender, entry));
                     }
@@ -705,6 +709,6 @@ where
 pub fn extract_this_topic(topic: &ethabi::Topic<ethabi::Hash>) -> Result<ethabi::Hash, Error> {
     match *topic {
         ethabi::Topic::This(ref id) => Ok(*id),
-        ref other => return Err(format!("not an exact topic: {:?}", other).into()),
+        ref other => return Err(format_err!("not an exact topic: {:?}", other)),
     }
 }

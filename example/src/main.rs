@@ -192,7 +192,7 @@ fn main() -> Result<()> {
                 let value = self.get_value(address)?;
 
                 if value != expected {
-                    return Err(format!("value: expected {} but got {}", expected, value).into());
+                    bail!("value: expected {} but got {}", expected, value);
                 }
 
                 Ok(())

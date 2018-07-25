@@ -1,10 +1,22 @@
-use error::Error;
 use ethereum_types::Address;
+use failure::{Error, ResultExt};
 use parity_evm;
 use source_map::SourceMap;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+
+#[derive(Debug, Fail)]
+pub enum LinkerError {
+    #[fail(display = "bad hex in section: #{}", pos)]
+    HexError { pos: usize },
+    #[fail(display = "no linker item: {}", item)]
+    LinkerItemError { item: String },
+    #[fail(display = "no linker path: {}", path)]
+    LinkerPathError { path: String },
+    #[fail(display = "failed to decode source map")]
+    SourceMapDecodeError,
+}
 
 /// All necessary source information to perform tracing.
 #[derive(Debug)]
@@ -112,11 +124,10 @@ impl Linker {
 
     /// Construct source information for the given code and source map.
     pub fn source(&self, bin: &str, source_map: &str) -> Result<Source, Error> {
-        let source_map = SourceMap::parse(source_map)
-            .map_err(|e| format!("failed to decode source map: {}", e))?;
+        let source_map =
+            SourceMap::parse(source_map).with_context(|_| LinkerError::SourceMapDecodeError)?;
 
-        let offsets = self.decode_offsets(bin)
-            .map_err(|e| format!("failed to decode offsets from bin: {}", e))?;
+        let offsets = self.decode_offsets(bin)?;
 
         Ok(Source {
             source_map,
@@ -220,16 +231,16 @@ impl Linker {
             let (path, item) = decode_linked(unlinked)?;
 
             let address = match item {
-                Some(item) => self.objects_by_item
-                    .get(item)
-                    .ok_or_else(|| Error::NoLinkerItem {
+                Some(item) => self.objects_by_item.get(item).ok_or_else(|| {
+                    LinkerError::LinkerItemError {
                         item: item.to_string(),
-                    })?,
-                None => self.objects_by_path
-                    .get(path)
-                    .ok_or_else(|| Error::NoLinkerPath {
+                    }
+                })?,
+                None => self.objects_by_path.get(path).ok_or_else(|| {
+                    LinkerError::LinkerPathError {
                         path: path.to_string(),
-                    })?,
+                    }
+                })?,
             };
 
             output.extend(address.iter());
@@ -304,7 +315,7 @@ impl<'a> Iterator for Decoder<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let swarm_hash = match self.input.take_swarm_hash() {
             Ok(swarm_hash) => swarm_hash,
-            Err(e) => return Some(Err(format!("{}: #{}", e, self.pos).into())),
+            Err(e) => return Some(Err(format_err!("{}: #{}", e, self.pos))),
         };
 
         if let Some((bytes, hash)) = swarm_hash {
@@ -320,7 +331,7 @@ impl<'a> Iterator for Decoder<'a> {
 
         let c = match c {
             Ok(c) => c,
-            Err(_) => return Some(Err(format!("bad hex: #{}", self.pos).into())),
+            Err(_) => return Some(Err(LinkerError::HexError { pos: self.pos }.into())),
         };
 
         let info = match parity_evm::Instruction::from_u8(c) {
@@ -339,11 +350,7 @@ impl<'a> Iterator for Decoder<'a> {
 
         let bytes = match self.input.take_raw(bytes) {
             Some(bytes) => bytes,
-            None => {
-                return Some(Err(
-                    format!("not enough input for push: #{}", self.pos).into()
-                ))
-            }
+            None => return Some(Err(format_err!("not enough input for push: #{}", self.pos))),
         };
 
         // unlinked section.
@@ -359,7 +366,7 @@ impl<'a> Iterator for Decoder<'a> {
         while let Some(b) = decoder.next() {
             let b = match b {
                 Ok(b) => b,
-                Err(_) => return Some(Err(format!("bad hex in section: #{}", self.pos).into())),
+                Err(_) => return Some(Err(LinkerError::HexError { pos: self.pos }.into())),
             };
 
             out.push(b);
@@ -443,7 +450,7 @@ impl<'a> HexDecode<'a> {
         while let Some(b) = decoder.next() {
             let b = match b {
                 Ok(b) => b,
-                Err(_) => return Err("bad hex in swarm hash".into()),
+                Err(_) => bail!("bad hex in swarm hash"),
             };
 
             hash.push(b);

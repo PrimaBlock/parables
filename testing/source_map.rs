@@ -1,4 +1,4 @@
-use error::Error;
+use failure::Error;
 
 macro_rules! parse_u32 {
     ($p:expr, $var:expr) => {
@@ -10,7 +10,7 @@ macro_rules! parse_u32 {
             }
             Some(string) => {
                 let value = u32::from_str(string)
-                    .map_err(|e| format!("failed to decode u32: {}: {}", string, e))?;
+                    .map_err(|e| format_err!("failed to decode u32: {}: {}", string, e))?;
                 $var = Some(value);
                 Some(value)
             }
@@ -25,7 +25,7 @@ macro_rules! parse_op {
                 $var = Some($v);
                 Some($v)
             })*
-            Some(op) => return Err(format!("bad operation: {}", op).into()),
+            Some(op) => return Err(format_err!("bad operation: {}", op)),
             None => $var.clone(),
         }
     };
@@ -72,8 +72,8 @@ impl SourceMap {
         while let Some(segment) = segments.next() {
             let mut parts = segment.split(":");
 
-            let start = parse_u32!(parts, start).ok_or_else(|| "missing start byte")?;
-            let length = parse_u32!(parts, length).ok_or_else(|| "missing length")?;
+            let start = parse_u32!(parts, start).ok_or_else(|| format_err!("missing start byte"))?;
+            let length = parse_u32!(parts, length).ok_or_else(|| format_err!("missing length"))?;
             let file_index = parse_u32!(parts, file_index);
 
             let operation = parse_op!(parts, operation, {

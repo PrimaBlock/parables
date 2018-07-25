@@ -3,8 +3,9 @@
 //! For testing, this permits us to perform a kind of double booking.
 
 use ethereum_types::{Address, U256};
+use evm;
+use failure::Error;
 use std::collections::{hash_map, HashMap};
-use {error, evm};
 
 #[derive(Debug)]
 pub struct Ledger<S>
@@ -37,7 +38,7 @@ where
     }
 
     /// Synchronize the ledger against the current state of the virtual machine.
-    pub fn sync(&mut self, address: Address) -> Result<(), error::Error> {
+    pub fn sync(&mut self, address: Address) -> Result<(), Error> {
         match self.entries.entry(address) {
             hash_map::Entry::Vacant(entry) => {
                 let mut state = self.state.new_instance();
@@ -53,10 +54,7 @@ where
     }
 
     /// Sync multiple addresses.
-    pub fn sync_all(
-        &mut self,
-        addresses: impl IntoIterator<Item = Address>,
-    ) -> Result<(), error::Error> {
+    pub fn sync_all(&mut self, addresses: impl IntoIterator<Item = Address>) -> Result<(), Error> {
         for a in addresses {
             self.sync(a)?;
         }
@@ -65,7 +63,7 @@ where
     }
 
     /// Go through each registered account, and verify their invariants.
-    pub fn verify(self) -> Result<(), error::Error> {
+    pub fn verify(self) -> Result<(), Error> {
         use std::fmt::Write;
 
         let mut errors = Vec::new();
@@ -88,7 +86,7 @@ where
                 writeln!(msg, "{}: {}", address, e)?;
             }
 
-            return Err(msg.into());
+            bail!("{}", msg);
         }
 
         Ok(())
@@ -161,10 +159,10 @@ pub trait LedgerState {
     fn new_instance(&self) -> Self::Entry;
 
     /// Verify the given state.
-    fn verify(&self, address: Address, instance: Self::Entry) -> Result<(), error::Error>;
+    fn verify(&self, address: Address, instance: Self::Entry) -> Result<(), Error>;
 
     /// Synchronize the given state.
-    fn sync(&self, address: Address, instance: &mut Self::Entry) -> Result<(), error::Error>;
+    fn sync(&self, address: Address, instance: &mut Self::Entry) -> Result<(), Error>;
 }
 
 /// A ledger state checking account balances against the EVM.
@@ -177,20 +175,21 @@ impl<'a> LedgerState for AccountBalance<'a> {
         U256::default()
     }
 
-    fn verify(&self, address: Address, expected_balance: Self::Entry) -> Result<(), error::Error> {
+    fn verify(&self, address: Address, expected_balance: Self::Entry) -> Result<(), Error> {
         let actual_balance = self.0.balance(address)?;
 
         if expected_balance != actual_balance {
-            return Err(format!(
+            bail!(
                 "expected account wei balance {}, but was {}",
-                expected_balance, actual_balance
-            ).into());
+                expected_balance,
+                actual_balance
+            );
         }
 
         Ok(())
     }
 
-    fn sync(&self, address: Address, balance: &mut Self::Entry) -> Result<(), error::Error> {
+    fn sync(&self, address: Address, balance: &mut Self::Entry) -> Result<(), Error> {
         *balance = self.0.balance(address)?;
         Ok(())
     }
@@ -228,7 +227,7 @@ mod tests {
                 &self,
                 _address: Address,
                 expected_balance: Self::Entry,
-            ) -> Result<(), error::Error> {
+            ) -> Result<(), Error> {
                 let actual_balance = self.1;
 
                 if expected_balance != actual_balance {
@@ -241,11 +240,7 @@ mod tests {
                 Ok(())
             }
 
-            fn sync(
-                &self,
-                _address: Address,
-                balance: &mut Self::Entry,
-            ) -> Result<(), error::Error> {
+            fn sync(&self, _address: Address, balance: &mut Self::Entry) -> Result<(), Error> {
                 *balance = self.0;
                 Ok(())
             }

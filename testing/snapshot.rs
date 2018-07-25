@@ -1,4 +1,4 @@
-use error::Error;
+use failure::Error;
 use std::sync::Mutex;
 
 /// A managed instance that can be shared by cloning across threads.
@@ -20,7 +20,7 @@ impl<T> Snapshot<T> {
     where
         T: Clone,
     {
-        let inner = self.inner.lock().map_err(|_| "lock poisoned")?;
+        let inner = self.inner.lock().map_err(|_| format_err!("lock poisoned"))?;
         Ok(inner.clone())
     }
 }

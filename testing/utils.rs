@@ -1,4 +1,4 @@
-use error::Error;
+use failure::Error;
 use std::fmt;
 use std::io::Read;
 use std::time;
@@ -21,7 +21,7 @@ pub fn find_line(
     let mut read = 0usize;
 
     while let Some(b) = it.next() {
-        let b = b.map_err(|e| format!("failed to read byte: {}", e))?;
+        let b = b.map_err(|e| format_err!("failed to read byte: {}", e))?;
         read += 1;
 
         match b {
@@ -36,7 +36,8 @@ pub fn find_line(
         current += read;
 
         if current > start {
-            let buffer = String::from_utf8(buffer).map_err(|e| format!("bad utf-8 line: {}", e))?;
+            let buffer =
+                String::from_utf8(buffer).map_err(|e| format_err!("bad utf-8 line: {}", e))?;
             let buffer = buffer.trim().to_string();
 
             let end = ::std::cmp::min(end, current);
@@ -49,7 +50,7 @@ pub fn find_line(
         buffer.clear();
     }
 
-    Err("bad file position".into())
+    Err(format_err!("bad file position"))
 }
 
 /// Format a duration as a human-readable time duration.

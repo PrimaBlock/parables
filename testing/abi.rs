@@ -1,8 +1,8 @@
 //! Contract ABI helpers.
 
-use error::Error;
 use ethabi::{Bytes, RawLog, TopicFilter};
 use ethereum_types::Address;
+use failure::Error;
 use linker::Linker;
 use std::path::PathBuf;
 use {call, evm};

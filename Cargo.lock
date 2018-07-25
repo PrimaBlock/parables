@@ -1131,7 +1131,7 @@ dependencies = [
  "kvdb-memorydb 0.1.0 (git+https://github.com/paritytech/parity-common.git)",
  "parables-derive 0.1.0",
  "parity-bytes 0.1.0 (git+https://github.com/paritytech/parity-common.git)",
- "proptest 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proptest 0.8.3 (git+https://github.com/primablock/proptest.git)",
  "rand 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1300,7 +1300,7 @@ dependencies = [
 [[package]]
 name = "proptest"
 version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/primablock/proptest.git#c42f66de2a34cf88443c49d26940b21fdd2139b8"
 dependencies = [
  "bit-set 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2165,7 +2165,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum primal-sieve 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)" = "da2d6ed369bb4b0273aeeb43f07c105c0117717cbae827b20719438eb2eb798c"
 "checksum proc-macro2 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "1b06e2f335f48d24442b35a19df506a835fb3547bc3c06ef27340da9acf5cae7"
 "checksum proc-macro2 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)" = "cccdc7557a98fe98453030f077df7f3a042052fae465bb61d2c2c41435cfd9b6"
-"checksum proptest 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "3e22d80dbb4e76f01beabba9a2ee7c8de2e25b7a92b57702760216c4742b76e8"
+"checksum proptest 0.8.3 (git+https://github.com/primablock/proptest.git)" = "<none>"
 "checksum protobuf 1.7.4 (registry+https://github.com/rust-lang/crates.io-index)" = "52fbc45bf6709565e44ef31847eb7407b3c3c80af811ee884a04da071dcca12b"
 "checksum pulldown-cmark 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "8361e81576d2e02643b04950e487ec172b687180da65c731c03cf336784e6c07"
 "checksum pwasm-utils 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "90d2b3c5bf24275fc77db6b14ec00a7a085d8ff9d1c4215fb6f6263e8d7b01bc"

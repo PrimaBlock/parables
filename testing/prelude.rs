@@ -2,7 +2,6 @@ pub use abi::Vm;
 #[cfg(feature = "account")]
 pub use account::Account;
 pub use call::Call;
-pub use error::Error;
 pub use ethabi;
 pub use ethcore::spec::Spec;
 pub use ethereum_types::*;
@@ -19,4 +18,4 @@ pub use wei;
 pub use ledger::{Ledger, LedgerState};
 pub use proptest::prelude::*;
 
-pub type Result<T> = ::std::result::Result<T, Error>;
+pub type Result<T> = ::std::result::Result<T, ::failure::Error>;

@@ -1,5 +1,5 @@
 //! Provides a simple test scaffolding for running tests in parallel.
-use error::Error;
+use failure::Error;
 use reporter::Reporter;
 use std::any;
 use std::borrow::Cow;
@@ -100,7 +100,6 @@ impl<'a, 'b: 'a> From<&'a panic::Location<'b>> for Location {
 }
 
 /// The outcome of a single test.
-#[derive(PartialEq)]
 pub enum Outcome {
     /// Contains information about the failed outcome.
     Failed(PanicInfo),

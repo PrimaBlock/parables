@@ -1,4 +1,4 @@
-use error::Error;
+use failure::Error;
 use isatty;
 use std::collections::BTreeMap;
 use std::fmt;
@@ -165,7 +165,7 @@ impl StdoutReporter {
 
 impl<'a> Reporter<'a> for StdoutReporter {
     fn supports_animation(&self) -> Result<bool, Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState { ref mut out, .. } = *state;
 
@@ -173,7 +173,7 @@ impl<'a> Reporter<'a> for StdoutReporter {
     }
 
     fn animate(&self) -> Result<(), Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState {
             ref mut out,
@@ -191,7 +191,7 @@ impl<'a> Reporter<'a> for StdoutReporter {
     }
 
     fn end(&self) -> Result<(), Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState { ref mut out, .. } = *state;
 
@@ -204,7 +204,7 @@ impl<'a> Reporter<'a> for StdoutReporter {
     }
 
     fn report_started(&self, index: usize, name: &str) -> Result<(), Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState {
             ref mut out,
@@ -223,7 +223,7 @@ impl<'a> Reporter<'a> for StdoutReporter {
     }
 
     fn report(&self, index: usize, result: TestResult) -> Result<(), Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState {
             ref mut out,
@@ -252,7 +252,7 @@ impl<'a> Reporter<'a> for StdoutReporter {
     }
 
     fn report_skipped(&self, test: Test) -> Result<(), Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState {
             ref mut out,
@@ -271,7 +271,7 @@ impl<'a> Reporter<'a> for StdoutReporter {
     }
 
     fn close(&self) -> Result<(), Error> {
-        let mut state = self.state.lock().map_err(|_| "lock poisoned")?;
+        let mut state = self.state.lock().map_err(|_| format_err!("lock poisoned"))?;
 
         let ReporterState {
             ref mut out,
@@ -314,13 +314,15 @@ impl<'a> CollectingReporter<'a> {
     pub fn take_results(self) -> Result<Vec<TestResult<'a>>, Error> {
         Ok(self.results
             .into_inner()
-            .map_err(|_| "another lock is held")?)
+            .map_err(|_| format_err!("another lock is held"))?)
     }
 }
 
 impl<'a> Reporter<'a> for CollectingReporter<'a> {
     fn report(&self, _index: usize, result: TestResult<'a>) -> Result<(), Error> {
-        let mut results = self.results.lock().map_err(|_| "lock poisoned")?;
+        let mut results = self.results
+            .lock()
+            .map_err(|_| format_err!("lock poisoned"))?;
         results.push(result);
         Ok(())
     }
@@ -493,8 +495,6 @@ impl<'a> ColoredOutcome<'a> {
     }
 
     fn fmt_errors(&self, fmt: &mut Terminal) -> fmt::Result {
-        use failure::Fail;
-
         let outcome = self.0;
 
         match outcome {
@@ -517,19 +517,13 @@ impl<'a> ColoredOutcome<'a> {
             }
             Outcome::Errored(ref e) => {
                 writeln!(fmt, "{}", e)?;
-
-                if let Some(backtrace) = e.backtrace() {
-                    writeln!(fmt, "{:?}", backtrace)?;
-                }
+                writeln!(fmt, "{:?}", e.backtrace())?;
 
                 let mut causes = e.causes().skip(1);
 
                 while let Some(e) = causes.next() {
                     writeln!(fmt, "caused by: {}", e)?;
-
-                    if let Some(backtrace) = e.backtrace() {
-                        writeln!(fmt, "{:?}", backtrace)?;
-                    }
+                    writeln!(fmt, "{:?}", e.backtrace())?;
                 }
             }
             _ => {}

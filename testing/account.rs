@@ -1,5 +1,4 @@
 use crypto::Crypto;
-use error;
 use ethereum_types::{Address, H160, H256, U256};
 use rust_crypto::digest::Digest;
 use rust_crypto::sha3::Sha3;
@@ -15,25 +14,16 @@ fn keccak256(bytes: &[u8]) -> [u8; 32] {
     hash
 }
 
-#[derive(Debug)]
-pub enum Error {
-    DerivePublicKeyError(secp256k1::Error),
-    SignError(secp256k1::Error),
-    MessageError(secp256k1::Error),
+#[derive(Debug, Fail)]
+pub enum AccountError {
+    #[fail(display = "failed to derive public key: {}", error)]
+    DerivePublicKeyError { error: secp256k1::Error },
+    #[fail(display = "failed to sign: {}", error)]
+    SignError { error: secp256k1::Error },
+    #[fail(display = "failed to build signature message: {}", error)]
+    MessageError { error: secp256k1::Error },
+    #[fail(display = "failed to borrow")]
     BorrowError,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        use self::Error::*;
-
-        match *self {
-            DerivePublicKeyError(e) => write!(fmt, "failed to derive public key: {}", e),
-            SignError(e) => write!(fmt, "failed to sign: {}", e),
-            MessageError(e) => write!(fmt, "failed to build signature message: {}", e),
-            BorrowError => write!(fmt, "failed to borrow"),
-        }
-    }
 }
 
 pub struct Account<'a> {
@@ -45,9 +35,11 @@ pub struct Account<'a> {
 
 impl<'a> Account<'a> {
     /// Create a new address with the give rng implementation.
-    pub fn new(crypto: &'a RefCell<Crypto>) -> Result<Account<'a>, Error> {
+    pub fn new(crypto: &'a RefCell<Crypto>) -> Result<Account<'a>, AccountError> {
         let (secret, public, address) = {
-            let mut lock = crypto.try_borrow_mut().map_err(|_| Error::BorrowError)?;
+            let mut lock = crypto
+                .try_borrow_mut()
+                .map_err(|_| AccountError::BorrowError)?;
 
             let Crypto {
                 ref secp,
@@ -56,7 +48,7 @@ impl<'a> Account<'a> {
 
             let secret = key::SecretKey::new(secp, rng);
             let public = key::PublicKey::from_secret_key(secp, &secret)
-                .map_err(Error::DerivePublicKeyError)?;
+                .map_err(|error| AccountError::DerivePublicKeyError { error })?;
 
             let address = {
                 let serialized = public.serialize_vec(secp, false);
@@ -114,7 +106,7 @@ impl<'s, 'a> Signer<'s, 'a> {
     }
 
     /// Finish the signature.
-    pub fn finish(self) -> Result<Signature, Error> {
+    pub fn finish(self) -> Result<Signature, AccountError> {
         let Signer {
             account,
             mut checksum,
@@ -144,15 +136,19 @@ impl<'s, 'a> Signer<'s, 'a> {
     }
 
     /// Build a secp256k1 signature.
-    fn to_secp_signature(account: &Account, message: &[u8]) -> Result<Signature, Error> {
-        let crypto = account.crypto.try_borrow().map_err(|_| Error::BorrowError)?;
+    fn to_secp_signature(account: &Account, message: &[u8]) -> Result<Signature, AccountError> {
+        let crypto = account
+            .crypto
+            .try_borrow()
+            .map_err(|_| AccountError::BorrowError)?;
 
-        let message = secp256k1::Message::from_slice(message).map_err(Error::MessageError)?;
+        let message = secp256k1::Message::from_slice(message)
+            .map_err(|error| AccountError::MessageError { error })?;
 
         let sig = crypto
             .secp
             .sign_recoverable(&message, &account.secret)
-            .map_err(Error::SignError)?;
+            .map_err(|error| AccountError::SignError { error })?;
 
         let (rec_id, data) = sig.serialize_compact(&crypto.secp);
 
@@ -193,11 +189,5 @@ impl Digestable for U256 {
 impl Digestable for H160 {
     fn digest(self) -> Vec<u8> {
         <[u8; 20]>::from(self).to_vec()
-    }
-}
-
-impl From<Error> for error::Error {
-    fn from(error: Error) -> Self {
-        error::Error::from(error.to_string())
     }
 }
