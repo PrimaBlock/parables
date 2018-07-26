@@ -68,13 +68,23 @@ pub struct Call<T> {
     pub gas_used: U256,
     /// The price payed for each gas.
     pub gas_price: U256,
+    /// Value transmitted during the call.
+    pub value: U256,
     /// The sender of the transaction.
     pub sender: Address,
 }
 
 impl<T> Call<T> {
-    /// Access the total amount of gas used.
-    pub fn gas_total(&self) -> U256 {
+    /// Total amount of wei transferred in the transaction.
+    pub fn total(&self) -> U256 {
+        match self.outcome {
+            Outcome::Ok(..) => self.value + self.gas(),
+            _ => self.gas(),
+        }
+    }
+
+    /// Access the total amount of gas used in wei.
+    pub fn gas(&self) -> U256 {
         self.gas_used * self.gas_price
     }
 
@@ -433,13 +443,16 @@ impl Evm {
 
         let gas_used = result.receipt.gas_used;
         let gas_price = tx.gas_price;
+        let value = tx.value;
         let sender = tx.sender();
+
         let outcome = self.outcome(result, tx, decode)?;
 
         Ok(Call {
             outcome,
             gas_used,
             gas_price,
+            value,
             sender,
         })
     }

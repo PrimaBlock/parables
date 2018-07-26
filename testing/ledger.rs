@@ -7,13 +7,15 @@ use evm;
 use failure::Error;
 use std::collections::{hash_map, HashMap};
 
-#[derive(Debug)]
+#[must_use]
+#[derive(Debug, Clone)]
 pub struct Ledger<S>
 where
     S: LedgerState,
 {
     state: S,
     entries: HashMap<Address, S::Entry>,
+    names: HashMap<Address, String>,
 }
 
 impl<'a> Ledger<AccountBalance<'a>> {
@@ -34,7 +36,13 @@ where
         Ledger {
             state,
             entries: HashMap::new(),
+            names: HashMap::new(),
         }
+    }
+
+    /// Provide a readable name for an address.
+    pub fn name(&mut self, address: Address, name: impl AsRef<str>) {
+        self.names.insert(address, name.as_ref().to_string());
     }
 
     /// Synchronize the ledger against the current state of the virtual machine.
@@ -68,6 +76,7 @@ where
 
         let mut errors = Vec::new();
 
+        let names = self.names;
         let state = self.state;
 
         // Check that all verifiable entries are matching expectations.
@@ -83,7 +92,7 @@ where
             writeln!(msg, "Errors in ledger:")?;
 
             for (address, e) in errors {
-                writeln!(msg, "{}: {}", address, e)?;
+                writeln!(msg, "{}: {}", Self::do_address_format(&names, address), e)?;
             }
 
             bail!("{}", msg);
@@ -102,6 +111,18 @@ where
             hash_map::Entry::Occupied(entry) => entry.into_mut(),
         }
     }
+
+    fn address_format(&self, address: Address) -> String {
+        Self::do_address_format(&self.names, address)
+    }
+
+    /// Convert an address into a human-readable name.
+    fn do_address_format(names: &HashMap<Address, String>, address: Address) -> String {
+        names
+            .get(&address)
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| address.to_string())
+    }
 }
 
 impl<S> Ledger<S>
@@ -113,21 +134,24 @@ where
     where
         V: Into<U256>,
     {
-        let current = self.entries.entry(address).or_insert_with(U256::default);
-        let value = value.into();
+        let update = {
+            let current = self.entries.entry(address).or_insert_with(U256::default);
+            let value = value.into();
 
-        if let Some(update) = current.checked_add(value) {
-            *current = update;
-
-            // verify after it has been updated.
-            if let Err(e) = self.state.verify(address, update) {
-                bail!("{}: {}", address, e);
+            if let Some(update) = current.checked_add(value) {
+                *current = update;
+                update
+            } else {
+                panic!(
+                    "{}: adding {} to the account would overflow the balance",
+                    address, value
+                );
             }
-        } else {
-            panic!(
-                "{}: adding {} to the account would overflow the balance",
-                address, value
-            );
+        };
+
+        // verify after it has been updated.
+        if let Err(e) = self.state.verify(address, update) {
+            bail!("{}: {}", self.address_format(address), e);
         }
 
         Ok(())
@@ -138,21 +162,24 @@ where
     where
         V: Into<U256>,
     {
-        let current = self.entries.entry(address).or_insert_with(U256::default);
-        let value = value.into();
+        let update = {
+            let current = self.entries.entry(address).or_insert_with(U256::default);
+            let value = value.into();
 
-        if let Some(update) = current.checked_sub(value) {
-            *current = update;
-
-            // verify after it has been updated.
-            if let Err(e) = self.state.verify(address, update) {
-                bail!("{}: {}", address, e);
+            if let Some(update) = current.checked_sub(value) {
+                *current = update;
+                update
+            } else {
+                panic!(
+                    "{}: subtracting {} would set account to negative balance",
+                    address, value
+                );
             }
-        } else {
-            panic!(
-                "{}: subtracting {} would set account to negative balance",
-                address, value
-            );
+        };
+
+        // verify after it has been updated.
+        if let Err(e) = self.state.verify(address, update) {
+            bail!("{}: {}", self.address_format(address), e);
         }
 
         Ok(())
@@ -174,6 +201,7 @@ pub trait LedgerState {
 }
 
 /// A ledger state checking account balances against the EVM.
+#[derive(Clone)]
 pub struct AccountBalance<'a>(&'a evm::Evm);
 
 impl<'a> LedgerState for AccountBalance<'a> {

@@ -123,7 +123,7 @@ fn main() -> Result<()> {
 
         // we also have to subtract gas * gas price
         assert_ne!(evm.balance(a)?, wei::from_ether(90));
-        assert_eq!(evm.balance(a)?, wei::from_ether(90) - r.gas_total());
+        assert_eq!(evm.balance(a)?, wei::from_ether(90) - r.gas());
         assert_eq!(evm.balance(b)?, wei::from_ether(10));
         Ok(())
     });
@@ -150,13 +150,13 @@ fn main() -> Result<()> {
 
         // add to a
         let res = simple.value(wei!(42 eth)).add(a)?;
-        balances.sub(a, res.gas_total() + wei!(42 eth))?;
+        balances.sub(a, res.gas() + wei!(42 eth))?;
         balances.add(simple.address, wei!(42 eth))?;
         states.add(a, wei!(42 eth))?;
 
         // add to b
         let res = simple.value(wei!(12 eth)).add(b)?;
-        balances.sub(a, res.gas_total() + wei!(12 eth))?;
+        balances.sub(a, res.gas() + wei!(12 eth))?;
         balances.add(simple.address, wei!(12 eth))?;
         states.add(b, wei!(12 eth))?;
 

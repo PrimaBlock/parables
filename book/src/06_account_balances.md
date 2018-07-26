@@ -33,7 +33,7 @@ Note that account `a` doesn't have `90` ether, we have to take the gas subtracte
 
 ```rust
 assert_ne!(evm.balance(a), wei::from_ether(90));
-assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas_total());
+assert_eq!(evm.balance(a), wei::from_ether(90) - res.gas());
 assert_eq!(evm.balance(b), wei::from_ether(10));
 ```
 
@@ -62,7 +62,7 @@ ledger.add(a, wei::from_ether(100))?;
 let call = Call::new(a).gas(21000).gas_price(10);
 let res = evm.call_default(b, call)?;
 // we expect the bas price to be deducted.
-ledger.sub(a, res.gas_total())?;
+ledger.sub(a, res.gas())?;
 
 // consume the ledger and verify all expected stated.
 ledger.verify()?;
@@ -115,13 +115,13 @@ states.sync_all(vec![a, b, simple.address])?;
 
 // add to a
 let res = simple.value(wei!(42 eth)).add(a)?;
-balances.sub(a, res.gas_total() + wei!(42 eth))?;
+balances.sub(a, res.gas() + wei!(42 eth))?;
 balances.add(simple.address, wei!(42 eth))?;
 states.add(a, wei!(42 eth))?;
 
 // add to b
 let res = simple.value(wei!(12 eth)).add(b)?;
-balances.sub(a, res.gas_total() + wei!(12 eth))?;
+balances.sub(a, res.gas() + wei!(12 eth))?;
 balances.add(simple.address, wei!(12 eth))?;
 states.add(b, wei!(12 eth))?;
 
