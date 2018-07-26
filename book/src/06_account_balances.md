@@ -57,12 +57,12 @@ ledger.sync(a)?;
 ledger.sync(b)?;
 
 evm.add_balance(a, wei::from_ether(100));
-ledger.add(a, wei::from_ether(100));
+ledger.add(a, wei::from_ether(100))?;
 
 let call = Call::new(a).gas(21000).gas_price(10);
 let res = evm.call_default(b, call)?;
 // we expect the bas price to be deducted.
-ledger.sub(a, res.gas_total());
+ledger.sub(a, res.gas_total())?;
 
 // consume the ledger and verify all expected stated.
 ledger.verify()?;
@@ -115,15 +115,15 @@ states.sync_all(vec![a, b, simple.address])?;
 
 // add to a
 let res = simple.value(wei!(42 eth)).add(a)?;
-balances.sub(a, res.gas_total() + wei!(42 eth));
-balances.add(simple.address, wei!(42 eth));
-states.add(a, wei!(42 eth));
+balances.sub(a, res.gas_total() + wei!(42 eth))?;
+balances.add(simple.address, wei!(42 eth))?;
+states.add(a, wei!(42 eth))?;
 
 // add to b
 let res = simple.value(wei!(12 eth)).add(b)?;
-balances.sub(a, res.gas_total() + wei!(12 eth));
-balances.add(simple.address, wei!(12 eth));
-states.add(b, wei!(12 eth));
+balances.sub(a, res.gas_total() + wei!(12 eth))?;
+balances.add(simple.address, wei!(12 eth))?;
+states.add(b, wei!(12 eth))?;
 
 balances.verify()?;
 states.verify()?;

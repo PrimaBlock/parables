@@ -109,6 +109,16 @@ pub enum Outcome {
     Ok,
 }
 
+impl Outcome {
+    /// Check if outcome is OK.
+    pub fn is_ok(&self) -> bool {
+        match *self {
+            Outcome::Ok => true,
+            _ => false,
+        }
+    }
+}
+
 /// The result from a single test.
 pub struct TestResult<'a> {
     /// The module that the test belonged to.
@@ -401,8 +411,8 @@ mod tests {
             .collect::<HashMap<_, _>>();
 
         assert_eq!(
-            Some(&Outcome::Ok),
-            result.get("my success").map(|r| &r.outcome)
+            Some(true),
+            result.get("my success").map(|r| r.outcome.is_ok())
         );
 
         match result.get("my failure").map(|r| &r.outcome) {
@@ -430,7 +440,7 @@ mod tests {
         let mut runner = TestRunner::new();
 
         {
-            let m = runner.module("deposit");
+            let _m = runner.module("deposit");
         }
     }
 }

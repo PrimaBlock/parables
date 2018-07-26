@@ -109,45 +109,53 @@ where
     S: LedgerState<Entry = U256>,
 {
     /// Add to the balance for the given address.
-    pub fn add<V>(&mut self, address: Address, value: V)
+    pub fn add<V>(&mut self, address: Address, value: V) -> Result<(), Error>
     where
         V: Into<U256>,
     {
         let current = self.entries.entry(address).or_insert_with(U256::default);
         let value = value.into();
 
-        match current.checked_add(value) {
-            None => {
-                panic!(
-                    "{}: adding {} to the account would overflow the balance",
-                    address, value
-                );
+        if let Some(update) = current.checked_add(value) {
+            *current = update;
+
+            // verify after it has been updated.
+            if let Err(e) = self.state.verify(address, update) {
+                bail!("{}: {}", address, e);
             }
-            Some(update) => {
-                *current = update;
-            }
+        } else {
+            panic!(
+                "{}: adding {} to the account would overflow the balance",
+                address, value
+            );
         }
+
+        Ok(())
     }
 
     /// Subtract from the balance for the given address.
-    pub fn sub<V>(&mut self, address: Address, value: V)
+    pub fn sub<V>(&mut self, address: Address, value: V) -> Result<(), Error>
     where
         V: Into<U256>,
     {
         let current = self.entries.entry(address).or_insert_with(U256::default);
         let value = value.into();
 
-        match current.checked_sub(value) {
-            None => {
-                panic!(
-                    "{}: subtracting {} would set account to negative balance",
-                    address, value
-                );
+        if let Some(update) = current.checked_sub(value) {
+            *current = update;
+
+            // verify after it has been updated.
+            if let Err(e) = self.state.verify(address, update) {
+                bail!("{}: {}", address, e);
             }
-            Some(update) => {
-                *current = update;
-            }
+        } else {
+            panic!(
+                "{}: subtracting {} would set account to negative balance",
+                address, value
+            );
         }
+
+        Ok(())
     }
 }
 
@@ -198,8 +206,8 @@ impl<'a> LedgerState for AccountBalance<'a> {
 #[cfg(test)]
 mod tests {
     use super::{Ledger, LedgerState};
-    use error;
     use ethereum_types::{Address, U256};
+    use failure::Error;
 
     #[test]
     fn simple_u256_ledger() {
@@ -209,8 +217,7 @@ mod tests {
 
         ledger.sync(a).expect("bad sync");
 
-        ledger.add(a, 10);
-        ledger.add(a, 32);
+        ledger.add(a, 42).expect("bad invariant");
 
         ledger.verify().expect("ledger not balanced");
 
@@ -231,10 +238,11 @@ mod tests {
                 let actual_balance = self.1;
 
                 if expected_balance != actual_balance {
-                    return Err(format!(
+                    bail!(
                         "expected account wei balance {}, but was {}",
-                        expected_balance, actual_balance
-                    ).into());
+                        expected_balance,
+                        actual_balance
+                    );
                 }
 
                 Ok(())
