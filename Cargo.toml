@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "testing",
+    "test-runner",
     "example",
     "derive",
 ]

@@ -144,7 +144,7 @@ fn compile(options: derive::Options) -> Result<quote::Tokens, Error> {
     let mut c = Command::new("solc");
 
     c.arg("--combined-json")
-        .arg("abi,bin,srcmap,srcmap-runtime,bin-runtime");
+        .arg("abi,bin,srcmap,srcmap-runtime,bin-runtime,ast");
 
     for contract in &options.contracts {
         let path = path.join(&contract.file);

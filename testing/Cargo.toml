@@ -9,6 +9,7 @@ path = "lib.rs"
 
 [dependencies]
 parables-derive = {path = "../derive"}
+parables-test-runner = {path = "../test-runner", optional = true}
 ethereum-types = "0.3"
 ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
 ethash = { git = "https://github.com/paritytech/parity.git" }
@@ -21,11 +22,7 @@ kvdb-memorydb = { git = "https://github.com/paritytech/parity-common.git" }
 parity-bytes = { git = "https://github.com/paritytech/parity-common.git" }
 vm = { git = "https://github.com/paritytech/parity.git" }
 
-isatty = {version = "0.1", optional = true}
-term = {version = "0.5", optional = true}
-proptest = {git = "https://github.com/primablock/proptest.git", version = "0.8", optional = true}
 failure = "0.1"
-rayon = {version = "1.0", optional = true}
 
 eth-secp256k1 = {git = "https://github.com/paritytech/rust-secp256k1", optional = true}
 rand = {version = "0.4", optional = true}
@@ -36,5 +33,5 @@ hex = "0.3"
 
 [features]
 default = ["test-runner", "account"]
-test-runner = ["rayon", "term", "proptest", "isatty"]
+test-runner = ["parables-test-runner"]
 account = ["eth-secp256k1", "rand", "rust-crypto"]

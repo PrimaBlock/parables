@@ -1,6 +1,9 @@
 #[macro_use]
 #[allow(unused_imports)]
 extern crate parables_derive;
+#[macro_use]
+#[allow(unused_imports)]
+extern crate parables_test_runner;
 pub extern crate ethabi;
 pub extern crate ethcore;
 extern crate ethcore_transaction;
@@ -10,30 +13,20 @@ pub extern crate parity_bytes;
 extern crate vm as parity_vm;
 #[macro_use]
 extern crate failure;
+#[cfg(feature = "account")]
+extern crate crypto as rust_crypto;
 extern crate journaldb;
 extern crate kvdb;
 extern crate kvdb_memorydb;
-#[cfg(feature = "rayon")]
-extern crate rayon;
-#[cfg(feature = "proptest")]
-#[allow(unused_imports)]
-#[macro_use]
-extern crate proptest;
-#[cfg(feature = "account")]
-extern crate crypto as rust_crypto;
-#[cfg(feature = "isatty")]
-extern crate isatty;
 #[cfg(feature = "account")]
 extern crate rand;
 #[cfg(feature = "account")]
 extern crate secp256k1;
-#[cfg(feature = "term")]
-extern crate term;
 
 pub use failure::*;
 pub use parables_derive::*;
-#[cfg(feature = "proptest")]
-pub use proptest::*;
+#[cfg(feature = "test-runner")]
+pub use parables_test_runner::*;
 
 pub mod abi;
 #[cfg(feature = "account")]
@@ -45,13 +38,7 @@ pub mod ledger;
 pub mod linker;
 mod macros;
 pub mod prelude;
-#[cfg(feature = "test-runner")]
-pub mod reporter;
-#[cfg(feature = "test-runner")]
-pub mod snapshot;
 pub mod source_map;
-#[cfg(feature = "test-runner")]
-pub mod test_runner;
 mod trace;
 mod utils;
 pub mod wei;

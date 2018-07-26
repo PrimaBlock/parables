@@ -1,0 +1,15 @@
+[package]
+name = "parables-test-runner"
+version = "0.1.0"
+authors = ["John-John Tedro <udoprog@tedro.se>"]
+license = "GPL-3.0"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+isatty = "0.1"
+term = "0.5"
+proptest = {git = "https://github.com/primablock/proptest.git", version = "0.8"}
+rayon = "1.0"
+failure = "0.1"

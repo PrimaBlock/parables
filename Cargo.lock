@@ -1113,6 +1113,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "parables-test-runner"
+version = "0.1.0"
+dependencies = [
+ "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "isatty 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proptest 0.8.3 (git+https://github.com/primablock/proptest.git)",
+ "rayon 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "term 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "parables-testing"
 version = "0.1.0"
 dependencies = [
@@ -1125,17 +1136,14 @@ dependencies = [
  "evm 0.1.0 (git+https://github.com/paritytech/parity.git)",
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "isatty 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "journaldb 0.2.0 (git+https://github.com/paritytech/parity.git)",
  "kvdb 0.1.0 (git+https://github.com/paritytech/parity-common.git)",
  "kvdb-memorydb 0.1.0 (git+https://github.com/paritytech/parity-common.git)",
  "parables-derive 0.1.0",
+ "parables-test-runner 0.1.0",
  "parity-bytes 0.1.0 (git+https://github.com/paritytech/parity-common.git)",
- "proptest 0.8.3 (git+https://github.com/primablock/proptest.git)",
  "rand 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rayon 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
- "term 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "vm 0.1.0 (git+https://github.com/paritytech/parity.git)",
 ]
 

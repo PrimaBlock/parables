@@ -26,6 +26,7 @@ pub struct ContractFields {
     runtime_bin: Option<String>,
     #[serde(rename = "srcmap-runtime")]
     runtime_source_map: Option<String>,
+    ast: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize)]
