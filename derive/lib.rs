@@ -153,8 +153,6 @@ fn compile(options: derive::Options) -> Result<quote::Tokens, Error> {
             panic!("No such file: {}", path.display());
         }
 
-        // TODO: how to implement this with a proc macro?
-        // println!("cargo:rerun-if-changed={}", path.join(&contract.file).display());
         c.arg(&contract.file);
     }
 

@@ -18,7 +18,7 @@ use std::fmt;
 use std::mem;
 use std::sync::{Arc, Mutex};
 use trace;
-use {abi, account, call, crypto, journaldb, kvdb, kvdb_memorydb, linker};
+use {abi, account, ast, call, crypto, journaldb, kvdb, kvdb_memorydb, linker};
 
 /// The outcome of a transaction.
 ///
@@ -173,6 +173,10 @@ impl Evm {
             linker.register_source_list(source_list);
         }
 
+        for (path, data) in context.sources {
+            linker.register_ast(path, ast::Ast::parse(data.ast)?);
+        }
+
         let evm = Evm {
             env_info,
             state: RefCell::new(state),
@@ -271,7 +275,7 @@ impl Evm {
         let entry_source = match (C::BIN.clone(), C::SOURCE_MAP.clone()) {
             (bin, Some(source_map)) => {
                 let source = linker
-                    .source(bin, source_map)
+                    .source(C::PATH, C::ITEM, bin, source_map)
                     .map_err(|e| format_err!("{}: {}", C::ITEM, e))?;
 
                 Some(Arc::new(source))
@@ -283,17 +287,19 @@ impl Evm {
 
         // Register all linker information used for debugging.
         if let Outcome::Ok(ref address) = result.outcome {
-            linker.register_item(C::ITEM.to_string(), *address);
+            let object = (C::PATH.to_string(), C::ITEM.to_string());
 
             if let (Some(bin), Some(source_map)) =
                 (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())
             {
                 let source = linker
-                    .source(bin, source_map)
+                    .source(C::PATH, C::ITEM, bin, source_map)
                     .map_err(|e| format_err!("{}: {}", C::ITEM, e))?;
 
-                linker.register_runtime_source(C::ITEM.to_string(), source);
+                linker.register_runtime_source(object.clone(), source);
             }
+
+            linker.register_object(object, *address);
         }
 
         Ok(result)
@@ -426,14 +432,15 @@ impl Evm {
         ).map_err(|e| format_err!("verify failed: {}", e))?;
 
         let frame_info = Mutex::new(trace::FrameInfo::None);
+        let sources = Mutex::new(vec![]);
 
         // Apply transaction
         let result = state.apply_with_tracing(
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(linker, entry_source.clone(), &frame_info),
-            trace::TxVmTracer::new(linker, entry_source.clone(), &frame_info),
+            trace::TxTracer::new(linker, entry_source.clone(), &frame_info, &sources),
+            trace::TxVmTracer::new(linker, entry_source.clone(), &frame_info, &sources),
         );
 
         let mut result = result.map_err(|e| format_err!("vm: {}", e))?;

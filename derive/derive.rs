@@ -26,7 +26,12 @@ pub struct ContractFields {
     runtime_bin: Option<String>,
     #[serde(rename = "srcmap-runtime")]
     runtime_source_map: Option<String>,
-    ast: Option<serde_json::Value>,
+}
+
+#[derive(Deserialize)]
+pub struct FileAst {
+    #[serde(rename = "AST")]
+    ast: serde_json::Value,
 }
 
 #[derive(Deserialize)]
@@ -37,6 +42,8 @@ pub struct Output {
     source_list: Vec<String>,
     #[allow(unused)]
     version: String,
+    #[serde(rename = "sources", default)]
+    sources: HashMap<String, FileAst>,
 }
 
 #[derive(Debug, Hash, PartialEq, Eq)]
@@ -110,7 +117,11 @@ pub fn impl_module(
         });
     }
 
-    result.push(new_context_function(path, output.source_list));
+    result.push(new_context_function(
+        path,
+        output.source_list,
+        output.sources,
+    )?);
 
     return Ok(quote!{ #(#result)* });
 
@@ -134,19 +145,55 @@ pub fn impl_module(
         })
     }
 
-    fn new_context_function(path: &Path, source_list: Vec<String>) -> quote::Tokens {
+    fn new_context_function(
+        path: &Path,
+        source_list: Vec<String>,
+        sources: HashMap<String, FileAst>,
+    ) -> Result<quote::Tokens> {
         let source_list = source_list
             .into_iter()
             .map(|p| path.join(p).display().to_string())
             .collect::<Vec<_>>();
 
-        quote! {
+        let sources_var = syn::Ident::from("sources");
+
+        let populate_sources = {
+            let mut out = Vec::new();
+
+            for (file, source) in sources {
+                let ast = serde_json::to_string(&source.ast)?;
+
+                out.push(quote! {
+                    #sources_var.insert(#file, ::parables_testing::abi::FileSource {
+                        ast: #ast,
+                    });
+                });
+            }
+
+            out
+        };
+
+        let sources = if populate_sources.len() > 0 {
+            quote! {
+                let mut #sources_var = ::std::collections::HashMap::new();
+                #(#populate_sources)*
+            }
+        } else {
+            quote! {
+                let #sources_var = ::std::collections::HashMap::new();
+            }
+        };
+
+        Ok(quote! {
             pub fn new_context() -> ::parables_testing::abi::ContractContext {
+                #sources
+
                 ::parables_testing::abi::ContractContext {
                     source_list: Some(vec![#(::std::path::Path::new(#source_list).to_owned(),)*]),
+                    sources,
                 }
             }
-        }
+        })
     }
 }
 
@@ -175,7 +222,7 @@ fn impl_contract_abi(
     }
 
     let events_impl: Vec<_> = contract.events().map(impl_contract_event).collect();
-    let constructor_impl = impl_constructor(name, contract_fields, contract.constructor.as_ref());
+    let constructor_impl = impl_constructor(name, contract_fields, contract.constructor.as_ref())?;
     let logs_structs: Vec<_> = contract.events().map(declare_logs).collect();
     let events_structs: Vec<_> = contract.events().map(declare_events).collect();
 
@@ -650,7 +697,7 @@ fn impl_constructor(
     name: &Name,
     contract_fields: &ContractFields,
     constructor: Option<&Constructor>,
-) -> quote::Tokens {
+) -> Result<quote::Tokens> {
     // [param0, hello_world, param2]
     let input_names: Vec<_> = constructor
         .map(|c| input_names(&c.inputs))
@@ -699,6 +746,7 @@ fn impl_constructor(
     let constructor_inputs = to_ethabi_param_vec(constructor.iter().flat_map(|c| c.inputs.iter()));
 
     let item = &name.type_name;
+    let path = &name.path;
     let bin = &contract_fields.bin;
 
     let source_map = match contract_fields.source_map.as_ref() {
@@ -716,7 +764,7 @@ fn impl_constructor(
         None => quote!{ None },
     };
 
-    quote! {
+    Ok(quote! {
         pub fn constructor<#(#template_params),*>(#(#params),* ) -> Constructor {
             let v: Vec<ethabi::Token> = vec![#(#usage),*];
             Constructor::new(v)
@@ -769,12 +817,13 @@ fn impl_constructor(
 
         impl ::parables_testing::abi::Constructor for Constructor {
             const ITEM: &'static str = #item;
+            const PATH: &'static str = #path;
             const BIN: &'static str = #bin;
             const SOURCE_MAP: Option<&'static str> = #source_map;
             const RUNTIME_BIN: Option<&'static str> = #runtime_bin;
             const RUNTIME_SOURCE_MAP: Option<&'static str> = #runtime_source_map;
         }
-    }
+    })
 }
 
 fn declare_logs(event: &Event) -> quote::Tokens {

@@ -1144,6 +1144,9 @@ dependencies = [
  "parity-bytes 0.1.0 (git+https://github.com/paritytech/parity-common.git)",
  "rand 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "vm 0.1.0 (git+https://github.com/paritytech/parity.git)",
 ]
 

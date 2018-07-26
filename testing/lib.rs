@@ -1,3 +1,7 @@
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 #[macro_use]
 #[allow(unused_imports)]
 extern crate parables_derive;
@@ -31,6 +35,7 @@ pub use parables_test_runner::*;
 pub mod abi;
 #[cfg(feature = "account")]
 pub mod account;
+mod ast;
 pub mod call;
 mod crypto;
 pub mod evm;

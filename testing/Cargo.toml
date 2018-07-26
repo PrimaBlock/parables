@@ -28,6 +28,10 @@ eth-secp256k1 = {git = "https://github.com/paritytech/rust-secp256k1", optional 
 rand = {version = "0.4", optional = true}
 rust-crypto = {version = "0.2", optional = true}
 
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+
 [dev-dependencies]
 hex = "0.3"
 

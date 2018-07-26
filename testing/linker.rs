@@ -1,3 +1,5 @@
+use ast;
+use ast::Ast;
 use ethereum_types::Address;
 use failure::{Error, ResultExt};
 use parity_evm;
@@ -18,13 +20,25 @@ pub enum LinkerError {
     SourceMapDecodeError,
 }
 
+pub type Object = (String, String);
+
 /// All necessary source information to perform tracing.
 #[derive(Debug)]
 pub struct Source {
+    pub object: Object,
     /// The source map for the given source.
     pub source_map: SourceMap,
     /// The decoded offsets for the given source, from program counter to instruction offset.
     pub offsets: HashMap<usize, usize>,
+}
+
+/// Information about an address.
+#[derive(Debug)]
+pub struct AddressInfo {
+    /// Source associated with an address.
+    pub source: Option<Arc<Source>>,
+    /// Ast associated with an address.
+    pub ast: Option<Arc<Ast>>,
 }
 
 /// hex lookup table
@@ -47,16 +61,18 @@ static HEX: [i8; 256] = [
 /// A solidity bytecode linker.
 #[derive(Debug, Clone)]
 pub struct Linker {
-    /// Known linkable objects by item.
-    objects_by_item: HashMap<String, Address>,
-    /// Addresses to known items.
-    item_by_address: HashMap<Address, String>,
-    /// Known linkable objects by path.
-    objects_by_path: HashMap<String, Address>,
+    /// Address to object.
+    address_to_object: HashMap<Address, Object>,
+    /// Find paths by object.
+    address_to_path: HashMap<Address, String>,
+    /// Find an item to an address.
+    item_to_address: HashMap<String, Address>,
     /// Known source maps by item.
-    sources: HashMap<String, Arc<Source>>,
+    sources: HashMap<Object, Arc<Source>>,
     /// Known runtime source maps by item.
-    runtime_sources: HashMap<String, Arc<Source>>,
+    runtime_sources: HashMap<Object, Arc<Source>>,
+    /// Known ASTs by file path.
+    ast_by_path: HashMap<String, Arc<ast::Ast>>,
     /// Known sources.
     source_list: Option<Arc<Vec<PathBuf>>>,
 }
@@ -65,43 +81,75 @@ impl Linker {
     /// Construct a new linker.
     pub fn new() -> Self {
         Self {
-            objects_by_item: HashMap::new(),
-            item_by_address: HashMap::new(),
-            objects_by_path: HashMap::new(),
+            address_to_object: HashMap::new(),
+            address_to_path: HashMap::new(),
+            item_to_address: HashMap::new(),
             sources: HashMap::new(),
             runtime_sources: HashMap::new(),
+            ast_by_path: HashMap::new(),
             source_list: None,
         }
+    }
+
+    /// Register the address for an object.
+    pub fn register_object(&mut self, object: Object, address: Address) {
+        self.address_to_object.insert(address, object.clone());
+        self.address_to_path.insert(address, object.0.clone());
+        self.item_to_address.insert(object.1.clone(), address);
+    }
+
+    /// Find all corresponding info for the given address.
+    pub fn find_info(&self, address: Address) -> AddressInfo {
+        let source = self.address_to_object
+            .get(&address)
+            .and_then(|object| self.sources.get(object))
+            .map(Arc::clone);
+
+        let ast = self.find_ast(address);
+        AddressInfo { source, ast }
+    }
+
+    /// Find all corresponding info for the given address.
+    pub fn find_runtime_info(&self, address: Address) -> AddressInfo {
+        let source = self.address_to_object
+            .get(&address)
+            .and_then(|object| self.runtime_sources.get(object))
+            .map(Arc::clone);
+
+        let ast = self.find_ast(address);
+        AddressInfo { source, ast }
+    }
+
+    /// Find a single AST.
+    pub fn find_ast(&self, address: Address) -> Option<Arc<Ast>> {
+        self.address_to_path
+            .get(&address)
+            .and_then(|path| self.ast_by_path.get(path))
+            .map(Arc::clone)
+    }
+
+    /// Find AST by corresponding object.
+    pub fn find_ast_by_object(&self, object: &Object) -> Option<Arc<Ast>> {
+        self.ast_by_path.get(&object.0).map(Arc::clone)
     }
 
     pub fn register_source_list(&mut self, source_list: Vec<PathBuf>) {
         self.source_list = Some(Arc::new(source_list));
     }
 
-    /// Register a runtime source.
-    pub fn register_source(&mut self, item: String, source: Source) {
-        self.sources.insert(item, Arc::new(source));
+    /// Register AST for a source.
+    pub fn register_ast(&mut self, path: &str, ast: ast::Ast) {
+        self.ast_by_path.insert(path.to_string(), Arc::new(ast));
     }
 
-    /// Find a corresponding source map for the given address.
-    pub fn find_source(&self, address: Address) -> Option<Arc<Source>> {
-        self.item_by_address
-            .get(&address)
-            .and_then(|item| self.sources.get(item))
-            .map(Arc::clone)
+    /// Register a source.
+    pub fn register_source(&mut self, object: Object, source: Source) {
+        self.sources.insert(object, Arc::new(source));
     }
 
     /// Register a runtime source.
-    pub fn register_runtime_source(&mut self, item: String, source: Source) {
-        self.runtime_sources.insert(item, Arc::new(source));
-    }
-
-    /// Find a corresponding runtime source map for the given address.
-    pub fn find_runtime_source(&self, address: Address) -> Option<Arc<Source>> {
-        self.item_by_address
-            .get(&address)
-            .and_then(|item| self.runtime_sources.get(item))
-            .map(Arc::clone)
+    pub fn register_runtime_source(&mut self, object: Object, source: Source) {
+        self.runtime_sources.insert(object, Arc::new(source));
     }
 
     /// Find the corresponding file to an index.
@@ -111,25 +159,21 @@ impl Linker {
             .and_then(|source_list| source_list.get(index as usize).map(|p| p.as_ref()))
     }
 
-    /// Register an address for an item.
-    pub fn register_item(&mut self, item: String, address: Address) {
-        self.objects_by_item.insert(item.clone(), address);
-        self.item_by_address.insert(address, item);
-    }
-
-    /// Register an address for a path.
-    pub fn register_path(&mut self, path: String, address: Address) {
-        self.objects_by_path.insert(path, address);
-    }
-
     /// Construct source information for the given code and source map.
-    pub fn source(&self, bin: &str, source_map: &str) -> Result<Source, Error> {
+    pub fn source(
+        &self,
+        path: &str,
+        item: &str,
+        bin: &str,
+        source_map: &str,
+    ) -> Result<Source, Error> {
         let source_map =
             SourceMap::parse(source_map).with_context(|_| LinkerError::SourceMapDecodeError)?;
 
         let offsets = self.decode_offsets(bin)?;
 
         Ok(Source {
+            object: (path.to_string(), item.to_string()),
             source_map,
             offsets,
         })
@@ -231,16 +275,16 @@ impl Linker {
             let (path, item) = decode_linked(unlinked)?;
 
             let address = match item {
-                Some(item) => self.objects_by_item.get(item).ok_or_else(|| {
+                Some(item) => self.item_to_address.get(item).ok_or_else(|| {
                     LinkerError::LinkerItemError {
                         item: item.to_string(),
                     }
                 })?,
-                None => self.objects_by_path.get(path).ok_or_else(|| {
-                    LinkerError::LinkerPathError {
+                None => {
+                    return Err(LinkerError::LinkerPathError {
                         path: path.to_string(),
-                    }
-                })?,
+                    }.into())
+                }
             };
 
             output.extend(address.iter());

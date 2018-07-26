@@ -5,6 +5,7 @@ use linker;
 use parity_bytes::Bytes;
 use parity_evm;
 use parity_vm;
+use source_map;
 use std::cmp;
 use std::fmt;
 use std::fs::File;
@@ -114,6 +115,8 @@ pub struct TxTracer<'a> {
     frame_info: &'a Mutex<FrameInfo>,
     // Information about a revert.
     errors: Vec<ErrorInfo>,
+    // Stack of address infos.
+    infos: &'a Mutex<Vec<linker::AddressInfo>>,
 }
 
 impl<'a> TxTracer<'a> {
@@ -121,31 +124,20 @@ impl<'a> TxTracer<'a> {
         linker: &'a linker::Linker,
         entry_source: Option<Arc<linker::Source>>,
         frame_info: &'a Mutex<FrameInfo>,
+        infos: &'a Mutex<Vec<linker::AddressInfo>>,
     ) -> Self {
         Self {
             linker,
             entry_source,
             frame_info,
             errors: Vec::new(),
+            infos,
         }
     }
 
     /// Get line info from the current program counter.
     fn line_info(&self, source: Option<&Arc<linker::Source>>, pc: usize) -> Option<LineInfo> {
-        let linker::Source {
-            ref source_map,
-            ref offsets,
-        } = match source {
-            Some(source) => source.as_ref(),
-            None => return None,
-        };
-
-        let offset = match offsets.get(&pc) {
-            Some(offset) => *offset,
-            None => return None,
-        };
-
-        let m = match source_map.find_mapping(offset) {
+        let m = match mapping(source, pc) {
             Some(m) => m,
             None => return None,
         };
@@ -173,10 +165,25 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     type Output = ErrorInfo;
 
     fn prepare_trace_call(&self, params: &parity_vm::ActionParams) -> Option<Call> {
+        self.infos
+            .lock()
+            .expect("lock poisoned")
+            .push(self.linker.find_runtime_info(params.address));
+
         Some(Call::from(params.clone()))
     }
 
     fn prepare_trace_create(&self, params: &parity_vm::ActionParams) -> Option<Create> {
+        let source = self.entry_source.clone();
+        let ast = source
+            .as_ref()
+            .and_then(|s| self.linker.find_ast_by_object(&s.object));
+
+        self.infos
+            .lock()
+            .expect("lock poisoned")
+            .push(linker::AddressInfo { source, ast });
+
         Some(Create::from(params.clone()))
     }
 
@@ -191,6 +198,8 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         _output: Option<Bytes>,
         subs: Vec<Self::Output>,
     ) {
+        self.infos.lock().expect("lock poisoned").pop();
+
         if !subs.is_empty() {
             self.errors.extend(subs);
         }
@@ -204,6 +213,8 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         _address: H160,
         subs: Vec<Self::Output>,
     ) {
+        self.infos.lock().expect("lock poisoned").pop();
+
         if !subs.is_empty() {
             self.errors.extend(subs);
         }
@@ -211,18 +222,16 @@ impl<'a> trace::Tracer for TxTracer<'a> {
 
     fn trace_failed_call(
         &mut self,
-        call: Option<Call>,
+        _call: Option<Call>,
         subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
-        let call = call.expect("no call");
-
+        let info = self.infos.lock().expect("lock poisoned").pop();
         let frame_info: FrameInfo = self.frame_info.lock().expect("poisoned lock").clone();
 
         match frame_info {
             FrameInfo::Some(pc) => {
-                let source = self.linker.find_runtime_source(call.to);
-                let line_info = self.line_info(source.as_ref(), pc);
+                let line_info = self.line_info(info.as_ref().and_then(|i| i.source.as_ref()), pc);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
@@ -244,11 +253,13 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
+        let info = self.infos.lock().expect("poisoned lock").pop();
+
         let frame_info: FrameInfo = self.frame_info.lock().expect("poisoned lock").clone();
 
         match frame_info {
             FrameInfo::Some(pc) => {
-                let line_info = self.line_info(self.entry_source.as_ref(), pc);
+                let line_info = self.line_info(info.as_ref().and_then(|i| i.source.as_ref()), pc);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
@@ -272,7 +283,12 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     where
         Self: Sized,
     {
-        TxTracer::new(self.linker, self.entry_source.clone(), self.frame_info)
+        TxTracer::new(
+            self.linker,
+            self.entry_source.clone(),
+            self.frame_info,
+            self.infos,
+        )
     }
 
     fn drain(self) -> Vec<ErrorInfo> {
@@ -304,12 +320,13 @@ pub struct TxVmTracer<'a> {
     linker: &'a linker::Linker,
     // if present, the source used to create a contract.
     entry_source: Option<Arc<linker::Source>>,
-    // current sources.
+    // current infos.
     frame_info: &'a Mutex<FrameInfo>,
     depth: usize,
     pc: usize,
     instruction: u8,
     stack: Vec<U256>,
+    infos: &'a Mutex<Vec<linker::AddressInfo>>,
 }
 
 impl<'a> TxVmTracer<'a> {
@@ -317,6 +334,7 @@ impl<'a> TxVmTracer<'a> {
         linker: &'a linker::Linker,
         entry_source: Option<Arc<linker::Source>>,
         frame_info: &'a Mutex<FrameInfo>,
+        infos: &'a Mutex<Vec<linker::AddressInfo>>,
     ) -> Self {
         TxVmTracer {
             linker,
@@ -326,6 +344,7 @@ impl<'a> TxVmTracer<'a> {
             pc: 0,
             instruction: 0,
             stack: Vec::new(),
+            infos,
         }
     }
 }
@@ -347,6 +366,17 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
         _store_diff: Option<(U256, U256)>,
     ) {
         let i = parity_evm::Instruction::from_u8(self.instruction).expect("legal instruction");
+        let infos = self.infos.lock().expect("poisoned lock");
+
+        if let Some(info) = infos.last() {
+            if let Some(m) = mapping(info.source.as_ref(), self.pc) {
+                if let Some(ref ast) = info.ast {
+                    if let Some(_ast) = ast.find(m.start, m.length) {
+                        // TODO: do something with found _ast
+                    }
+                }
+            }
+        }
 
         let len = self.stack.len();
 
@@ -369,7 +399,12 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
     where
         Self: Sized,
     {
-        let mut vm = TxVmTracer::new(self.linker, self.entry_source.clone(), self.frame_info);
+        let mut vm = TxVmTracer::new(
+            self.linker,
+            self.entry_source.clone(),
+            self.frame_info,
+            self.infos,
+        );
         vm.depth = self.depth + 1;
         vm
     }
@@ -379,4 +414,26 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
     fn drain(self) -> Option<Self::Output> {
         None
     }
+}
+
+/// Find the corresponding mapping for a source and program counter.
+fn mapping<'a>(
+    source: Option<&'a Arc<linker::Source>>,
+    pc: usize,
+) -> Option<&'a source_map::Mapping> {
+    let linker::Source {
+        ref source_map,
+        ref offsets,
+        ..
+    } = match source {
+        Some(source) => source.as_ref(),
+        None => return None,
+    };
+
+    let offset = match offsets.get(&pc) {
+        Some(offset) => *offset,
+        None => return None,
+    };
+
+    source_map.find_mapping(offset)
 }
