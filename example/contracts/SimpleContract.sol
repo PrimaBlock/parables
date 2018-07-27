@@ -24,8 +24,8 @@ contract SimpleContract {
     }
 
     function testAdd(uint a, uint b) public ownerOnly() {
-        uint update = a.add(b);
-        value = update;
+        uint simpleUpdate = a.add(b);
+        value = simpleUpdate;
     }
 
     function getValue() public view returns(uint) {

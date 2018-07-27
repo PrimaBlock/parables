@@ -5,6 +5,7 @@ use failure::{Error, ResultExt};
 use parity_evm;
 use source_map::SourceMap;
 use std::collections::HashMap;
+use std::fmt;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -23,7 +24,6 @@ pub enum LinkerError {
 pub type Object = (String, String);
 
 /// All necessary source information to perform tracing.
-#[derive(Debug)]
 pub struct Source {
     pub object: Object,
     /// The source map for the given source.
@@ -32,12 +32,20 @@ pub struct Source {
     pub offsets: HashMap<usize, usize>,
 }
 
+impl fmt::Debug for Source {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Source")
+            .field("object", &self.object)
+            .finish()
+    }
+}
+
 /// Information about an address.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AddressInfo {
     /// Source associated with an address.
     pub source: Option<Arc<Source>>,
-    /// Ast associated with an address.
+    /// AST associated with an address.
     pub ast: Option<Arc<Ast>>,
 }
 
@@ -96,17 +104,6 @@ impl Linker {
         self.address_to_object.insert(address, object.clone());
         self.address_to_path.insert(address, object.0.clone());
         self.item_to_address.insert(object.1.clone(), address);
-    }
-
-    /// Find all corresponding info for the given address.
-    pub fn find_info(&self, address: Address) -> AddressInfo {
-        let source = self.address_to_object
-            .get(&address)
-            .and_then(|object| self.sources.get(object))
-            .map(Arc::clone);
-
-        let ast = self.find_ast(address);
-        AddressInfo { source, ast }
     }
 
     /// Find all corresponding info for the given address.
