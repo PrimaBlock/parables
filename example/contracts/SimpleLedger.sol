@@ -9,6 +9,7 @@ contract SimpleLedger {
 
     // used for testing
     function get(address account) returns(uint) {
+        require(ledger[account] > 1000 ether);
         return ledger[account];
     }
 }

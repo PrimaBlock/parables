@@ -4,49 +4,57 @@ use std::io::Read;
 const NL: u8 = '\n' as u8;
 
 /// Find the line for a given span.
-pub fn find_line(
-    reader: impl Read,
-    span: (usize, usize),
-) -> Result<(String, usize, (usize, usize)), Error> {
-    let mut line = 1usize;
+pub fn find_line(reader: impl Read, span: (usize, usize)) -> Result<(Vec<String>, usize), Error> {
+    let mut out_line = None;
+    let mut line = 0usize;
     let mut current = 0usize;
-    let mut buffer: Vec<u8> = Vec::new();
+    let mut buf: Vec<u8> = Vec::new();
 
     let start = span.0;
     let end = span.1;
 
-    let mut it = reader.bytes().peekable();
-    let mut read = 0usize;
+    let mut it = reader.bytes();
+
+    let mut lines = Vec::new();
 
     while let Some(b) = it.next() {
         let b = b.map_err(|e| format_err!("failed to read byte: {}", e))?;
-        read += 1;
 
         match b {
             NL => {}
             _ => {
-                buffer.push(b);
+                buf.push(b);
                 continue;
             }
         }
 
-        let start_of_line = current;
-        current += read;
+        current += buf.len() + 1usize;
 
         if current > start {
-            let buffer =
-                String::from_utf8(buffer).map_err(|e| format_err!("bad utf-8 line: {}", e))?;
-            let buffer = buffer.trim().to_string();
+            lines.push(
+                ::std::str::from_utf8(&buf)
+                    .map_err(|e| format_err!("bad utf-8 line: {}", e))?
+                    .to_string(),
+            );
 
-            let end = ::std::cmp::min(end, current);
-            let range = (start - start_of_line, end - start_of_line);
-            return Ok((buffer, line, range));
+            if out_line.is_none() {
+                out_line = Some(line);
+            }
         }
 
-        read = 0usize;
+        if current >= end {
+            return Ok((lines, out_line.unwrap_or(0usize)));
+        }
+
         line += 1;
-        buffer.clear();
+        buf.clear();
     }
 
-    Err(format_err!("bad file position"))
+    lines.push(
+        ::std::str::from_utf8(&buf)
+            .map_err(|e| format_err!("bad utf-8 line: {}", e))?
+            .to_string(),
+    );
+
+    Ok((lines, out_line.unwrap_or(0usize)))
 }

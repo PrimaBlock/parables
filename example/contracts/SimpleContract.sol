@@ -24,8 +24,9 @@ contract SimpleContract {
     }
 
     function testAdd(uint a, uint b) public ownerOnly() {
-        uint update = a.add(b);
-        value = update;
+        uint simpleUpdate = a.add(b);
+        value = simpleUpdate;
+        require(msg.value > 100 ether);
     }
 
     function getValue() public view returns(uint) {

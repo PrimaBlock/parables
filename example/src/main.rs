@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate parables_testing;
+extern crate pretty_env_logger;
 
 use parables_testing::prelude::*;
 
@@ -10,6 +11,8 @@ contracts!{
 }
 
 fn main() -> Result<()> {
+    pretty_env_logger::init();
+
     let owner = Address::random();
     // template call
     let call = Call::new(owner).gas(1_000_000);
@@ -53,6 +56,40 @@ fn main() -> Result<()> {
             }
         },
     );
+
+    runner.test("simple contract", || {
+        let evm = evm.get()?;
+        let mut current = 42u64;
+
+        let contract = simple_contract::contract(&evm, simple, call);
+
+        let out = contract.get_value()?.ok()?;
+        assert_eq!(out, current.into());
+
+        contract.test_add(10, 20)?.ok()?;
+        current = 30u64;
+
+        for _ in 0..1 {
+            let out = contract.get_value()?.ok()?;
+            assert_eq!(out, current.into());
+
+            // add a value to the call, this value will be sent to the contract.
+            contract
+                .value(wei::from_ether(1))
+                .set_value(out + 1.into())?
+                .ok()?;
+
+            current += 1;
+        }
+
+        let not_owner = Address::random();
+
+        // non-owner is not allowed to set value.
+        let result = contract.sender(not_owner).set_value(0)?;
+        assert!(result.is_reverted_with("require(msg.sender == owner);"));
+
+        Ok(())
+    });
 
     runner.test("decrement step by step", || {
         use simple_contract::events as ev;
