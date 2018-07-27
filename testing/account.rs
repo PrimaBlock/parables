@@ -1,18 +1,10 @@
-use crypto::Crypto;
+use crypto::{keccak256, Crypto};
 use ethereum_types::{Address, H160, H256, U256};
 use rust_crypto::digest::Digest;
 use rust_crypto::sha3::Sha3;
 use secp256k1::{self, key};
 use std::cell::RefCell;
 use std::fmt;
-
-fn keccak256(bytes: &[u8]) -> [u8; 32] {
-    let mut checksum = Sha3::keccak256();
-    checksum.input(bytes);
-    let mut hash = [0u8; 32];
-    checksum.result(&mut hash);
-    hash
-}
 
 #[derive(Debug, Fail)]
 pub enum AccountError {

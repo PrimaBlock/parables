@@ -1,10 +1,10 @@
 use ast;
-use ast::Ast;
 use ethereum_types::Address;
 use failure::{Error, ResultExt};
 use parity_evm;
 use source_map::SourceMap;
 use std::collections::HashMap;
+use std::fmt;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -23,7 +23,6 @@ pub enum LinkerError {
 pub type Object = (String, String);
 
 /// All necessary source information to perform tracing.
-#[derive(Debug)]
 pub struct Source {
     pub object: Object,
     /// The source map for the given source.
@@ -32,13 +31,21 @@ pub struct Source {
     pub offsets: HashMap<usize, usize>,
 }
 
+impl fmt::Debug for Source {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("Source")
+            .field("object", &self.object)
+            .finish()
+    }
+}
+
 /// Information about an address.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AddressInfo {
     /// Source associated with an address.
     pub source: Option<Arc<Source>>,
-    /// Ast associated with an address.
-    pub ast: Option<Arc<Ast>>,
+    /// AST associated with an address.
+    pub ast: Option<Arc<ast::Registry>>,
 }
 
 /// hex lookup table
@@ -72,7 +79,7 @@ pub struct Linker {
     /// Known runtime source maps by item.
     runtime_sources: HashMap<Object, Arc<Source>>,
     /// Known ASTs by file path.
-    ast_by_path: HashMap<String, Arc<ast::Ast>>,
+    ast_by_path: HashMap<String, Arc<ast::Registry>>,
     /// Known sources.
     source_list: Option<Arc<Vec<PathBuf>>>,
 }
@@ -99,17 +106,6 @@ impl Linker {
     }
 
     /// Find all corresponding info for the given address.
-    pub fn find_info(&self, address: Address) -> AddressInfo {
-        let source = self.address_to_object
-            .get(&address)
-            .and_then(|object| self.sources.get(object))
-            .map(Arc::clone);
-
-        let ast = self.find_ast(address);
-        AddressInfo { source, ast }
-    }
-
-    /// Find all corresponding info for the given address.
     pub fn find_runtime_info(&self, address: Address) -> AddressInfo {
         let source = self.address_to_object
             .get(&address)
@@ -121,7 +117,7 @@ impl Linker {
     }
 
     /// Find a single AST.
-    pub fn find_ast(&self, address: Address) -> Option<Arc<Ast>> {
+    pub fn find_ast(&self, address: Address) -> Option<Arc<ast::Registry>> {
         self.address_to_path
             .get(&address)
             .and_then(|path| self.ast_by_path.get(path))
@@ -129,7 +125,7 @@ impl Linker {
     }
 
     /// Find AST by corresponding object.
-    pub fn find_ast_by_object(&self, object: &Object) -> Option<Arc<Ast>> {
+    pub fn find_ast_by_object(&self, object: &Object) -> Option<Arc<ast::Registry>> {
         self.ast_by_path.get(&object.0).map(Arc::clone)
     }
 
@@ -138,8 +134,9 @@ impl Linker {
     }
 
     /// Register AST for a source.
-    pub fn register_ast(&mut self, path: &str, ast: ast::Ast) {
-        self.ast_by_path.insert(path.to_string(), Arc::new(ast));
+    pub fn register_ast(&mut self, path: &str, registry: ast::Registry) {
+        self.ast_by_path
+            .insert(path.to_string(), Arc::new(registry));
     }
 
     /// Register a source.
@@ -542,7 +539,10 @@ mod tests {
     #[test]
     fn test_contract_a_linker() {
         let mut linker = Linker::new();
-        linker.register_item("SimpleLib".to_string(), 0x342a.into());
+        linker.register_object(
+            ("SimpleLib.sol".to_string(), "SimpleLib".to_string()),
+            0x342a.into(),
+        );
 
         let out = linker
             .link(include_str!("tests/a.bin").trim())

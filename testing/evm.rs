@@ -174,7 +174,7 @@ impl Evm {
         }
 
         for (path, data) in context.sources {
-            linker.register_ast(path, ast::Ast::parse(data.ast)?);
+            linker.register_ast(path, ast::Registry::parse(data.ast)?);
         }
 
         let evm = Evm {
@@ -431,16 +431,15 @@ impl Evm {
             self.env_info.number >= self.engine.params().eip86_transition,
         ).map_err(|e| format_err!("verify failed: {}", e))?;
 
-        let frame_info = Mutex::new(trace::FrameInfo::None);
-        let sources = Mutex::new(vec![]);
+        let shared = Mutex::new(trace::Shared::new());
 
         // Apply transaction
         let result = state.apply_with_tracing(
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(linker, entry_source.clone(), &frame_info, &sources),
-            trace::TxVmTracer::new(linker, entry_source.clone(), &frame_info, &sources),
+            trace::TxTracer::new(linker, entry_source.clone(), &shared),
+            trace::TxVmTracer::new(linker, entry_source.clone(), &shared),
         );
 
         let mut result = result.map_err(|e| format_err!("vm: {}", e))?;

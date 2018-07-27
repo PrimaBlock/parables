@@ -1,12 +1,16 @@
+use ast;
+use ethcore::storage;
 use ethcore::trace;
 use ethcore::trace::trace::{Call, Create};
-use ethereum_types::{H160, U256};
+use ethereum_types::{Address, H160, U256};
+use failure::Error;
 use linker;
 use parity_bytes::Bytes;
 use parity_evm;
 use parity_vm;
 use source_map;
 use std::cmp;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
@@ -43,6 +47,8 @@ pub struct ErrorInfo {
     pub kind: ErrorKind,
     pub line_info: Option<LineInfo>,
     pub subs: Vec<ErrorInfo>,
+    /// Local variables and their corresponding values at the time of error.
+    pub variables: BTreeMap<ast::Expr, ast::Value>,
 }
 
 impl ErrorInfo {
@@ -51,29 +57,9 @@ impl ErrorInfo {
         Self {
             kind: ErrorKind::Root,
             line_info: None,
-            subs: subs,
+            subs,
+            variables: BTreeMap::new(),
         }
-    }
-
-    fn fmt_sub(&self, fmt: &mut fmt::Formatter, level: usize) -> fmt::Result {
-        let prefix = (0..level).map(|_| "  ").collect::<String>();
-
-        match self.kind {
-            ErrorKind::Root => match self.line_info {
-                Some(ref line_info) => writeln!(fmt, "{}failed at {}", prefix, line_info)?,
-                None => writeln!(fmt, "{}failed", prefix)?,
-            },
-            ErrorKind::Error(ref e) => match self.line_info {
-                Some(ref line_info) => writeln!(fmt, "{}{} at {}", prefix, e, line_info)?,
-                None => writeln!(fmt, "{}{} at unknown location", prefix, e)?,
-            },
-        }
-
-        for sub in &self.subs {
-            sub.fmt_sub(fmt, level + 1)?;
-        }
-
-        Ok(())
     }
 
     /// Check if kind is reverted.
@@ -92,7 +78,7 @@ impl ErrorInfo {
         let stmt = stmt.as_ref();
 
         if let Some(ref line_info) = self.line_info {
-            if line_info.line_string.trim() == stmt {
+            if line_info.lines.iter().any(|l| l.trim() == stmt) {
                 return true;
             }
         }
@@ -103,61 +89,305 @@ impl ErrorInfo {
 
 impl fmt::Display for ErrorInfo {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self.fmt_sub(fmt, 0)
+        match self.kind {
+            ErrorKind::Root => match self.line_info {
+                Some(ref line_info) => {
+                    writeln!(fmt, "{}: Failed", line_info)?;
+
+                    for (l, line) in (line_info.line..).zip(line_info.lines.iter()) {
+                        writeln!(fmt, "{:>3}: {}", l + 1, line)?;
+                    }
+                }
+                None => writeln!(fmt, "?:?: Failed")?,
+            },
+            ErrorKind::Error(ref e) => match self.line_info {
+                Some(ref line_info) => {
+                    writeln!(fmt, "{}: {}", line_info, e)?;
+
+                    for (l, line) in (line_info.line..).zip(line_info.lines.iter()) {
+                        writeln!(fmt, " {:>3}: {}", l + 1, line)?;
+                    }
+                }
+                None => writeln!(fmt, "?:?: {}", e)?,
+            },
+        }
+
+        if !self.variables.is_empty() {
+            writeln!(fmt, "Expressions:")?;
+
+            let mut it = self.variables.iter();
+
+            while let Some((var, value)) = it.next() {
+                writeln!(fmt, "  {} = {}", var, value)?;
+            }
+        }
+
+        for sub in &self.subs {
+            sub.fmt(fmt)?;
+        }
+
+        Ok(())
     }
 }
 
-pub struct TxTracer<'a> {
-    linker: &'a linker::Linker,
-    // if present, the source used when creating a contract.
-    entry_source: Option<Arc<linker::Source>>,
-    // program counter of last revert.
-    frame_info: &'a Mutex<FrameInfo>,
-    // Information about a revert.
-    errors: Vec<ErrorInfo>,
-    // Stack of address infos.
-    infos: &'a Mutex<Vec<linker::AddressInfo>>,
+#[derive(Debug)]
+pub enum Operation {
+    None,
+    Create,
+    Call,
 }
 
-impl<'a> TxTracer<'a> {
-    pub fn new(
-        linker: &'a linker::Linker,
-        entry_source: Option<Arc<linker::Source>>,
-        frame_info: &'a Mutex<FrameInfo>,
-        infos: &'a Mutex<Vec<linker::AddressInfo>>,
-    ) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LineInfo {
+    path: PathBuf,
+    line: usize,
+    lines: Vec<String>,
+}
+
+impl fmt::Display for LineInfo {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmt, "{}:{}", self.path.display(), self.line + 1)
+    }
+}
+
+#[derive(Debug)]
+pub struct Shared {
+    // Information about the current frame.
+    frame_info: FrameInfo,
+    // Call stack.
+    call_stack: Vec<CallFrame>,
+}
+
+impl Shared {
+    /// Create a new instance of shared state.
+    pub fn new() -> Self {
         Self {
-            linker,
-            entry_source,
-            frame_info,
-            errors: Vec::new(),
-            infos,
+            frame_info: FrameInfo::None,
+            call_stack: vec![CallFrame::default()],
         }
     }
 
+    /// Register an expression and the value it evaluated to.
+    fn register_expr(
+        c: &ast::Ast,
+        ctx: &mut ast::Context,
+        variables: &mut HashMap<ast::Expr, ast::Value>,
+    ) -> Result<(), Error> {
+        use ast::Ast::*;
+
+        let (var, ty) = match *c {
+            Identifier { ref attributes, .. } => {
+                let var = ast::Expr::Identifier {
+                    identifier: attributes.value.to_string(),
+                };
+
+                (var, attributes.ty.as_str())
+            }
+            Assignment { ref children, .. } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+
+                match it.next() {
+                    Some(Identifier { ref attributes, .. }) => {
+                        let var = ast::Expr::Identifier {
+                            identifier: attributes.value.to_string(),
+                        };
+
+                        (var, attributes.ty.as_str())
+                    }
+                    _ => return Ok(()),
+                }
+            }
+            IndexAccess {
+                ref attributes,
+                ref children,
+                ..
+            } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+
+                let key = match it.next() {
+                    Some(Identifier { ref attributes, .. }) => attributes,
+                    _ => return Ok(()),
+                };
+
+                let value = match it.next() {
+                    Some(Identifier { ref attributes, .. }) => attributes,
+                    _ => return Ok(()),
+                };
+
+                let var = ast::Expr::IndexAccess {
+                    key: key.value.to_string(),
+                    value: value.value.to_string(),
+                };
+
+                (var, attributes.ty.as_str())
+            }
+            MemberAccess {
+                ref attributes,
+                ref children,
+                ..
+            } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+
+                let key = match it.next() {
+                    Some(Identifier { ref attributes, .. }) => attributes,
+                    _ => return Ok(()),
+                };
+
+                let var = ast::Expr::MemberAccess {
+                    key: key.value.to_string(),
+                    value: attributes.member_name.to_string(),
+                };
+
+                (var, attributes.ty.as_str())
+            }
+            _ => return Ok(()),
+        };
+
+        let value = ast::Type::decode(ty).value(ctx)?;
+
+        trace!("Set: {} = {}", var, value);
+        variables.insert(var.clone(), value);
+        Ok(())
+    }
+
+    // Decode the current statement according to its AST.
+    //
+    // `pc` - the current program counter.
+    //
+    // This will try to decode any variable assignments.
+    //
+    // NOTE: AST searching is currently not indexed correctly making it rather slow.
+    fn decode_instruction(
+        &mut self,
+        pc: usize,
+        stack: &[U256],
+        memory: &[u8],
+        storage: &storage::StorageAccess,
+        last: &mut Option<source_map::Mapping>,
+        force_replace: bool,
+    ) -> Result<(), Error> {
+        use ast::Ast::*;
+        use std::mem;
+
+        let info = match self.call_stack.last_mut() {
+            Some(info) => info,
+            None => return Ok(()),
+        };
+
+        let current = match mapping(info.source.as_ref(), pc) {
+            Some(current) => current,
+            None => return Ok(()),
+        };
+
+        let replace = force_replace || match *last {
+            None => true,
+            // either the statement has changed, or we are reverting.
+            Some(ref last) => last != current,
+        };
+
+        // No change in AST.
+        if !replace {
+            return Ok(());
+        }
+
+        let last = match mem::replace(last, Some(current.clone())) {
+            Some(last) => last,
+            // initial statement
+            None => return Ok(()),
+        };
+
+        let ast = match info.ast {
+            Some(ref ast) => ast,
+            None => return Ok(()),
+        };
+
+        let from = match ast.find(&last) {
+            Some(ast) => ast,
+            None => return Ok(()),
+        };
+
+        let to = match ast.find(&current) {
+            Some(ast) => ast,
+            None => return Ok(()),
+        };
+
+        trace!("AST: {} -> {}", from.kind(), to.kind());
+
+        match *from {
+            // Expressions are statements where we register a set of variables to print.
+            ExpressionStatement { .. } => {
+                info.variables = mem::replace(&mut info.seen_variables, HashMap::new());
+            }
+            // An identifier has just been evaluated, should be on the top of the stack.
+            ref ast => {
+                let mut ctx = ast::Context::new(stack, memory, storage, &info.call_data);
+                Self::register_expr(ast, &mut ctx, &mut info.seen_variables)?;
+            }
+        }
+
+        Ok(())
+    }
+
     /// Get line info from the current program counter.
-    fn line_info(&self, source: Option<&Arc<linker::Source>>, pc: usize) -> Option<LineInfo> {
+    fn line_info(
+        &self,
+        linker: &linker::Linker,
+        source: Option<&Arc<linker::Source>>,
+        pc: usize,
+    ) -> Option<LineInfo> {
         let m = match mapping(source, pc) {
             Some(m) => m,
             None => return None,
         };
 
-        let path = match m.file_index.and_then(|index| self.linker.find_file(index)) {
+        let path = match m.file_index.and_then(|index| linker.find_file(index)) {
             Some(path) => path,
             None => return None,
         };
 
         let file = File::open(path).expect("bad file");
 
-        let (line_string, line, _) =
+        let (lines, line) =
             utils::find_line(file, (m.start as usize, (m.start + m.length) as usize))
                 .expect("line from file");
 
         Some(LineInfo {
             path: path.to_owned(),
-            line_string,
             line,
+            lines,
         })
+    }
+}
+
+/// Call tracer.
+pub struct TxTracer<'a> {
+    linker: &'a linker::Linker,
+    // if present, the source used when creating a contract.
+    entry_source: Option<Arc<linker::Source>>,
+    // Information about a revert.
+    errors: Vec<ErrorInfo>,
+    // operation prepare.
+    operation: Operation,
+    // depth of the tracer.
+    depth: usize,
+    // shared state between tracers.
+    shared: &'a Mutex<Shared>,
+}
+
+impl<'a> TxTracer<'a> {
+    pub fn new(
+        linker: &'a linker::Linker,
+        entry_source: Option<Arc<linker::Source>>,
+        shared: &'a Mutex<Shared>,
+    ) -> Self {
+        Self {
+            linker,
+            entry_source,
+            errors: Vec::new(),
+            operation: Operation::None,
+            depth: 0,
+            shared,
+        }
     }
 }
 
@@ -165,29 +395,56 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     type Output = ErrorInfo;
 
     fn prepare_trace_call(&self, params: &parity_vm::ActionParams) -> Option<Call> {
-        self.infos
-            .lock()
-            .expect("lock poisoned")
-            .push(self.linker.find_runtime_info(params.address));
+        // ignore built-in calls since they don't call trace_call correctly:
+        // https://github.com/paritytech/parity-ethereum/pull/9236
+        if params.code_address == Address::from(0x1) {
+            return None;
+        }
 
-        Some(Call::from(params.clone()))
+        let mut shared = self.shared.lock().expect("lock poisoned");
+
+        let mut info = CallFrame::from(self.linker.find_runtime_info(params.code_address));
+
+        info.call_data = params.data.clone().unwrap_or_else(Bytes::default);
+
+        debug!(
+            ">> {:03}: Prepare Trace Call: {:?} (address: {:?}, call_type: {:?})",
+            self.depth, info.source, params.code_address, params.call_type,
+        );
+
+        shared.call_stack.push(info);
+        None
     }
 
     fn prepare_trace_create(&self, params: &parity_vm::ActionParams) -> Option<Create> {
+        let mut shared = self.shared.lock().expect("lock poisoned");
         let source = self.entry_source.clone();
         let ast = source
             .as_ref()
             .and_then(|s| self.linker.find_ast_by_object(&s.object));
 
-        self.infos
-            .lock()
-            .expect("lock poisoned")
-            .push(linker::AddressInfo { source, ast });
+        let info = CallFrame {
+            source,
+            ast,
+            call_data: params.data.clone().unwrap_or_else(Bytes::default),
+            seen_variables: HashMap::new(),
+            variables: HashMap::new(),
+        };
 
-        Some(Create::from(params.clone()))
+        debug!(
+            ">> {:03}: Prepare Trace Create: {:?}",
+            self.depth, info.source
+        );
+
+        shared.call_stack.push(info);
+        None
     }
 
     fn prepare_trace_output(&self) -> Option<Bytes> {
+        let shared = self.shared.lock().expect("lock poisoned");
+        let source = shared.call_stack.last().and_then(|s| s.source.as_ref());
+
+        debug!("!! {:03}: Prepare Trace Output: {:?}", self.depth, source);
         None
     }
 
@@ -198,11 +455,17 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         _output: Option<Bytes>,
         subs: Vec<Self::Output>,
     ) {
-        self.infos.lock().expect("lock poisoned").pop();
+        let mut shared = self.shared.lock().expect("lock poisoned");
+        let info = shared.call_stack.pop();
+        let source = info.as_ref().and_then(|s| s.source.as_ref());
+
+        debug!("!! {:03}: Trace Call: {:?}", self.depth, source);
 
         if !subs.is_empty() {
             self.errors.extend(subs);
         }
+
+        self.operation = Operation::Call;
     }
 
     fn trace_create(
@@ -210,14 +473,23 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         _create: Option<Create>,
         _gas_used: U256,
         _code: Option<Bytes>,
-        _address: H160,
+        address: H160,
         subs: Vec<Self::Output>,
     ) {
-        self.infos.lock().expect("lock poisoned").pop();
+        let mut shared = self.shared.lock().expect("lock poisoned");
+        let info = shared.call_stack.pop();
+        let source = info.as_ref().and_then(|s| s.source.as_ref());
+
+        debug!(
+            "!! {:03}: Trace Create: {:?} ({})",
+            self.depth, source, address
+        );
 
         if !subs.is_empty() {
             self.errors.extend(subs);
         }
+
+        self.operation = Operation::Create;
     }
 
     fn trace_failed_call(
@@ -226,23 +498,36 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
-        let info = self.infos.lock().expect("lock poisoned").pop();
-        let frame_info: FrameInfo = self.frame_info.lock().expect("poisoned lock").clone();
+        let mut shared = self.shared.lock().expect("lock poisoned");
+        let info = shared.call_stack.pop();
+        let source = info.as_ref().and_then(|s| s.source.as_ref());
 
-        match frame_info {
+        debug!(
+            "!! {:03}: Trace Failed Call: {:?} ({})",
+            self.depth, source, error
+        );
+
+        let variables: BTreeMap<_, _> = match info.as_ref() {
+            Some(info) => info.variables.clone().into_iter().collect(),
+            None => BTreeMap::new(),
+        };
+
+        match shared.frame_info.clone() {
             FrameInfo::Some(pc) => {
-                let line_info = self.line_info(info.as_ref().and_then(|i| i.source.as_ref()), pc);
+                let line_info = shared.line_info(self.linker, source, pc);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
                     line_info,
                     subs,
+                    variables,
                 })
             }
             FrameInfo::None => self.errors.push(ErrorInfo {
                 kind: ErrorKind::Error(error),
                 line_info: None,
-                subs: subs,
+                subs,
+                variables,
             }),
         }
     }
@@ -253,98 +538,122 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         subs: Vec<Self::Output>,
         error: trace::TraceError,
     ) {
-        let info = self.infos.lock().expect("poisoned lock").pop();
+        let mut shared = self.shared.lock().expect("lock poisoned");
+        let info = shared.call_stack.pop();
+        let source = info.as_ref().and_then(|s| s.source.as_ref());
 
-        let frame_info: FrameInfo = self.frame_info.lock().expect("poisoned lock").clone();
+        debug!(
+            "!! {:03}: Trace Failed Create: {:?} ({})",
+            self.depth, source, error
+        );
 
-        match frame_info {
+        let variables: BTreeMap<_, _> = match info.as_ref() {
+            Some(info) => info.variables.clone().into_iter().collect(),
+            None => BTreeMap::new(),
+        };
+
+        match shared.frame_info.clone() {
             FrameInfo::Some(pc) => {
-                let line_info = self.line_info(info.as_ref().and_then(|i| i.source.as_ref()), pc);
+                let line_info = shared.line_info(self.linker, source, pc);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
                     line_info,
                     subs,
+                    variables,
                 })
             }
             FrameInfo::None => self.errors.push(ErrorInfo {
                 kind: ErrorKind::Error(error),
                 line_info: None,
-                subs: subs,
+                subs,
+                variables,
             }),
         }
     }
 
-    fn trace_suicide(&mut self, _address: H160, _balance: U256, _refund_address: H160) {}
+    fn trace_suicide(&mut self, _address: H160, _balance: U256, _refund_address: H160) {
+        let shared = self.shared.lock().expect("lock poisoned");
+        let source = shared.call_stack.last().and_then(|s| s.source.as_ref());
 
-    fn trace_reward(&mut self, _author: H160, _value: U256, _reward_type: trace::RewardType) {}
+        debug!("!! {:03}: Trace Suicide: {:?}", self.depth, source,);
+    }
+
+    fn trace_reward(&mut self, _author: H160, _value: U256, _reward_type: trace::RewardType) {
+        let shared = self.shared.lock().expect("lock poisoned");
+        let source = shared.call_stack.last().and_then(|s| s.source.as_ref());
+
+        debug!("!! {:03}: Trace Reward: {:?}", self.depth, source,);
+    }
 
     fn subtracer(&self) -> TxTracer<'a>
     where
         Self: Sized,
     {
-        TxTracer::new(
-            self.linker,
-            self.entry_source.clone(),
-            self.frame_info,
-            self.infos,
-        )
+        debug!("!! {:03}: New Sub-Tracer", self.depth);
+
+        TxTracer {
+            linker: self.linker,
+            entry_source: self.entry_source.clone(),
+            errors: Vec::new(),
+            operation: Operation::None,
+            depth: self.depth + 1,
+            shared: self.shared,
+        }
     }
 
     fn drain(self) -> Vec<ErrorInfo> {
+        let shared = self.shared.lock().expect("lock poisoned");
+        let source = shared
+            .call_stack
+            .last()
+            .as_ref()
+            .and_then(|s| s.source.as_ref());
+
+        debug!(
+            "<< {:03}: Drain: {:?} ({:?})",
+            self.depth, source, self.operation
+        );
+
         self.errors
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LineInfo {
-    path: PathBuf,
-    line_string: String,
-    line: usize,
-}
-
-impl fmt::Display for LineInfo {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            fmt,
-            "{}:{}: {}",
-            self.path.display(),
-            self.line,
-            self.line_string
-        )
-    }
-}
-
+/// Instruction tracer.
 #[derive(Debug)]
 pub struct TxVmTracer<'a> {
     linker: &'a linker::Linker,
-    // if present, the source used to create a contract.
+    /// If present, the source used to create a contract.
     entry_source: Option<Arc<linker::Source>>,
-    // current infos.
-    frame_info: &'a Mutex<FrameInfo>,
-    depth: usize,
+    /// Current program counter.
     pc: usize,
-    instruction: u8,
+    /// Current instruction.
+    instruction: Option<parity_evm::Instruction>,
+    /// Current stack.
     stack: Vec<U256>,
-    infos: &'a Mutex<Vec<linker::AddressInfo>>,
+    /// Current memory.
+    memory: Vec<u8>,
+    /// Last evaluated mapping.
+    last: Option<source_map::Mapping>,
+    /// Shared state between tracers.
+    shared: &'a Mutex<Shared>,
 }
 
 impl<'a> TxVmTracer<'a> {
     pub fn new(
         linker: &'a linker::Linker,
         entry_source: Option<Arc<linker::Source>>,
-        frame_info: &'a Mutex<FrameInfo>,
-        infos: &'a Mutex<Vec<linker::AddressInfo>>,
+        shared: &'a Mutex<Shared>,
     ) -> Self {
         TxVmTracer {
             linker,
             entry_source,
-            frame_info,
-            depth: 0,
             pc: 0,
-            instruction: 0,
+            instruction: None,
             stack: Vec::new(),
-            infos,
+            memory: Vec::new(),
+            last: None,
+            shared,
         }
     }
 }
@@ -354,7 +663,7 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
 
     fn trace_next_instruction(&mut self, pc: usize, instruction: u8, _current_gas: U256) -> bool {
         self.pc = pc;
-        self.instruction = instruction;
+        self.instruction = parity_evm::Instruction::from_u8(instruction);
         true
     }
 
@@ -362,54 +671,85 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
         &mut self,
         _gas_used: U256,
         stack_push: &[U256],
-        _mem_diff: Option<(usize, &[u8])>,
+        mem_diff: Option<(usize, &[u8])>,
         _store_diff: Option<(U256, U256)>,
+        storage: &storage::StorageAccess,
     ) {
-        let i = parity_evm::Instruction::from_u8(self.instruction).expect("legal instruction");
-        let infos = self.infos.lock().expect("poisoned lock");
+        let mut shared = self.shared.lock().expect("poisoned lock");
 
-        if let Some(info) = infos.last() {
-            if let Some(m) = mapping(info.source.as_ref(), self.pc) {
-                if let Some(ref ast) = info.ast {
-                    if let Some(_ast) = ast.find(m.start, m.length) {
-                        // TODO: do something with found _ast
-                    }
-                }
-            }
+        if let Err(e) = shared.decode_instruction(
+            self.pc,
+            &self.stack,
+            &self.memory,
+            storage,
+            &mut self.last,
+            false,
+        ) {
+            warn!("Failed to decode: {}", e);
         }
+
+        let inst = self.instruction.expect("illegal instruction");
+        trace!(
+            "I {:<4x}: {:<16}: {:?}",
+            self.pc,
+            inst.info().name,
+            self.stack
+        );
 
         let len = self.stack.len();
+        shared.frame_info = FrameInfo::Some(self.pc);
 
-        {
-            let mut frame_info = self.frame_info.lock().expect("poisoned lock");
-            *frame_info = FrameInfo::Some(self.pc);
-        }
-
-        let info = i.info();
+        let info = inst.info();
 
         self.stack.truncate(if len >= info.args {
             len - info.args
         } else {
             0usize
         });
+
         self.stack.extend_from_slice(stack_push);
+
+        if let Some((pos, slice)) = mem_diff {
+            let len = pos + slice.len();
+
+            if self.memory.len() < len {
+                let rest = len - self.memory.len();
+                self.memory.extend(::std::iter::repeat(0u8).take(rest));
+            }
+
+            self.memory[pos..(pos + slice.len())].copy_from_slice(slice);
+            trace!("M {:<4x} length:{}", pos, slice.len());
+        }
+
+        // print post-stack manipulation state.
+        trace!("{:<24}= {:?}", "", self.stack);
+    }
+
+    fn trace_done(&mut self, storage: &storage::StorageAccess) {
+        let mut shared = self.shared.lock().expect("poisoned lock");
+
+        if let Err(e) = shared.decode_instruction(
+            self.pc,
+            &self.stack,
+            &self.memory,
+            storage,
+            &mut self.last,
+            true,
+        ) {
+            warn!("Failed to decode: {}", e);
+        }
     }
 
     fn prepare_subtrace(&self, _code: &[u8]) -> Self
     where
         Self: Sized,
     {
-        let mut vm = TxVmTracer::new(
-            self.linker,
-            self.entry_source.clone(),
-            self.frame_info,
-            self.infos,
-        );
-        vm.depth = self.depth + 1;
-        vm
+        TxVmTracer::new(self.linker, self.entry_source.clone(), self.shared)
     }
 
-    fn done_subtrace(&mut self, _sub: Self) {}
+    fn done_subtrace(&mut self, sub: Self) {
+        sub.drain();
+    }
 
     fn drain(self) -> Option<Self::Output> {
         None
@@ -436,4 +776,31 @@ fn mapping<'a>(
     };
 
     source_map.find_mapping(offset)
+}
+
+/// Information about the current call.
+#[derive(Debug, Default)]
+pub struct CallFrame {
+    /// Source associated with an address.
+    pub source: Option<Arc<linker::Source>>,
+    /// AST associated with an address.
+    pub ast: Option<Arc<ast::Registry>>,
+    /// Input data for the current call frame.
+    pub call_data: Bytes,
+    // named variables and their stack offsets.
+    variables: HashMap<ast::Expr, ast::Value>,
+    // Last set of variables seen up until an expression.
+    seen_variables: HashMap<ast::Expr, ast::Value>,
+}
+
+impl From<linker::AddressInfo> for CallFrame {
+    fn from(info: linker::AddressInfo) -> Self {
+        Self {
+            source: info.source,
+            ast: info.ast,
+            call_data: Bytes::default(),
+            variables: HashMap::new(),
+            seen_variables: HashMap::new(),
+        }
+    }
 }
