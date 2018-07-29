@@ -241,5 +241,8 @@ fn main() -> Result<()> {
     runner.run(&reporter)?;
     reporter.close()?;
 
+    let (count, total) = evm.get()?.calculate_visited()?;
+    println!("Contract Coverage: {}%", count * 100 / total);
+
     Ok(())
 }

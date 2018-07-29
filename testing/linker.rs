@@ -116,6 +116,11 @@ impl Linker {
         AddressInfo { source, ast }
     }
 
+    /// Find all AST registries.
+    pub fn all_asts(&self) -> impl Iterator<Item = &ast::Registry> {
+        self.ast_by_path.values().map(|a| a.as_ref())
+    }
+
     /// Find a single AST.
     pub fn find_ast(&self, address: Address) -> Option<Arc<ast::Registry>> {
         self.address_to_path

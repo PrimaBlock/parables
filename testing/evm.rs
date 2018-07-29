@@ -13,7 +13,7 @@ use failure::Error;
 use kvdb::KeyValueDB;
 use parity_vm;
 use std::cell::{Ref, RefCell, RefMut};
-use std::collections::{hash_map, HashMap};
+use std::collections::{hash_map, HashMap, HashSet};
 use std::fmt;
 use std::mem;
 use std::sync::{Arc, Mutex};
@@ -152,6 +152,8 @@ pub struct Evm {
     linker: RefCell<linker::Linker>,
     /// Default crypto implementation.
     crypto: RefCell<crypto::Crypto>,
+    /// Local set of visited statements.
+    visited_statements: Arc<Mutex<HashSet<ast::Src>>>,
 }
 
 impl fmt::Debug for Evm {
@@ -174,7 +176,8 @@ impl Evm {
         }
 
         for (path, data) in context.sources {
-            linker.register_ast(path, ast::Registry::parse(data.ast)?);
+            let registry = ast::Registry::parse(data.ast)?;
+            linker.register_ast(path, registry);
         }
 
         let evm = Evm {
@@ -184,6 +187,7 @@ impl Evm {
             logs: RefCell::new(HashMap::new()),
             linker: RefCell::new(linker),
             crypto: RefCell::new(crypto::Crypto::new()),
+            visited_statements: Arc::new(Mutex::new(HashSet::new())),
         };
 
         Ok(evm)
@@ -386,6 +390,28 @@ impl Evm {
             .map_err(|_| format_err!("failed to modify balance"))?)
     }
 
+    /// Access the visisted statement statistics.
+    pub fn calculate_visited(&self) -> Result<(u32, u32), Error> {
+        let mut total = 0u32;
+        let mut count = 0u32;
+
+        let visited_statements = self.visited_statements
+            .lock()
+            .map_err(|_| format_err!("lock poisoned"))?;
+
+        let linker = self.borrow_linker()?;
+
+        for src in linker.all_asts().flat_map(ast::Registry::statements) {
+            total += 1;
+
+            if visited_statements.contains(src) {
+                count += 1;
+            }
+        }
+
+        Ok((count, total))
+    }
+
     /// Execute the given action.
     fn action<T>(
         &self,
@@ -438,8 +464,8 @@ impl Evm {
             &self.env_info,
             self.engine.machine(),
             &tx,
-            trace::TxTracer::new(linker, entry_source.clone(), &shared),
-            trace::TxVmTracer::new(linker, entry_source.clone(), &shared),
+            trace::Tracer::new(linker, entry_source.clone(), &shared),
+            trace::VmTracer::new(linker, entry_source.clone(), &shared),
         );
 
         let mut result = result.map_err(|e| format_err!("vm: {}", e))?;
@@ -451,6 +477,16 @@ impl Evm {
         let gas_price = tx.gas_price;
         let value = tx.value;
         let sender = tx.sender();
+
+        if let Some(vm_trace) = result.vm_trace.as_mut() {
+            let mut visited_statements = self.visited_statements
+                .lock()
+                .map_err(|_| format_err!("lock poisoned"))?;
+
+            for s in vm_trace.visited_statements.drain() {
+                visited_statements.insert(s);
+            }
+        }
 
         let outcome = self.outcome(result, tx, decode)?;
 
@@ -466,7 +502,7 @@ impl Evm {
     /// Convert into an outcome.
     fn outcome<T>(
         &self,
-        result: state::ApplyOutcome<trace::ErrorInfo, ()>,
+        result: state::ApplyOutcome<trace::ErrorInfo, trace::VmTracerOutput>,
         tx: SignedTransaction,
         decode: impl FnOnce(&Evm, &SignedTransaction, Vec<u8>) -> Result<T, Error>,
     ) -> Result<Outcome<T>, Error> {

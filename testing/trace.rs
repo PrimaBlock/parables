@@ -10,7 +10,7 @@ use parity_evm;
 use parity_vm;
 use source_map;
 use std::cmp;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
@@ -264,6 +264,7 @@ impl Shared {
         memory: &[u8],
         storage: &storage::StorageAccess,
         last: &mut Option<source_map::Mapping>,
+        visited_statements: &mut HashSet<ast::Src>,
         force_replace: bool,
     ) -> Result<(), Error> {
         use ast::Ast::*;
@@ -313,6 +314,8 @@ impl Shared {
 
         trace!("AST: {} -> {}", from.kind(), to.kind());
 
+        visited_statements.insert(from.source().clone());
+
         match *from {
             // Expressions are statements where we register a set of variables to print.
             ExpressionStatement { .. } => {
@@ -360,7 +363,7 @@ impl Shared {
 }
 
 /// Call tracer.
-pub struct TxTracer<'a> {
+pub struct Tracer<'a> {
     linker: &'a linker::Linker,
     // if present, the source used when creating a contract.
     entry_source: Option<Arc<linker::Source>>,
@@ -374,7 +377,7 @@ pub struct TxTracer<'a> {
     shared: &'a Mutex<Shared>,
 }
 
-impl<'a> TxTracer<'a> {
+impl<'a> Tracer<'a> {
     pub fn new(
         linker: &'a linker::Linker,
         entry_source: Option<Arc<linker::Source>>,
@@ -391,7 +394,7 @@ impl<'a> TxTracer<'a> {
     }
 }
 
-impl<'a> trace::Tracer for TxTracer<'a> {
+impl<'a> trace::Tracer for Tracer<'a> {
     type Output = ErrorInfo;
 
     fn prepare_trace_call(&self, params: &parity_vm::ActionParams) -> Option<Call> {
@@ -586,13 +589,13 @@ impl<'a> trace::Tracer for TxTracer<'a> {
         debug!("!! {:03}: Trace Reward: {:?}", self.depth, source,);
     }
 
-    fn subtracer(&self) -> TxTracer<'a>
+    fn subtracer(&self) -> Tracer<'a>
     where
         Self: Sized,
     {
         debug!("!! {:03}: New Sub-Tracer", self.depth);
 
-        TxTracer {
+        Tracer {
             linker: self.linker,
             entry_source: self.entry_source.clone(),
             errors: Vec::new(),
@@ -604,11 +607,9 @@ impl<'a> trace::Tracer for TxTracer<'a> {
 
     fn drain(self) -> Vec<ErrorInfo> {
         let shared = self.shared.lock().expect("lock poisoned");
-        let source = shared
-            .call_stack
-            .last()
-            .as_ref()
-            .and_then(|s| s.source.as_ref());
+        let head = shared.call_stack.last();
+
+        let source = head.as_ref().and_then(|s| s.source.as_ref());
 
         debug!(
             "<< {:03}: Drain: {:?} ({:?})",
@@ -619,9 +620,15 @@ impl<'a> trace::Tracer for TxTracer<'a> {
     }
 }
 
+#[derive(Debug)]
+pub struct VmTracerOutput {
+    /// Statements which have been visited.
+    pub visited_statements: HashSet<ast::Src>,
+}
+
 /// Instruction tracer.
 #[derive(Debug)]
-pub struct TxVmTracer<'a> {
+pub struct VmTracer<'a> {
     linker: &'a linker::Linker,
     /// If present, the source used to create a contract.
     entry_source: Option<Arc<linker::Source>>,
@@ -637,15 +644,17 @@ pub struct TxVmTracer<'a> {
     last: Option<source_map::Mapping>,
     /// Shared state between tracers.
     shared: &'a Mutex<Shared>,
+    /// Statements which have been visited.
+    visited_statements: HashSet<ast::Src>,
 }
 
-impl<'a> TxVmTracer<'a> {
+impl<'a> VmTracer<'a> {
     pub fn new(
         linker: &'a linker::Linker,
         entry_source: Option<Arc<linker::Source>>,
         shared: &'a Mutex<Shared>,
     ) -> Self {
-        TxVmTracer {
+        VmTracer {
             linker,
             entry_source,
             pc: 0,
@@ -654,12 +663,13 @@ impl<'a> TxVmTracer<'a> {
             memory: Vec::new(),
             last: None,
             shared,
+            visited_statements: HashSet::new(),
         }
     }
 }
 
-impl<'a> trace::VMTracer for TxVmTracer<'a> {
-    type Output = ();
+impl<'a> trace::VMTracer for VmTracer<'a> {
+    type Output = VmTracerOutput;
 
     fn trace_next_instruction(&mut self, pc: usize, instruction: u8, _current_gas: U256) -> bool {
         self.pc = pc;
@@ -683,6 +693,7 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
             &self.memory,
             storage,
             &mut self.last,
+            &mut self.visited_statements,
             false,
         ) {
             warn!("Failed to decode: {}", e);
@@ -734,6 +745,7 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
             &self.memory,
             storage,
             &mut self.last,
+            &mut self.visited_statements,
             true,
         ) {
             warn!("Failed to decode: {}", e);
@@ -744,15 +756,19 @@ impl<'a> trace::VMTracer for TxVmTracer<'a> {
     where
         Self: Sized,
     {
-        TxVmTracer::new(self.linker, self.entry_source.clone(), self.shared)
+        VmTracer::new(self.linker, self.entry_source.clone(), self.shared)
     }
 
     fn done_subtrace(&mut self, sub: Self) {
-        sub.drain();
+        if let Some(s) = sub.drain() {
+            self.visited_statements.extend(s.visited_statements);
+        }
     }
 
     fn drain(self) -> Option<Self::Output> {
-        None
+        let visited_statements = self.visited_statements;
+
+        Some(VmTracerOutput { visited_statements })
     }
 }
 

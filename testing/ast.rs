@@ -5,7 +5,7 @@ use parity_bytes::Bytes;
 use serde::de;
 use serde_json;
 use source_map;
-use std::collections::HashMap;
+use std::collections::{hash_map, HashMap, HashSet};
 use std::fmt;
 use std::sync::Arc;
 
@@ -46,7 +46,7 @@ macro_rules! ast {
             }
 
             /// Access the source of this AST element.
-            fn source(&self) -> &Src {
+            pub fn source(&self) -> &Src {
                 match *self {
                     $(Ast::$variant { ref src, ..  } => src,)*
                 }
@@ -62,7 +62,7 @@ macro_rules! ast {
     }
 }
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct Src {
     start: u32,
     length: u32,
@@ -234,6 +234,8 @@ ast!{
 pub struct Registry {
     /// ASTs indexed by source location.
     index: HashMap<(u32, u32), Arc<Ast>>,
+    /// Set of statements.
+    statements: HashSet<Src>,
 }
 
 impl Registry {
@@ -245,26 +247,34 @@ impl Registry {
         let ast = Arc::new(ast);
 
         let mut index = HashMap::new();
+        let mut statements = HashSet::new();
+
         let mut current = ::std::collections::VecDeque::new();
         current.push_back(&ast);
 
         while let Some(next) = current.pop_front() {
             let src = next.source();
 
-            index
-                .entry((src.start, src.length))
-                .or_insert_with(|| Arc::clone(next));
+            if let hash_map::Entry::Vacant(e) = index.entry((src.start, src.length)) {
+                statements.insert(next.source().clone());
+                e.insert(Arc::clone(next));
+            }
 
             current.extend(next.children());
         }
 
-        Ok(Registry { index })
+        Ok(Registry { index, statements })
     }
 
     /// Find the first element exactly matching the given span.
     pub fn find(&self, mapping: &source_map::Mapping) -> Option<&Ast> {
         let src = (mapping.start, mapping.length);
         self.index.get(&src).map(|a| a.as_ref())
+    }
+
+    /// Find the location of all statements in registry.
+    pub fn statements(&self) -> impl Iterator<Item = &Src> {
+        self.statements.iter()
     }
 }
 
