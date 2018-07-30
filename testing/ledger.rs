@@ -70,6 +70,17 @@ where
         Ok(())
     }
 
+    /// Get the current entry.
+    pub fn get(&mut self, address: Address) -> Result<&S::Entry, Error> {
+        match self.entries.entry(address) {
+            hash_map::Entry::Vacant(entry) => {
+                let state = self.state.new_instance();
+                Ok(entry.insert(state))
+            }
+            hash_map::Entry::Occupied(entry) => Ok(entry.into_mut()),
+        }
+    }
+
     /// Go through each registered account, and verify their invariants.
     pub fn verify(self) -> Result<(), Error> {
         use std::fmt::Write;
@@ -81,7 +92,7 @@ where
 
         // Check that all verifiable entries are matching expectations.
         for (address, s) in self.entries {
-            if let Err(e) = state.verify(address, s) {
+            if let Err(e) = state.verify(address, &s) {
                 errors.push((address, e));
             }
         }
@@ -102,14 +113,30 @@ where
     }
 
     /// Access the mutable state for the given address.
-    pub fn entry(&mut self, address: Address) -> &mut S::Entry {
-        match self.entries.entry(address) {
+    pub fn entry(&mut self, address: Address, f: impl FnOnce(&mut S::Entry)) -> Result<(), Error> {
+        let Ledger {
+            ref mut entries,
+            ref state,
+            ref names,
+            ..
+        } = *self;
+
+        let entry = match entries.entry(address) {
             hash_map::Entry::Vacant(entry) => {
-                let mut state = self.state.new_instance();
+                let mut state = state.new_instance();
                 entry.insert(state)
             }
             hash_map::Entry::Occupied(entry) => entry.into_mut(),
+        };
+
+        f(entry);
+
+        // verify after it has been updated.
+        if let Err(e) = state.verify(address, entry) {
+            bail!("{}: {}", Self::do_address_format(names, address), e);
         }
+
+        Ok(())
     }
 
     fn address_format(&self, address: Address) -> String {
@@ -150,7 +177,7 @@ where
         };
 
         // verify after it has been updated.
-        if let Err(e) = self.state.verify(address, update) {
+        if let Err(e) = self.state.verify(address, &update) {
             bail!("{}: {}", self.address_format(address), e);
         }
 
@@ -178,7 +205,7 @@ where
         };
 
         // verify after it has been updated.
-        if let Err(e) = self.state.verify(address, update) {
+        if let Err(e) = self.state.verify(address, &update) {
             bail!("{}: {}", self.address_format(address), e);
         }
 
@@ -194,7 +221,7 @@ pub trait LedgerState {
     fn new_instance(&self) -> Self::Entry;
 
     /// Verify the given state.
-    fn verify(&self, address: Address, instance: Self::Entry) -> Result<(), Error>;
+    fn verify(&self, address: Address, instance: &Self::Entry) -> Result<(), Error>;
 
     /// Synchronize the given state.
     fn sync(&self, address: Address, instance: &mut Self::Entry) -> Result<(), Error>;
@@ -211,10 +238,10 @@ impl<'a> LedgerState for AccountBalance<'a> {
         U256::default()
     }
 
-    fn verify(&self, address: Address, expected_balance: Self::Entry) -> Result<(), Error> {
+    fn verify(&self, address: Address, expected_balance: &Self::Entry) -> Result<(), Error> {
         let actual_balance = self.0.balance(address)?;
 
-        if expected_balance != actual_balance {
+        if *expected_balance != actual_balance {
             bail!(
                 "expected account wei balance {}, but was {}",
                 expected_balance,
@@ -261,11 +288,11 @@ mod tests {
             fn verify(
                 &self,
                 _address: Address,
-                expected_balance: Self::Entry,
+                expected_balance: &Self::Entry,
             ) -> Result<(), Error> {
                 let actual_balance = self.1;
 
-                if expected_balance != actual_balance {
+                if *expected_balance != actual_balance {
                     bail!(
                         "expected account wei balance {}, but was {}",
                         expected_balance,

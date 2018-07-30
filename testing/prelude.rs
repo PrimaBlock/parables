@@ -15,7 +15,7 @@ pub use snapshot::Snapshot;
 pub use test_runner::{Suite, TestRunner};
 pub use wei;
 // re-export property testing prelude.
-pub use ledger::{Ledger, LedgerState};
+pub use ledger::{Ledger, LedgerState, AccountBalance};
 pub use proptest::prelude::*;
 
 pub type Result<T> = ::std::result::Result<T, ::failure::Error>;

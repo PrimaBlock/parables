@@ -225,10 +225,10 @@ fn main() -> Result<()> {
                 Ok(())
             }
 
-            fn verify(&self, address: Address, expected: Self::Entry) -> Result<()> {
+            fn verify(&self, address: Address, expected: &Self::Entry) -> Result<()> {
                 let value = self.get_value(address)?;
 
-                if value != expected {
+                if value != *expected {
                     bail!("value: expected {} but got {}", expected, value);
                 }
 
