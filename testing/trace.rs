@@ -77,18 +77,14 @@ impl ErrorInfo {
     /// This recursively looks through all sub-traces to find a match.
     pub fn is_failed_with(
         &self,
-        location: impl matcher::LocationMatcher + Copy,
-        stmt: impl AsRef<str> + Copy,
+        location: impl matcher::LocationMatcher,
+        stmt: impl matcher::StatementMatcher,
     ) -> bool {
-        let stmt = stmt.as_ref();
-
         if let Some(ref line_info) = self.line_info {
             let object = line_info.object.as_ref();
             let function = line_info.function.as_ref().map(|s| s.as_str());
 
-            if location.matches_location(object, function)
-                && line_info.lines.iter().any(|l| l.trim() == stmt)
-            {
+            if location.matches_location(object, function) && stmt.matches_lines(&line_info.lines) {
                 return true;
             }
         }

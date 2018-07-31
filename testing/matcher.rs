@@ -1,9 +1,16 @@
 use linker;
+use std::fmt;
 
 /// Matches a specific location in a solidity file.
-pub trait LocationMatcher {
+pub trait LocationMatcher: fmt::Display + Copy {
     /// Test if the given location matches.
     fn matches_location(&self, object: Option<&linker::Object>, function: Option<&str>) -> bool;
+}
+
+/// Matches a specific statement in a solidity file.
+pub trait StatementMatcher: fmt::Display + Copy {
+    /// Test if the given statement matches.
+    fn matches_lines<'a>(&self, lines: impl IntoIterator<Item = &'a String>) -> bool;
 }
 
 /// A default matcher.
@@ -12,6 +19,30 @@ pub struct Matcher {
     path: Option<&'static str>,
     item: Option<&'static str>,
     function: Option<&'static str>,
+}
+
+impl fmt::Display for Matcher {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(ref path) = self.path {
+            write!(fmt, "{}:", path)?;
+        } else {
+            write!(fmt, "*:")?;
+        }
+
+        if let Some(ref item) = self.item {
+            write!(fmt, "{}:", item)?;
+        } else {
+            write!(fmt, "*:")?;
+        }
+
+        if let Some(ref function) = self.function {
+            write!(fmt, "{}", function)?;
+        } else {
+            write!(fmt, "*")?;
+        }
+
+        Ok(())
+    }
 }
 
 impl Matcher {
@@ -107,6 +138,12 @@ impl LocationMatcher for &'static str {
             .item(second)
             .function(third)
             .matches_location(object, function)
+    }
+}
+
+impl StatementMatcher for &'static str {
+    fn matches_lines<'a>(&self, lines: impl IntoIterator<Item = &'a String>) -> bool {
+        lines.into_iter().any(|s| s.trim() == *self)
     }
 }
 

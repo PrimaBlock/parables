@@ -103,20 +103,49 @@ impl<T> Call<T> {
         self.outcome.is_reverted()
     }
 
-    /// Check that a revert happened with the specified statement.
-    pub fn is_reverted_with(
-        &self,
-        location: impl matcher::LocationMatcher + Copy,
-        stmt: impl AsRef<str> + Copy,
-    ) -> bool {
+    /// Test that the specified revert happened.
+    ///
+    /// If the assertion doesn't hold, return an error indicating what actually happened.
+    pub fn assert_failed(
+        self,
+        location: impl matcher::LocationMatcher,
+        stmt: impl matcher::StatementMatcher,
+    ) -> Result<(), Error> {
         use self::Outcome::*;
 
         match self.outcome {
             Reverted { ref error_info } => {
-                error_info.is_reverted() && error_info.is_failed_with(location, stmt)
+                if !error_info.is_failed_with(location, stmt) {
+                    bail!(
+                        "Expected {} `{}`.\nBut call reverted: {}",
+                        location,
+                        stmt,
+                        error_info
+                    );
+                }
             }
-            _ => false,
+            Errored { ref error_info } => {
+                if !error_info.is_failed_with(location, stmt) {
+                    bail!(
+                        "Expected {} `{}`.\nBut call errored: {}",
+                        location,
+                        stmt,
+                        error_info
+                    );
+                }
+            }
+            Status { ref status } => {
+                bail!(
+                    "Expected {} `{}`.\nBut call returned status: {}",
+                    location,
+                    stmt,
+                    status
+                );
+            }
+            Ok(_) => {}
         }
+
+        return Result::Ok(());
     }
 
     /// Convert the outcome into a result.
@@ -125,9 +154,9 @@ impl<T> Call<T> {
 
         match self.outcome {
             Ok(value) => Result::Ok(value),
-            Reverted { error_info } => Err(format_err!("call reverted: {}", error_info)),
-            Errored { error_info } => Err(format_err!("call errored: {}", error_info)),
-            Status { status } => Err(format_err!("call returned status: {}", status)),
+            Reverted { error_info } => bail!("call reverted: {}", error_info),
+            Errored { error_info } => bail!("call errored: {}", error_info),
+            Status { status } => bail!("call returned status: {}", status),
         }
     }
 }
