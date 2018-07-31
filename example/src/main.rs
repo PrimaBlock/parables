@@ -86,7 +86,7 @@ fn main() -> Result<()> {
 
         // non-owner is not allowed to set value.
         let result = contract.sender(not_owner).set_value(0)?;
-        assert!(result.is_reverted_with("require(msg.sender == owner);"));
+        assert!(result.is_reverted_with("SimpleContract:setValue", "require(msg.sender == owner);"));
 
         Ok(())
     });

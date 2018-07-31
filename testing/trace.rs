@@ -5,6 +5,7 @@ use ethcore::trace::trace::{Call, Create};
 use ethereum_types::{Address, H160, U256};
 use failure::Error;
 use linker;
+use matcher;
 use parity_bytes::Bytes;
 use parity_evm;
 use parity_vm;
@@ -74,16 +75,25 @@ impl ErrorInfo {
     /// Check if error info contains a line that caused it to be reverted.
     ///
     /// This recursively looks through all sub-traces to find a match.
-    pub fn is_failed_with(&self, stmt: impl AsRef<str> + Copy) -> bool {
+    pub fn is_failed_with(
+        &self,
+        location: impl matcher::LocationMatcher + Copy,
+        stmt: impl AsRef<str> + Copy,
+    ) -> bool {
         let stmt = stmt.as_ref();
 
         if let Some(ref line_info) = self.line_info {
-            if line_info.lines.iter().any(|l| l.trim() == stmt) {
+            let object = line_info.object.as_ref();
+            let function = line_info.function.as_ref().map(|s| s.as_str());
+
+            if location.matches_location(object, function)
+                && line_info.lines.iter().any(|l| l.trim() == stmt)
+            {
                 return true;
             }
         }
 
-        self.subs.iter().any(|e| e.is_failed_with(stmt))
+        self.subs.iter().any(|e| e.is_failed_with(location, stmt))
     }
 }
 
@@ -140,13 +150,23 @@ pub enum Operation {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LineInfo {
     path: PathBuf,
+    object: Option<linker::Object>,
+    function: Option<String>,
     line: usize,
     lines: Vec<String>,
 }
 
 impl fmt::Display for LineInfo {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "{}:{}", self.path.display(), self.line + 1)
+        write!(fmt, "{}:{}", self.path.display(), self.line + 1)?;
+
+        if let Some(ref name) = self.function {
+            write!(fmt, ":{}", name)?;
+        } else {
+            write!(fmt, ":?")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -263,6 +283,7 @@ impl Shared {
         stack: &[U256],
         memory: &[u8],
         storage: &storage::StorageAccess,
+        last_function: &mut Option<Arc<ast::Function>>,
         last: &mut Option<source_map::Mapping>,
         visited_statements: &mut HashSet<ast::Src>,
         force_replace: bool,
@@ -270,12 +291,12 @@ impl Shared {
         use ast::Ast::*;
         use std::mem;
 
-        let info = match self.call_stack.last_mut() {
-            Some(info) => info,
+        let call_info = match self.call_stack.last_mut() {
+            Some(call_info) => call_info,
             None => return Ok(()),
         };
 
-        let current = match mapping(info.source.as_ref(), pc) {
+        let current = match mapping(call_info.source.as_ref(), pc) {
             Some(current) => current,
             None => return Ok(()),
         };
@@ -286,6 +307,30 @@ impl Shared {
             Some(ref last) => last != current,
         };
 
+        let ast = match call_info.ast {
+            Some(ref ast) => ast,
+            None => return Ok(()),
+        };
+
+        // TODO: can we use current.is_jump_to_function()?
+        if let Some(function) = ast.find_function(&current) {
+            // are we in a new function?
+            let replace = match last_function.as_ref() {
+                Some(last_function) => function.src != last_function.src,
+                None => true,
+            };
+
+            if replace {
+                mem::replace(last_function, Some(Arc::clone(function)));
+                call_info.function = Some(Arc::clone(function));
+
+                debug!(
+                    "In Function: {}: {:?} from {:?}",
+                    function.name, function.src, current
+                );
+            }
+        }
+
         // No change in AST.
         if !replace {
             return Ok(());
@@ -294,11 +339,6 @@ impl Shared {
         let last = match mem::replace(last, Some(current.clone())) {
             Some(last) => last,
             // initial statement
-            None => return Ok(()),
-        };
-
-        let ast = match info.ast {
-            Some(ref ast) => ast,
             None => return Ok(()),
         };
 
@@ -317,14 +357,14 @@ impl Shared {
         visited_statements.insert(from.source().clone());
 
         match *from {
-            // Expressions are statements where we register a set of variables to print.
+            // Expressions are statements where we register the last set of seen variables to be
+            // printed in case of an exception.
             ExpressionStatement { .. } => {
-                info.variables = mem::replace(&mut info.seen_variables, HashMap::new());
+                call_info.variables = mem::replace(&mut call_info.seen_variables, HashMap::new());
             }
-            // An identifier has just been evaluated, should be on the top of the stack.
             ref ast => {
-                let mut ctx = ast::Context::new(stack, memory, storage, &info.call_data);
-                Self::register_expr(ast, &mut ctx, &mut info.seen_variables)?;
+                let mut ctx = ast::Context::new(stack, memory, storage, &call_info.call_data);
+                Self::register_expr(ast, &mut ctx, &mut call_info.seen_variables)?;
             }
         }
 
@@ -337,6 +377,7 @@ impl Shared {
         linker: &linker::Linker,
         source: Option<&Arc<linker::Source>>,
         pc: usize,
+        function: Option<&Arc<ast::Function>>,
     ) -> Option<LineInfo> {
         let m = match mapping(source, pc) {
             Some(m) => m,
@@ -354,8 +395,18 @@ impl Shared {
             utils::find_line(file, (m.start as usize, (m.start + m.length) as usize))
                 .expect("line from file");
 
+        let object = source.map(|s| s.object.clone());
+
+        // record function name if it is known.
+        let function = match function {
+            Some(function) => Some(function.name.to_string()),
+            None => None,
+        };
+
         Some(LineInfo {
             path: path.to_owned(),
+            object,
+            function,
             line,
             lines,
         })
@@ -432,6 +483,7 @@ impl<'a> trace::Tracer for Tracer<'a> {
             call_data: params.data.clone().unwrap_or_else(Bytes::default),
             seen_variables: HashMap::new(),
             variables: HashMap::new(),
+            function: None,
         };
 
         debug!(
@@ -515,9 +567,11 @@ impl<'a> trace::Tracer for Tracer<'a> {
             None => BTreeMap::new(),
         };
 
+        let function = info.as_ref().and_then(|i| i.function.as_ref());
+
         match shared.frame_info.clone() {
             FrameInfo::Some(pc) => {
-                let line_info = shared.line_info(self.linker, source, pc);
+                let line_info = shared.line_info(self.linker, source, pc, function);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
@@ -555,9 +609,11 @@ impl<'a> trace::Tracer for Tracer<'a> {
             None => BTreeMap::new(),
         };
 
+        let function = info.as_ref().and_then(|i| i.function.as_ref());
+
         match shared.frame_info.clone() {
             FrameInfo::Some(pc) => {
-                let line_info = shared.line_info(self.linker, source, pc);
+                let line_info = shared.line_info(self.linker, source, pc, function);
 
                 self.errors.push(ErrorInfo {
                     kind: ErrorKind::Error(error),
@@ -640,6 +696,8 @@ pub struct VmTracer<'a> {
     stack: Vec<U256>,
     /// Current memory.
     memory: Vec<u8>,
+    /// Last evaluated function.
+    last_function: Option<Arc<ast::Function>>,
     /// Last evaluated mapping.
     last: Option<source_map::Mapping>,
     /// Shared state between tracers.
@@ -661,6 +719,7 @@ impl<'a> VmTracer<'a> {
             instruction: None,
             stack: Vec::new(),
             memory: Vec::new(),
+            last_function: None,
             last: None,
             shared,
             visited_statements: HashSet::new(),
@@ -692,6 +751,7 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
             &self.stack,
             &self.memory,
             storage,
+            &mut self.last_function,
             &mut self.last,
             &mut self.visited_statements,
             false,
@@ -744,6 +804,7 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
             &self.stack,
             &self.memory,
             storage,
+            &mut self.last_function,
             &mut self.last,
             &mut self.visited_statements,
             true,
@@ -807,6 +868,8 @@ pub struct CallFrame {
     variables: HashMap<ast::Expr, ast::Value>,
     // Last set of variables seen up until an expression.
     seen_variables: HashMap<ast::Expr, ast::Value>,
+    // Function call stack.
+    function: Option<Arc<ast::Function>>,
 }
 
 impl From<linker::AddressInfo> for CallFrame {
@@ -817,6 +880,7 @@ impl From<linker::AddressInfo> for CallFrame {
             call_data: Bytes::default(),
             variables: HashMap::new(),
             seen_variables: HashMap::new(),
+            function: None,
         }
     }
 }

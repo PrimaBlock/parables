@@ -20,7 +20,13 @@ pub enum LinkerError {
     SourceMapDecodeError,
 }
 
-pub type Object = (String, String);
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct Object {
+    /// The path that the object belongs to.
+    pub path: String,
+    /// The item (library or contract) the object belongs to.
+    pub item: String,
+}
 
 /// All necessary source information to perform tracing.
 pub struct Source {
@@ -101,8 +107,8 @@ impl Linker {
     /// Register the address for an object.
     pub fn register_object(&mut self, object: Object, address: Address) {
         self.address_to_object.insert(address, object.clone());
-        self.address_to_path.insert(address, object.0.clone());
-        self.item_to_address.insert(object.1.clone(), address);
+        self.address_to_path.insert(address, object.path.clone());
+        self.item_to_address.insert(object.item.clone(), address);
     }
 
     /// Find all corresponding info for the given address.
@@ -131,7 +137,7 @@ impl Linker {
 
     /// Find AST by corresponding object.
     pub fn find_ast_by_object(&self, object: &Object) -> Option<Arc<ast::Registry>> {
-        self.ast_by_path.get(&object.0).map(Arc::clone)
+        self.ast_by_path.get(&object.path).map(Arc::clone)
     }
 
     pub fn register_source_list(&mut self, source_list: Vec<PathBuf>) {
@@ -175,7 +181,10 @@ impl Linker {
         let offsets = self.decode_offsets(bin)?;
 
         Ok(Source {
-            object: (path.to_string(), item.to_string()),
+            object: Object {
+                path: path.to_string(),
+                item: item.to_string(),
+            },
             source_map,
             offsets,
         })
@@ -522,8 +531,7 @@ impl<'a> Iterator for HexDecode<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::HexDecode;
-    use super::Linker;
+    use super::{HexDecode, Linker, Object};
 
     extern crate hex;
 
@@ -545,7 +553,10 @@ mod tests {
     fn test_contract_a_linker() {
         let mut linker = Linker::new();
         linker.register_object(
-            ("SimpleLib.sol".to_string(), "SimpleLib".to_string()),
+            Object {
+                path: "SimpleLib.sol".to_string(),
+                item: "SimpleLib".to_string(),
+            },
             0x342a.into(),
         );
 

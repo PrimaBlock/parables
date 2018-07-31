@@ -18,7 +18,7 @@ use std::fmt;
 use std::mem;
 use std::sync::{Arc, Mutex};
 use trace;
-use {abi, account, ast, call, crypto, journaldb, kvdb, kvdb_memorydb, linker};
+use {abi, account, ast, call, crypto, journaldb, kvdb, kvdb_memorydb, linker, matcher};
 
 /// The outcome of a transaction.
 ///
@@ -104,12 +104,16 @@ impl<T> Call<T> {
     }
 
     /// Check that a revert happened with the specified statement.
-    pub fn is_reverted_with(&self, stmt: impl AsRef<str> + Copy) -> bool {
+    pub fn is_reverted_with(
+        &self,
+        location: impl matcher::LocationMatcher + Copy,
+        stmt: impl AsRef<str> + Copy,
+    ) -> bool {
         use self::Outcome::*;
 
         match self.outcome {
             Reverted { ref error_info } => {
-                error_info.is_reverted() && error_info.is_failed_with(stmt)
+                error_info.is_reverted() && error_info.is_failed_with(location, stmt)
             }
             _ => false,
         }
@@ -291,7 +295,10 @@ impl Evm {
 
         // Register all linker information used for debugging.
         if let Outcome::Ok(ref address) = result.outcome {
-            let object = (C::PATH.to_string(), C::ITEM.to_string());
+            let object = linker::Object {
+                path: C::PATH.to_string(),
+                item: C::ITEM.to_string(),
+            };
 
             if let (Some(bin), Some(source_map)) =
                 (C::RUNTIME_BIN.clone(), C::RUNTIME_SOURCE_MAP.clone())

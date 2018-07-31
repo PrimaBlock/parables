@@ -5,7 +5,7 @@ use parity_bytes::Bytes;
 use serde::de;
 use serde_json;
 use source_map;
-use std::collections::{hash_map, HashMap, HashSet};
+use std::collections::{hash_map, BTreeMap, HashMap, HashSet};
 use std::fmt;
 use std::sync::Arc;
 
@@ -62,7 +62,7 @@ macro_rules! ast {
     }
 }
 
-#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Src {
     start: u32,
     length: u32,
@@ -231,11 +231,19 @@ ast!{
 }
 
 #[derive(Debug)]
+pub struct Function {
+    pub src: Src,
+    pub name: String,
+}
+
+#[derive(Debug)]
 pub struct Registry {
     /// ASTs indexed by source location.
     index: HashMap<(u32, u32), Arc<Ast>>,
     /// Set of statements.
     statements: HashSet<Src>,
+    /// Ranges of functions.
+    functions: HashMap<u32, BTreeMap<u32, Arc<Function>>>,
 }
 
 impl Registry {
@@ -248,14 +256,32 @@ impl Registry {
 
         let mut index = HashMap::new();
         let mut statements = HashSet::new();
+        // mapping location ranges to functions.
+        let mut functions = HashMap::new();
 
         let mut current = ::std::collections::VecDeque::new();
         current.push_back(&ast);
 
         while let Some(next) = current.pop_front() {
             let src = next.source();
+            let key = (src.start, src.length);
 
-            if let hash_map::Entry::Vacant(e) = index.entry((src.start, src.length)) {
+            match next.as_ref() {
+                Ast::FunctionDefinition { ref attributes, .. } => {
+                    let function = Arc::new(Function {
+                        src: src.clone(),
+                        name: attributes.name.to_string(),
+                    });
+
+                    functions
+                        .entry(src.file_index)
+                        .or_insert_with(BTreeMap::new)
+                        .insert(src.start, function);
+                }
+                _ => {}
+            }
+
+            if let hash_map::Entry::Vacant(e) = index.entry(key) {
                 statements.insert(next.source().clone());
                 e.insert(Arc::clone(next));
             }
@@ -263,7 +289,39 @@ impl Registry {
             current.extend(next.children());
         }
 
-        Ok(Registry { index, statements })
+        Ok(Registry {
+            index,
+            statements,
+            functions,
+        })
+    }
+
+    /// Find the function the encapsulated the specified mapping.
+    pub fn find_function(&self, mapping: &source_map::Mapping) -> Option<&Arc<Function>> {
+        use std::ops::Bound;
+
+        let file_index = match mapping.file_index {
+            Some(file_index) => file_index,
+            None => return None,
+        };
+
+        let functions = match self.functions.get(&file_index) {
+            Some(function) => function,
+            None => return None,
+        };
+
+        let mut it = functions.range((Bound::Unbounded, Bound::Included(mapping.start)));
+
+        if let Some((_, f)) = it.next_back() {
+            let end = f.src.start + f.src.length;
+            let lookup_end = mapping.start + mapping.length;
+
+            if lookup_end <= end {
+                return Some(f);
+            }
+        }
+
+        None
     }
 
     /// Find the first element exactly matching the given span.

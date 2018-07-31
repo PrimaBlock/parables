@@ -49,6 +49,16 @@ pub struct Mapping {
     pub operation: Operation,
 }
 
+impl Mapping {
+    /// Test if this an operation that jumps to a different function.
+    pub fn is_jump_to_function(&self) -> bool {
+        match self.operation {
+            Operation::Input | Operation::Output => true,
+            _ => false,
+        }
+    }
+}
+
 /// A parsed source map.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceMap {
