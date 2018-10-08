@@ -1,7 +1,6 @@
 use ast;
 use ethcore::trace;
 use ethereum_types::{H160, U256};
-use std::mem;
 use failure::Error;
 use linker;
 use matcher;
@@ -13,6 +12,7 @@ use std::cmp;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt;
 use std::fs::File;
+use std::mem;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use utils;
@@ -182,21 +182,25 @@ impl Shared {
         }
     }
 
-    /// Register an expression and the value it evaluated to.
-    fn register_expr(
-        c: &ast::Ast,
-        ctx: &mut ast::Context,
-        variables: &mut HashMap<ast::Expr, ast::Value>,
-    ) -> Result<(), Error> {
+    /// Decode AST into an expression.
+    /// If AST cannot be decoded, returns `None`.
+    fn decode_ast<'a>(c: &'a ast::Ast) -> Option<(ast::Expr, &'a str)> {
         use ast::Ast::*;
 
-        let (var, ty) = match *c {
+        match *c {
             Identifier { ref attributes, .. } => {
                 let var = ast::Expr::Identifier {
                     identifier: attributes.value.to_string(),
                 };
 
-                (var, attributes.ty.as_str())
+                return Some((var, attributes.ty.as_str()));
+            }
+            ElementaryTypeNameExpression { ref attributes, .. } => {
+                let var = ast::Expr::Identifier {
+                    identifier: attributes.value.to_string(),
+                };
+
+                return Some((var, attributes.ty.as_str()));
             }
             Assignment { ref children, .. } => {
                 let mut it = children.iter().map(|a| a.as_ref());
@@ -207,9 +211,9 @@ impl Shared {
                             identifier: attributes.value.to_string(),
                         };
 
-                        (var, attributes.ty.as_str())
+                        Some((var, attributes.ty.as_str()))
                     }
-                    _ => return Ok(()),
+                    _ => None,
                 }
             }
             IndexAccess {
@@ -219,22 +223,15 @@ impl Shared {
             } => {
                 let mut it = children.iter().map(|a| a.as_ref());
 
-                let key = match it.next() {
-                    Some(Identifier { ref attributes, .. }) => attributes,
-                    _ => return Ok(()),
-                };
-
-                let value = match it.next() {
-                    Some(Identifier { ref attributes, .. }) => attributes,
-                    _ => return Ok(()),
-                };
+                let key = Self::decode_ast(it.next()?)?.0;
+                let value = Self::decode_ast(it.next()?)?.0;
 
                 let var = ast::Expr::IndexAccess {
-                    key: key.value.to_string(),
-                    value: value.value.to_string(),
+                    key: Box::new(key),
+                    value: Box::new(value),
                 };
 
-                (var, attributes.ty.as_str())
+                Some((var, attributes.ty.as_str()))
             }
             MemberAccess {
                 ref attributes,
@@ -243,25 +240,55 @@ impl Shared {
             } => {
                 let mut it = children.iter().map(|a| a.as_ref());
 
-                let key = match it.next() {
-                    Some(Identifier { ref attributes, .. }) => attributes,
-                    _ => return Ok(()),
-                };
+                let key = Self::decode_ast(it.next()?)?.0;
 
                 let var = ast::Expr::MemberAccess {
-                    key: key.value.to_string(),
+                    key: Box::new(key),
                     value: attributes.member_name.to_string(),
                 };
 
-                (var, attributes.ty.as_str())
+                Some((var, attributes.ty.as_str()))
             }
-            _ => return Ok(()),
+            FunctionCall {
+                ref attributes,
+                ref children,
+                ..
+            } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+                let name = Self::decode_ast(it.next()?)?.0;
+                let mut args = Vec::new();
+
+                for c in it {
+                    args.push(Self::decode_ast(c)?.0);
+                }
+
+                let var = ast::Expr::FunctionCall {
+                    name: Box::new(name),
+                    args,
+                };
+
+                Some((var, attributes.ty.as_str()))
+            }
+            _ => None,
+        }
+    }
+
+    /// Register an expression and the value it evaluated to.
+    fn register_expr(
+        c: &ast::Ast,
+        ctx: &mut ast::Context,
+        variables: &mut HashMap<ast::Expr, ast::Value>,
+    ) -> Result<(), Error> {
+        let (var, value) = match Self::decode_ast(c) {
+            Some((var, ty)) => {
+                let value = ast::Type::decode(ty).value(ctx)?;
+                (var, value)
+            }
+            None => return Ok(()),
         };
 
-        let value = ast::Type::decode(ty).value(ctx)?;
-
         trace!("Set: {} = {}", var, value);
-        variables.insert(var.clone(), value);
+        variables.insert(var, value);
         Ok(())
     }
 
@@ -354,11 +381,11 @@ impl Shared {
             // Expressions are statements where we register the last set of seen variables to be
             // printed in case of an exception.
             ExpressionStatement { .. } => {
-                call_info.variables = mem::replace(&mut call_info.seen_variables, HashMap::new());
+                call_info.variables.clear();
             }
             ref ast => {
                 let mut ctx = ast::Context::new(stack, memory, &call_info.call_data);
-                Self::register_expr(ast, &mut ctx, &mut call_info.seen_variables)?;
+                Self::register_expr(ast, &mut ctx, &mut call_info.variables)?;
             }
         }
 
@@ -473,7 +500,6 @@ impl<'a> trace::Tracer for Tracer<'a> {
             source,
             ast,
             call_data: params.data.clone().unwrap_or_else(Bytes::default),
-            seen_variables: HashMap::new(),
             variables: HashMap::new(),
             function: None,
         };
@@ -486,11 +512,7 @@ impl<'a> trace::Tracer for Tracer<'a> {
         shared.call_stack.push(info);
     }
 
-    fn done_trace_call(
-        &mut self,
-        _gas_used: U256,
-        _output: &[u8],
-    ) {
+    fn done_trace_call(&mut self, _gas_used: U256, _output: &[u8]) {
         let mut shared = self.shared.lock().expect("lock poisoned");
         let info = shared.call_stack.pop();
         let source = info.as_ref().and_then(|s| s.source.as_ref());
@@ -499,12 +521,7 @@ impl<'a> trace::Tracer for Tracer<'a> {
         self.operation = Operation::Call;
     }
 
-    fn done_trace_create(
-        &mut self,
-        _gas_used: U256,
-        _code: &[u8],
-        address: H160,
-    ) {
+    fn done_trace_create(&mut self, _gas_used: U256, _code: &[u8], address: H160) {
         let mut shared = self.shared.lock().expect("lock poisoned");
         let info = shared.call_stack.pop();
         let source = info.as_ref().and_then(|s| s.source.as_ref());
@@ -641,12 +658,7 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
         true
     }
 
-    fn trace_executed(
-        &mut self,
-        _gas_used: U256,
-        stack_push: &[U256],
-        mem: &[u8],
-    ) {
+    fn trace_executed(&mut self, _gas_used: U256, stack_push: &[U256], mem: &[u8]) {
         let mut shared = self.shared.lock().expect("poisoned lock");
 
         if let Err(e) = shared.decode_instruction(
@@ -662,12 +674,7 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
         }
 
         let inst = self.instruction.expect("illegal instruction");
-        trace!(
-            "I {:<4x}: {:<16}: {:?}",
-            self.pc,
-            inst.info().name,
-            self.stack
-        );
+        trace!("I {:<4x}: {:<16}", self.pc, inst.info().name,);
 
         let len = self.stack.len();
         shared.frame_info = FrameInfo::Some(self.pc);
@@ -683,7 +690,7 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
         self.stack.extend_from_slice(stack_push);
 
         // print post-stack manipulation state.
-        trace!("{:<24}= {:?}", "", self.stack);
+        // trace!("{:<24}= {:?}", "", self.stack);
     }
 
     fn prepare_subtrace(&mut self, _code: &[u8]) {}
@@ -728,8 +735,6 @@ pub struct CallFrame {
     pub call_data: Bytes,
     // named variables and their stack offsets.
     variables: HashMap<ast::Expr, ast::Value>,
-    // Last set of variables seen up until an expression.
-    seen_variables: HashMap<ast::Expr, ast::Value>,
     // Function call stack.
     function: Option<Arc<ast::Function>>,
 }
@@ -741,7 +746,6 @@ impl From<linker::AddressInfo> for CallFrame {
             ast: info.ast,
             call_data: Bytes::default(),
             variables: HashMap::new(),
-            seen_variables: HashMap::new(),
             function: None,
         }
     }

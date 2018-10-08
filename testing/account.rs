@@ -103,11 +103,8 @@ impl<'s, 'a> Signer<'s, 'a> {
             mut checksum,
         } = self;
 
-        let hash = {
-            let mut hash = vec![0u8; 32];
-            checksum.result(&mut hash);
-            hash
-        };
+        let mut hash = [0u8; 32];
+        checksum.result(&mut hash);
 
         let hash = Self::to_rpc_hash(&hash);
         Self::to_secp_signature(account, &hash)

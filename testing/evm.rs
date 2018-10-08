@@ -428,7 +428,7 @@ impl Evm {
             .map_err(|_| format_err!("failed to modify balance"))?)
     }
 
-    /// Access the visisted statement statistics.
+    /// Access the visited statement statistics.
     pub fn calculate_visited(&self) -> Result<(u32, u32), Error> {
         let mut total = 0u32;
         let mut count = 0u32;
@@ -490,7 +490,8 @@ impl Evm {
         decode: impl FnOnce(&Evm, &SignedTransaction, Vec<u8>) -> Result<T, Error>,
     ) -> Result<Call<T>, Error> {
         // Verify transaction
-        tx.verify_basic(true, None, false).map_err(|e| format_err!("verify failed: {}", e))?;
+        tx.verify_basic(true, None, false)
+            .map_err(|e| format_err!("verify failed: {}", e))?;
 
         let shared = Mutex::new(trace::Shared::new());
 
@@ -519,9 +520,7 @@ impl Evm {
                 .lock()
                 .map_err(|_| format_err!("lock poisoned"))?;
 
-            for s in vm_trace.visited_statements.drain() {
-                visited_statements.insert(s);
-            }
+            visited_statements.extend(vm_trace.visited_statements.drain());
         }
 
         let outcome = self.outcome(result, tx, decode)?;

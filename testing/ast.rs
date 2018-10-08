@@ -117,6 +117,13 @@ impl<'de> de::Deserialize<'de> for Src {
 
 #[serde(rename_all = "camelCase")]
 #[derive(Debug, Deserialize)]
+pub struct FunctionCallAttributes {
+    #[serde(rename = "type")]
+    pub ty: String,
+}
+
+#[serde(rename_all = "camelCase")]
+#[derive(Debug, Deserialize)]
 pub struct FunctionDefinitionAttributes {
     pub name: String,
 }
@@ -169,6 +176,14 @@ pub struct ElementaryTypeNameAttributes {
     pub name: String,
 }
 
+#[serde(rename_all = "camelCase")]
+#[derive(Debug, Deserialize)]
+pub struct ElementaryTypeNameExpressionAttributes {
+    #[serde(rename = "type")]
+    pub ty: String,
+    pub value: String,
+}
+
 ast!{
     ArrayTypeName { },
     Assignment {
@@ -176,20 +191,25 @@ ast!{
     },
     BinaryOperation { },
     Block { },
+    Break { },
     Conditional { },
     Continue { },
     ContractDefinition { },
     ElementaryTypeName {
         attributes: ElementaryTypeNameAttributes,
     },
-    ElementaryTypeNameExpression { },
+    ElementaryTypeNameExpression {
+        attributes: ElementaryTypeNameExpressionAttributes,
+    },
     EmitStatement { },
     EnumDefinition { },
     EnumValue { },
     EventDefinition { },
     ExpressionStatement { },
     ForStatement { },
-    FunctionCall { },
+    FunctionCall {
+        attributes: FunctionCallAttributes,
+    },
     FunctionDefinition {
         id: u32,
         attributes: FunctionDefinitionAttributes,
@@ -382,8 +402,11 @@ impl fmt::Display for Storage {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Type {
     Bytes(Storage),
+    Bytes32,
     Uint256,
+    Bool,
     Address,
+    Enum(String),
     Struct(String, Storage, Kind),
     Function(String),
     Mapping(Box<Type>, Box<Type>),
@@ -425,6 +448,14 @@ impl Type {
         let mut it = ty.split(" ");
 
         match it.next() {
+            Some("enum") => {
+                let name = match it.next() {
+                    Some(name) => name,
+                    _ => return Unknown(ty.into()),
+                };
+
+                return Enum(name.to_string());
+            }
             Some("struct") => {
                 let name = match it.next() {
                     Some(name) => name,
@@ -465,7 +496,9 @@ impl Type {
                 Some("memory") => Bytes(Storage::Memory),
                 _ => return Unknown(ty.into()),
             },
+            Some("bytes32") => Bytes32,
             Some("uint256") => Uint256,
+            Some("bool") => Bool,
             Some("address") => Address,
             _ => return Unknown(ty.into()),
         }
@@ -494,10 +527,17 @@ impl Type {
 
                 Ok(Value::Bytes(data.to_vec()))
             }
+            Bytes32 => {
+                let value = ctx.pop()?;
+                Ok(Value::Bytes32(<[u8; 32]>::from(value)))
+            }
             Uint256 => {
                 let value = ctx.pop()?;
-
                 Ok(Value::Uint256(value))
+            }
+            Bool => {
+                let value = ctx.pop()?;
+                Ok(Value::Bool(value != U256::from(0)))
             }
             Address => {
                 let value = ctx.pop()?;
@@ -505,6 +545,10 @@ impl Type {
                 Ok(Value::Address(address))
             }
             Mapping(key, value) => Ok(Value::Mapping(*key, *value)),
+            Enum(name) => {
+                let value = ctx.pop()?;
+                Ok(Value::Enum(name, value))
+            }
             Struct(name, storage, kind) => Ok(Value::Struct(name, storage, kind)),
             Function(params) => Ok(Value::Function(params)),
             Unknown(ty) => Ok(Value::Unknown(ty)),
@@ -519,9 +563,12 @@ impl fmt::Display for Type {
 
         match *self {
             Bytes(ref storage) => write!(fmt, "bytes {}", storage),
+            Bytes32 => write!(fmt, "bytes32"),
             Uint256 => write!(fmt, "uint256"),
+            Bool => write!(fmt, "bool"),
             Address => write!(fmt, "address"),
             Mapping(ref key, ref value) => write!(fmt, "mapping({} => {})", key, value),
+            Enum(ref name) => write!(fmt, "enum {}", name),
             Struct(ref name, ref storage, ref kind) => {
                 write!(fmt, "struct {} {} {}", name, storage, kind)
             }
@@ -535,12 +582,18 @@ impl fmt::Display for Type {
 pub enum Value {
     /// A byte-array.
     Bytes(Vec<u8>),
+    /// A bytes32 value.
+    Bytes32([u8; 32]),
     /// A uint256
     Uint256(U256),
+    /// A bool.
+    Bool(bool),
     /// An address.
     Address(Address),
     /// Only store the types of a mapping since we can't discover all values.
     Mapping(Type, Type),
+    /// An enum value.
+    Enum(String, U256),
     /// A struct and its name.
     Struct(String, Storage, Kind),
     /// A function.
@@ -554,9 +607,12 @@ impl fmt::Display for Value {
 
         match *self {
             Bytes(ref bytes) => write!(fmt, "bytes({}, {})", Hex(bytes), bytes.len()),
+            Bytes32(ref value) => write!(fmt, "bytes32({})", Hex(value)),
             Uint256(ref value) => write!(fmt, "uint256({})", value),
-            Address(ref value) => write!(fmt, "address({})", value),
+            Bool(ref value) => write!(fmt, "bool({})", value),
+            Address(ref value) => write!(fmt, "address({:?})", value),
             Mapping(ref key, ref value) => write!(fmt, "mapping({} => {})", key, value),
+            Enum(ref name, ref value) => write!(fmt, "enum {}({})", name, value),
             Struct(ref name, ref storage, ref kind) => {
                 write!(fmt, "struct {} {} {}", name, storage, kind)
             }
@@ -575,11 +631,7 @@ pub struct Context<'a> {
 
 impl<'a> Context<'a> {
     /// Create a new decoding context.
-    pub fn new(
-        stack: &'a [U256],
-        memory: &'a [u8],
-        call_data: &'a Bytes,
-    ) -> Context<'a> {
+    pub fn new(stack: &'a [U256], memory: &'a [u8], call_data: &'a Bytes) -> Context<'a> {
         Context {
             stack,
             memory,
@@ -604,9 +656,11 @@ pub enum Expr {
     /// identifier expressions
     Identifier { identifier: String },
     /// key[value] expressions
-    IndexAccess { key: String, value: String },
+    IndexAccess { key: Box<Expr>, value: Box<Expr> },
     /// key.value expressions
-    MemberAccess { key: String, value: String },
+    MemberAccess { key: Box<Expr>, value: String },
+    /// name(args) function calls.
+    FunctionCall { name: Box<Expr>, args: Vec<Expr> },
 }
 
 impl fmt::Display for Expr {
@@ -617,6 +671,14 @@ impl fmt::Display for Expr {
             Identifier { ref identifier } => identifier.fmt(fmt),
             IndexAccess { ref key, ref value } => write!(fmt, "{}[{}]", key, value),
             MemberAccess { ref key, ref value } => write!(fmt, "{}.{}", key, value),
+            FunctionCall { ref name, ref args } => {
+                let args = args
+                    .iter()
+                    .map(|a| a.to_string())
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                write!(fmt, "{}({})", name, args)
+            }
         }
     }
 }
