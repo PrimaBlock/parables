@@ -228,7 +228,8 @@ impl Evm {
 
     /// Create a new account.
     pub fn account(&self) -> Result<account::Account, Error> {
-        account::Account::new(&self.crypto)
+        let mut crypto = self.borrow_mut_crypto()?;
+        account::Account::new(&mut crypto)
             .map_err(|e| format_err!("failed to setup account: {}", e))
     }
 
@@ -621,6 +622,13 @@ impl Evm {
         self.state
             .try_borrow_mut()
             .map_err(|e| format_err!("cannot borrow state mutably: {}", e))
+    }
+
+    /// Access underlying crypto.
+    fn borrow_mut_crypto(&self) -> Result<RefMut<crypto::Crypto>, Error> {
+        self.crypto
+            .try_borrow_mut()
+            .map_err(|e| format_err!("cannot borrow crypto: {}", e))
     }
 }
 

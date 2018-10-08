@@ -3,8 +3,8 @@ use ethereum_types::{Address, H160, H256, U256};
 use rust_crypto::digest::Digest;
 use rust_crypto::sha3::Sha3;
 use secp256k1::{self, key};
-use std::cell::RefCell;
 use std::fmt;
+use std::sync::Arc;
 
 #[derive(Debug, Fail)]
 pub enum AccountError {
@@ -18,26 +18,22 @@ pub enum AccountError {
     BorrowError,
 }
 
-pub struct Account<'a> {
-    crypto: &'a RefCell<Crypto>,
+pub struct Account {
+    secp: Arc<secp256k1::Secp256k1>,
     pub address: Address,
     secret: key::SecretKey,
     public: key::PublicKey,
 }
 
-impl<'a> Account<'a> {
+impl Account {
     /// Create a new address with the give rng implementation.
-    pub fn new(crypto: &'a RefCell<Crypto>) -> Result<Account<'a>, AccountError> {
+    pub fn new(crypto: &mut Crypto) -> Result<Account, AccountError> {
+        let Crypto {
+            ref secp,
+            ref mut rng,
+        } = *crypto;
+
         let (secret, public, address) = {
-            let mut lock = crypto
-                .try_borrow_mut()
-                .map_err(|_| AccountError::BorrowError)?;
-
-            let Crypto {
-                ref secp,
-                ref mut rng,
-            } = *lock;
-
             let secret = key::SecretKey::new(secp, rng);
             let public = key::PublicKey::from_secret_key(secp, &secret)
                 .map_err(|error| AccountError::DerivePublicKeyError { error })?;
@@ -54,7 +50,7 @@ impl<'a> Account<'a> {
         };
 
         Ok(Self {
-            crypto,
+            secp: Arc::clone(secp),
             address,
             secret,
             public,
@@ -62,12 +58,12 @@ impl<'a> Account<'a> {
     }
 
     /// Create a new signer.
-    pub fn sign<'s>(&'s self) -> Signer<'s, 'a> {
+    pub fn sign<'a>(&'a self) -> Signer<'a> {
         Signer::new(self)
     }
 }
 
-impl<'a> fmt::Debug for Account<'a> {
+impl fmt::Debug for Account {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct("Account")
             .field("address", &self.address)
@@ -77,13 +73,13 @@ impl<'a> fmt::Debug for Account<'a> {
     }
 }
 
-pub struct Signer<'s, 'a: 's> {
-    account: &'s Account<'a>,
+pub struct Signer<'a> {
+    account: &'a Account,
     checksum: Sha3,
 }
 
-impl<'s, 'a> Signer<'s, 'a> {
-    pub fn new(account: &'s Account<'a>) -> Self {
+impl<'a> Signer<'a> {
+    pub fn new(account: &'a Account) -> Self {
         Self {
             account,
             checksum: Sha3::keccak256(),
@@ -125,20 +121,15 @@ impl<'s, 'a> Signer<'s, 'a> {
 
     /// Build a secp256k1 signature.
     fn to_secp_signature(account: &Account, message: &[u8]) -> Result<Signature, AccountError> {
-        let crypto = account
-            .crypto
-            .try_borrow()
-            .map_err(|_| AccountError::BorrowError)?;
-
         let message = secp256k1::Message::from_slice(message)
             .map_err(|error| AccountError::MessageError { error })?;
 
-        let sig = crypto
+        let sig = account
             .secp
             .sign_recoverable(&message, &account.secret)
             .map_err(|error| AccountError::SignError { error })?;
 
-        let (rec_id, data) = sig.serialize_compact(&crypto.secp);
+        let (rec_id, data) = sig.serialize_compact(&account.secp);
 
         let mut output = Vec::with_capacity(65);
         output.extend(&data[..]);
