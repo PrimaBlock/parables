@@ -10,7 +10,7 @@ path = "lib.rs"
 [dependencies]
 parables-derive = {path = "../derive"}
 parables-test-runner = {path = "../test-runner", optional = true}
-ethereum-types = "0.3"
+ethereum-types = "0.4"
 ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
 
 # ethash = { git = "https://github.com/paritytech/parity.git" }
@@ -20,12 +20,12 @@ ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
 # journaldb = { git = "https://github.com/paritytech/parity.git" }
 # vm = { git = "https://github.com/paritytech/parity.git" }
 
-ethash = { git = "https://github.com/primablock/parity.git", branch = "tracing-storage-access" }
-ethcore = { git = "https://github.com/primablock/parity.git", features = ["test-helpers"], branch = "tracing-storage-access" }
-ethcore-transaction = { git = "https://github.com/primablock/parity.git", branch = "tracing-storage-access" }
-evm = { git = "https://github.com/primablock/parity.git", branch = "tracing-storage-access" }
-journaldb = { git = "https://github.com/primablock/parity.git", branch = "tracing-storage-access" }
-vm = { git = "https://github.com/primablock/parity.git", branch = "tracing-storage-access" }
+ethash = { git = "https://github.com/paritytech/parity-ethereum.git" }
+ethcore = { git = "https://github.com/paritytech/parity-ethereum.git" }
+ethcore-transaction = { git = "https://github.com/paritytech/parity-ethereum.git" }
+evm = { git = "https://github.com/paritytech/parity-ethereum.git" }
+journaldb = { git = "https://github.com/paritytech/parity-ethereum.git" }
+vm = { git = "https://github.com/paritytech/parity-ethereum.git" }
 
 kvdb = { git = "https://github.com/paritytech/parity-common.git" }
 kvdb-memorydb = { git = "https://github.com/paritytech/parity-common.git" }

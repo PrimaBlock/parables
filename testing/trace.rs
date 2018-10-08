@@ -1,8 +1,7 @@
 use ast;
-use ethcore::storage;
 use ethcore::trace;
-use ethcore::trace::trace::{Call, Create};
-use ethereum_types::{Address, H160, U256};
+use ethereum_types::{H160, U256};
+use std::mem;
 use failure::Error;
 use linker;
 use matcher;
@@ -278,7 +277,6 @@ impl Shared {
         pc: usize,
         stack: &[U256],
         memory: &[u8],
-        storage: &storage::StorageAccess,
         last_function: &mut Option<Arc<ast::Function>>,
         last: &mut Option<source_map::Mapping>,
         visited_statements: &mut HashSet<ast::Src>,
@@ -359,7 +357,7 @@ impl Shared {
                 call_info.variables = mem::replace(&mut call_info.seen_variables, HashMap::new());
             }
             ref ast => {
-                let mut ctx = ast::Context::new(stack, memory, storage, &call_info.call_data);
+                let mut ctx = ast::Context::new(stack, memory, &call_info.call_data);
                 Self::register_expr(ast, &mut ctx, &mut call_info.seen_variables)?;
             }
         }
@@ -444,13 +442,12 @@ impl<'a> Tracer<'a> {
 impl<'a> trace::Tracer for Tracer<'a> {
     type Output = ErrorInfo;
 
-    fn prepare_trace_call(&self, params: &parity_vm::ActionParams) -> Option<Call> {
-        // ignore built-in calls since they don't call trace_call correctly:
-        // https://github.com/paritytech/parity-ethereum/pull/9236
-        if params.code_address == Address::from(0x1) {
-            return None;
-        }
-
+    fn prepare_trace_call(
+        &mut self,
+        params: &parity_vm::ActionParams,
+        depth: usize,
+        is_builtin: bool,
+    ) {
         let mut shared = self.shared.lock().expect("lock poisoned");
 
         let mut info = CallFrame::from(self.linker.find_runtime_info(params.code_address));
@@ -463,10 +460,9 @@ impl<'a> trace::Tracer for Tracer<'a> {
         );
 
         shared.call_stack.push(info);
-        None
     }
 
-    fn prepare_trace_create(&self, params: &parity_vm::ActionParams) -> Option<Create> {
+    fn prepare_trace_create(&mut self, params: &parity_vm::ActionParams) {
         let mut shared = self.shared.lock().expect("lock poisoned");
         let source = self.entry_source.clone();
         let ast = source
@@ -488,44 +484,26 @@ impl<'a> trace::Tracer for Tracer<'a> {
         );
 
         shared.call_stack.push(info);
-        None
     }
 
-    fn prepare_trace_output(&self) -> Option<Bytes> {
-        let shared = self.shared.lock().expect("lock poisoned");
-        let source = shared.call_stack.last().and_then(|s| s.source.as_ref());
-
-        debug!("!! {:03}: Prepare Trace Output: {:?}", self.depth, source);
-        None
-    }
-
-    fn trace_call(
+    fn done_trace_call(
         &mut self,
-        _call: Option<Call>,
         _gas_used: U256,
-        _output: Option<Bytes>,
-        subs: Vec<Self::Output>,
+        _output: &[u8],
     ) {
         let mut shared = self.shared.lock().expect("lock poisoned");
         let info = shared.call_stack.pop();
         let source = info.as_ref().and_then(|s| s.source.as_ref());
 
         debug!("!! {:03}: Trace Call: {:?}", self.depth, source);
-
-        if !subs.is_empty() {
-            self.errors.extend(subs);
-        }
-
         self.operation = Operation::Call;
     }
 
-    fn trace_create(
+    fn done_trace_create(
         &mut self,
-        _create: Option<Create>,
         _gas_used: U256,
-        _code: Option<Bytes>,
+        _code: &[u8],
         address: H160,
-        subs: Vec<Self::Output>,
     ) {
         let mut shared = self.shared.lock().expect("lock poisoned");
         let info = shared.call_stack.pop();
@@ -536,19 +514,10 @@ impl<'a> trace::Tracer for Tracer<'a> {
             self.depth, source, address
         );
 
-        if !subs.is_empty() {
-            self.errors.extend(subs);
-        }
-
         self.operation = Operation::Create;
     }
 
-    fn trace_failed_call(
-        &mut self,
-        _call: Option<Call>,
-        subs: Vec<Self::Output>,
-        error: trace::TraceError,
-    ) {
+    fn done_trace_failed(&mut self, error: &parity_vm::Error) {
         let mut shared = self.shared.lock().expect("lock poisoned");
         let info = shared.call_stack.pop();
         let source = info.as_ref().and_then(|s| s.source.as_ref());
@@ -564,48 +533,7 @@ impl<'a> trace::Tracer for Tracer<'a> {
         };
 
         let function = info.as_ref().and_then(|i| i.function.as_ref());
-
-        match shared.frame_info.clone() {
-            FrameInfo::Some(pc) => {
-                let line_info = shared.line_info(self.linker, source, pc, function);
-
-                self.errors.push(ErrorInfo {
-                    kind: ErrorKind::Error(error),
-                    line_info,
-                    subs,
-                    variables,
-                })
-            }
-            FrameInfo::None => self.errors.push(ErrorInfo {
-                kind: ErrorKind::Error(error),
-                line_info: None,
-                subs,
-                variables,
-            }),
-        }
-    }
-
-    fn trace_failed_create(
-        &mut self,
-        _create: Option<Create>,
-        subs: Vec<Self::Output>,
-        error: trace::TraceError,
-    ) {
-        let mut shared = self.shared.lock().expect("lock poisoned");
-        let info = shared.call_stack.pop();
-        let source = info.as_ref().and_then(|s| s.source.as_ref());
-
-        debug!(
-            "!! {:03}: Trace Failed Create: {:?} ({})",
-            self.depth, source, error
-        );
-
-        let variables: BTreeMap<_, _> = match info.as_ref() {
-            Some(info) => info.variables.clone().into_iter().collect(),
-            None => BTreeMap::new(),
-        };
-
-        let function = info.as_ref().and_then(|i| i.function.as_ref());
+        let subs = mem::replace(&mut self.errors, vec![]);
 
         match shared.frame_info.clone() {
             FrameInfo::Some(pc) => {
@@ -641,22 +569,6 @@ impl<'a> trace::Tracer for Tracer<'a> {
         debug!("!! {:03}: Trace Reward: {:?}", self.depth, source,);
     }
 
-    fn subtracer(&self) -> Tracer<'a>
-    where
-        Self: Sized,
-    {
-        debug!("!! {:03}: New Sub-Tracer", self.depth);
-
-        Tracer {
-            linker: self.linker,
-            entry_source: self.entry_source.clone(),
-            errors: Vec::new(),
-            operation: Operation::None,
-            depth: self.depth + 1,
-            shared: self.shared,
-        }
-    }
-
     fn drain(self) -> Vec<ErrorInfo> {
         let shared = self.shared.lock().expect("lock poisoned");
         let head = shared.call_stack.last();
@@ -690,8 +602,6 @@ pub struct VmTracer<'a> {
     instruction: Option<parity_evm::Instruction>,
     /// Current stack.
     stack: Vec<U256>,
-    /// Current memory.
-    memory: Vec<u8>,
     /// Last evaluated function.
     last_function: Option<Arc<ast::Function>>,
     /// Last evaluated mapping.
@@ -714,7 +624,6 @@ impl<'a> VmTracer<'a> {
             pc: 0,
             instruction: None,
             stack: Vec::new(),
-            memory: Vec::new(),
             last_function: None,
             last: None,
             shared,
@@ -736,17 +645,14 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
         &mut self,
         _gas_used: U256,
         stack_push: &[U256],
-        mem_diff: Option<(usize, &[u8])>,
-        _store_diff: Option<(U256, U256)>,
-        storage: &storage::StorageAccess,
+        mem: &[u8],
     ) {
         let mut shared = self.shared.lock().expect("poisoned lock");
 
         if let Err(e) = shared.decode_instruction(
             self.pc,
             &self.stack,
-            &self.memory,
-            storage,
+            mem,
             &mut self.last_function,
             &mut self.last,
             &mut self.visited_statements,
@@ -776,30 +682,19 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
 
         self.stack.extend_from_slice(stack_push);
 
-        if let Some((pos, slice)) = mem_diff {
-            let len = pos + slice.len();
-
-            if self.memory.len() < len {
-                let rest = len - self.memory.len();
-                self.memory.extend(::std::iter::repeat(0u8).take(rest));
-            }
-
-            self.memory[pos..(pos + slice.len())].copy_from_slice(slice);
-            trace!("M {:<4x} length:{}", pos, slice.len());
-        }
-
         // print post-stack manipulation state.
         trace!("{:<24}= {:?}", "", self.stack);
     }
 
-    fn trace_done(&mut self, storage: &storage::StorageAccess) {
+    fn prepare_subtrace(&mut self, _code: &[u8]) {}
+
+    fn done_subtrace(&mut self) {
         let mut shared = self.shared.lock().expect("poisoned lock");
 
         if let Err(e) = shared.decode_instruction(
             self.pc,
             &self.stack,
             &self.memory,
-            storage,
             &mut self.last_function,
             &mut self.last,
             &mut self.visited_statements,
@@ -809,22 +704,8 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
         }
     }
 
-    fn prepare_subtrace(&self, _code: &[u8]) -> Self
-    where
-        Self: Sized,
-    {
-        VmTracer::new(self.linker, self.entry_source.clone(), self.shared)
-    }
-
-    fn done_subtrace(&mut self, sub: Self) {
-        if let Some(s) = sub.drain() {
-            self.visited_statements.extend(s.visited_statements);
-        }
-    }
-
     fn drain(self) -> Option<Self::Output> {
         let visited_statements = self.visited_statements;
-
         Some(VmTracerOutput { visited_statements })
     }
 }

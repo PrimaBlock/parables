@@ -1,4 +1,3 @@
-use ethcore::storage;
 use ethereum_types::{Address, H160, H256, U256};
 use failure::Error;
 use parity_bytes::Bytes;
@@ -571,8 +570,6 @@ impl fmt::Display for Value {
 pub struct Context<'a> {
     stack: &'a [U256],
     memory: &'a [u8],
-    #[allow(unused)]
-    storage: &'a storage::StorageAccess,
     call_data: &'a Bytes,
 }
 
@@ -581,13 +578,11 @@ impl<'a> Context<'a> {
     pub fn new(
         stack: &'a [U256],
         memory: &'a [u8],
-        storage: &'a storage::StorageAccess,
         call_data: &'a Bytes,
     ) -> Context<'a> {
         Context {
             stack,
             memory,
-            storage,
             call_data,
         }
     }
