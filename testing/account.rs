@@ -92,8 +92,7 @@ impl<'s, 'a> Signer<'s, 'a> {
 
     /// Input the given set of bytes.
     pub fn input<D: Digestable>(mut self, digestable: D) -> Self {
-        let digested = digestable.digest();
-        self.checksum.input(&digested);
+        digestable.digest(&mut self.checksum);
         self
     }
 
@@ -163,23 +162,35 @@ impl From<Signature> for Vec<u8> {
 /// Trait for things which can be digested.
 pub trait Digestable {
     /// Digest the given type.
-    fn digest(self) -> Vec<u8>;
+    fn digest(self, checksum: &mut Sha3);
 }
 
-impl Digestable for Vec<u8> {
-    fn digest(self) -> Vec<u8> {
-        self
+impl<'a> Digestable for &'a str {
+    fn digest(self, checksum: &mut Sha3) {
+        checksum.input(self.as_bytes());
+    }
+}
+
+impl<'a> Digestable for &'a [u8] {
+    fn digest(self, checksum: &mut Sha3) {
+        checksum.input(self);
+    }
+}
+
+impl<'a> Digestable for &'a Vec<u8> {
+    fn digest(self, checksum: &mut Sha3) {
+        checksum.input(self);
     }
 }
 
 impl Digestable for U256 {
-    fn digest(self) -> Vec<u8> {
-        <[u8; 32]>::from(self).to_vec()
+    fn digest(self, checksum: &mut Sha3) {
+        checksum.input(&<[u8; 32]>::from(self));
     }
 }
 
 impl Digestable for H160 {
-    fn digest(self) -> Vec<u8> {
-        <[u8; 20]>::from(self).to_vec()
+    fn digest(self, checksum: &mut Sha3) {
+        checksum.input(&<[u8; 20]>::from(self));
     }
 }

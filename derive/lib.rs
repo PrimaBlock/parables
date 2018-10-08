@@ -156,7 +156,8 @@ fn compile(options: derive::Options) -> Result<quote::Tokens, Error> {
         c.arg(&contract.file);
     }
 
-    let output = c.current_dir(&path)
+    let output = c
+        .current_dir(&path)
         .output()
         .map_err(|e| format!("error compiling contracts: {}", e))?;
 

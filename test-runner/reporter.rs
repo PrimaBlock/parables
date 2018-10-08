@@ -312,7 +312,8 @@ impl<'a> CollectingReporter<'a> {
 
     /// Take all collected results.
     pub fn take_results(self) -> Result<Vec<TestResult<'a>>, Error> {
-        Ok(self.results
+        Ok(self
+            .results
             .into_inner()
             .map_err(|_| format_err!("another lock is held"))?)
     }
@@ -320,7 +321,8 @@ impl<'a> CollectingReporter<'a> {
 
 impl<'a> Reporter<'a> for CollectingReporter<'a> {
     fn report(&self, _index: usize, result: TestResult<'a>) -> Result<(), Error> {
-        let mut results = self.results
+        let mut results = self
+            .results
             .lock()
             .map_err(|_| format_err!("lock poisoned"))?;
         results.push(result);

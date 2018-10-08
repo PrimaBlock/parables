@@ -90,17 +90,20 @@ impl<'de> de::Deserialize<'de> for Src {
 
         let mut it = s.split(":");
 
-        let start = it.next()
+        let start = it
+            .next()
             .ok_or(D::Error::custom("missing start"))?
             .parse::<u32>()
             .map_err(D::Error::custom)?;
 
-        let length = it.next()
+        let length = it
+            .next()
             .ok_or(D::Error::custom("missing length"))?
             .parse::<u32>()
             .map_err(D::Error::custom)?;
 
-        let file_index = it.next()
+        let file_index = it
+            .next()
             .ok_or(D::Error::custom("missing file index"))?
             .parse::<u32>()
             .map_err(D::Error::custom)?;

@@ -113,7 +113,8 @@ impl Linker {
 
     /// Find all corresponding info for the given address.
     pub fn find_runtime_info(&self, address: Address) -> AddressInfo {
-        let source = self.address_to_object
+        let source = self
+            .address_to_object
             .get(&address)
             .and_then(|object| self.runtime_sources.get(object))
             .map(Arc::clone);

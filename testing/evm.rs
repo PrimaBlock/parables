@@ -257,7 +257,8 @@ impl Evm {
 
         let mut state_db = state_db::StateDB::new(journal_db, 5 * 1024 * 1024);
 
-        state_db = spec.ensure_db_good(state_db, &factories)
+        state_db = spec
+            .ensure_db_good(state_db, &factories)
             .map_err(|e| format_err!("bad database state: {}", e))?;
 
         let genesis = spec.genesis_header();
@@ -360,7 +361,8 @@ impl Evm {
             entry_source,
             linker,
             |evm, tx, _| {
-                let scheme = evm.engine
+                let scheme = evm
+                    .engine
                     .machine()
                     .create_address_scheme(evm.env_info.number);
 
@@ -431,7 +433,8 @@ impl Evm {
         let mut total = 0u32;
         let mut count = 0u32;
 
-        let visited_statements = self.visited_statements
+        let visited_statements = self
+            .visited_statements
             .lock()
             .map_err(|_| format_err!("lock poisoned"))?;
 
@@ -515,7 +518,8 @@ impl Evm {
         let sender = tx.sender();
 
         if let Some(vm_trace) = result.vm_trace.as_mut() {
-            let mut visited_statements = self.visited_statements
+            let mut visited_statements = self
+                .visited_statements
                 .lock()
                 .map_err(|_| format_err!("lock poisoned"))?;
 
@@ -632,7 +636,8 @@ impl abi::Vm for Evm {
     {
         let linker = self.borrow_linker()?;
 
-        let params = f.encoded(&linker)
+        let params = f
+            .encoded(&linker)
             .map_err(|e| format_err!("failed to encode input: {}", e))?;
 
         self.action(
@@ -772,7 +777,8 @@ where
 
                         let sender = entry.address;
 
-                        let entry = log.parse_log((entry.topics, entry.data).into())
+                        let entry = log
+                            .parse_log((entry.topics, entry.data).into())
                             .map_err(|e| format_err!("failed to parse log entry: {}", e))?;
 
                         out.push(map(sender, entry));
