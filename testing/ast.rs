@@ -134,7 +134,7 @@ pub struct IdentifierAttributes {
     #[serde(rename = "type")]
     pub ty: String,
     pub value: String,
-    pub reference_declaration: Option<u32>,
+    pub referenced_declaration: u32,
 }
 
 #[serde(rename_all = "camelCase")]
@@ -151,6 +151,7 @@ pub struct MemberAccessAttributes {
     pub ty: String,
     #[serde(rename = "member_name")]
     pub member_name: String,
+    pub is_pure: bool,
 }
 
 #[serde(rename_all = "camelCase")]
@@ -184,6 +185,19 @@ pub struct ElementaryTypeNameExpressionAttributes {
     pub value: String,
 }
 
+#[serde(rename_all = "camelCase")]
+#[derive(Debug, Deserialize)]
+pub struct EnumDefinitionAttributes {
+    pub canonical_name: String,
+    pub name: String,
+}
+
+#[serde(rename_all = "camelCase")]
+#[derive(Debug, Deserialize)]
+pub struct EnumValueAttributes {
+    pub name: String,
+}
+
 ast!{
     ArrayTypeName { },
     Assignment {
@@ -202,8 +216,14 @@ ast!{
         attributes: ElementaryTypeNameExpressionAttributes,
     },
     EmitStatement { },
-    EnumDefinition { },
-    EnumValue { },
+    EnumDefinition {
+        id: u32,
+        attributes: EnumDefinitionAttributes,
+    },
+    EnumValue {
+        id: u32,
+        attributes: EnumValueAttributes,
+    },
     EventDefinition { },
     ExpressionStatement { },
     ForStatement { },
@@ -258,7 +278,18 @@ pub struct Function {
     pub name: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Variant {
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Enum {
+    pub name: String,
+    pub variants: Vec<Variant>,
+}
+
+#[derive(Debug, Default)]
 pub struct Registry {
     /// ASTs indexed by source location.
     index: HashMap<(u32, u32), Arc<Ast>>,
@@ -266,6 +297,8 @@ pub struct Registry {
     statements: HashSet<Src>,
     /// Ranges of functions.
     functions: HashMap<u32, BTreeMap<u32, Arc<Function>>>,
+    /// Enums, to lookup variant names.
+    enums: HashMap<String, Arc<Enum>>,
 }
 
 impl Registry {
@@ -280,6 +313,8 @@ impl Registry {
         let mut statements = HashSet::new();
         // mapping location ranges to functions.
         let mut functions = HashMap::new();
+        // mapping from enum variants to struct to figure out name.
+        let mut enums = HashMap::new();
 
         let mut current = ::std::collections::VecDeque::new();
         current.push_back(&ast);
@@ -300,6 +335,28 @@ impl Registry {
                         .or_insert_with(BTreeMap::new)
                         .insert(src.start, function);
                 }
+                Ast::EnumDefinition {
+                    ref attributes,
+                    ref children,
+                    ..
+                } => {
+                    let mut variants = Vec::new();
+
+                    for c in children {
+                        if let Ast::EnumValue { ref attributes, .. } = *c.as_ref() {
+                            variants.push(Variant {
+                                name: attributes.name.to_string(),
+                            });
+                        }
+                    }
+
+                    let enum_ = Arc::new(Enum {
+                        name: attributes.name.to_string(),
+                        variants: variants,
+                    });
+
+                    enums.insert(attributes.canonical_name.to_string(), enum_);
+                }
                 _ => {}
             }
 
@@ -315,6 +372,7 @@ impl Registry {
             index,
             statements,
             functions,
+            enums,
         })
     }
 
@@ -355,6 +413,197 @@ impl Registry {
     /// Find the location of all statements in registry.
     pub fn statements(&self) -> impl Iterator<Item = &Src> {
         self.statements.iter()
+    }
+
+    /// Decode AST into an expression.
+    /// If AST cannot be decoded, returns `None`.
+    pub fn decode_ast<'a>(&self, c: &'a Ast) -> Option<(Expr, &'a str)> {
+        use self::Ast::*;
+
+        match *c {
+            Identifier { ref attributes, .. } => {
+                let var = Expr::Identifier {
+                    identifier: attributes.value.to_string(),
+                };
+
+                return Some((var, attributes.ty.as_str()));
+            }
+            ElementaryTypeNameExpression { ref attributes, .. } => {
+                let var = Expr::Identifier {
+                    identifier: attributes.value.to_string(),
+                };
+
+                return Some((var, attributes.ty.as_str()));
+            }
+            Assignment { ref children, .. } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+
+                match it.next() {
+                    Some(Identifier { ref attributes, .. }) => {
+                        let var = Expr::Identifier {
+                            identifier: attributes.value.to_string(),
+                        };
+
+                        Some((var, attributes.ty.as_str()))
+                    }
+                    _ => None,
+                }
+            }
+            IndexAccess {
+                ref attributes,
+                ref children,
+                ..
+            } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+
+                let key = self.decode_ast(it.next()?)?.0;
+                let value = self.decode_ast(it.next()?)?.0;
+
+                let var = Expr::IndexAccess {
+                    key: Box::new(key),
+                    value: Box::new(value),
+                };
+
+                Some((var, attributes.ty.as_str()))
+            }
+            MemberAccess {
+                ref attributes,
+                ref children,
+                ..
+            } => {
+                // Pure member accesses can be understood without decoding.
+                // This is typically enum values, like `State.Open`.
+                if attributes.is_pure {
+                    return None;
+                }
+
+                let mut it = children.iter().map(|a| a.as_ref());
+
+                let key = self.decode_ast(it.next()?)?.0;
+
+                let var = Expr::MemberAccess {
+                    key: Box::new(key),
+                    value: attributes.member_name.to_string(),
+                };
+
+                Some((var, attributes.ty.as_str()))
+            }
+            FunctionCall {
+                ref attributes,
+                ref children,
+                ..
+            } => {
+                let mut it = children.iter().map(|a| a.as_ref());
+                let name = self.decode_ast(it.next()?)?.0;
+                let mut args = Vec::new();
+
+                for c in it {
+                    args.push(self.decode_ast(c)?.0);
+                }
+
+                let var = Expr::FunctionCall {
+                    name: Box::new(name),
+                    args,
+                };
+
+                Some((var, attributes.ty.as_str()))
+            }
+            _ => None,
+        }
+    }
+
+    /// Try to decode the given AST into a type.
+    pub fn decode_type(&self, ty: &str) -> Type {
+        use self::Type::*;
+
+        if ty.starts_with("mapping") {
+            let mapping = &ty[7..];
+
+            if &mapping[..1] != "(" || &mapping[mapping.len() - 1..] != ")" {
+                return Type::Unknown(ty.into());
+            }
+
+            let mapping = &mapping[1..mapping.len() - 1];
+
+            let mut it = mapping.split("=>");
+
+            let from = match it.next() {
+                Some(from) => from.trim(),
+                None => return Type::Unknown(ty.into()),
+            };
+
+            let to = match it.next() {
+                Some(to) => to.trim(),
+                None => return Type::Unknown(ty.into()),
+            };
+
+            let from = self.decode_type(from);
+            let to = self.decode_type(to);
+
+            return Type::Mapping(Box::new(from), Box::new(to));
+        }
+
+        let mut it = ty.split(" ");
+
+        match it.next() {
+            Some("enum") => {
+                let name = match it.next() {
+                    Some(name) => name,
+                    _ => return Unknown(ty.into()),
+                };
+
+                if let Some(enum_) = self.enums.get(name) {
+                    return Enum(name.to_string(), Some(Arc::clone(enum_)));
+                }
+
+                return Enum(name.to_string(), None);
+            }
+            Some("struct") => {
+                let name = match it.next() {
+                    Some(name) => name,
+                    _ => return Unknown(ty.into()),
+                };
+
+                let storage = match it.next() {
+                    Some("storage") => Storage::Storage,
+                    Some("memory") => Storage::Memory,
+                    Some("calldata") => Storage::CallData,
+                    _ => return Unknown(ty.into()),
+                };
+
+                let kind = match it.next() {
+                    Some("pointer") => Kind::Pointer,
+                    Some("ref") => Kind::Ref,
+                    _ => return Unknown(ty.into()),
+                };
+
+                return Struct(name.to_string(), storage, kind);
+            }
+            Some("function") => {
+                let mut it = ty.splitn(2, " ");
+
+                if it.next() != Some("function") {
+                    return Unknown(ty.into());
+                }
+
+                let params = match it.next() {
+                    Some(params) => params,
+                    _ => return Unknown(ty.into()),
+                };
+
+                return Function(params.to_string());
+            }
+            Some("bytes") => match it.next() {
+                Some("calldata") => Bytes(Storage::CallData),
+                Some("memory") => Bytes(Storage::Memory),
+                _ => return Unknown(ty.into()),
+            },
+            Some("bytes32") => Bytes32,
+            Some("uint256") => Uint256,
+            Some("bool") => Bool,
+            Some("address") => Address,
+            _ => return Unknown(ty.into()),
+        }
     }
 }
 
@@ -406,7 +655,7 @@ pub enum Type {
     Uint256,
     Bool,
     Address,
-    Enum(String),
+    Enum(String, Option<Arc<Enum>>),
     Struct(String, Storage, Kind),
     Function(String),
     Mapping(Box<Type>, Box<Type>),
@@ -414,96 +663,6 @@ pub enum Type {
 }
 
 impl Type {
-    /// Try to decode the given AST into a type.
-    pub fn decode(ty: &str) -> Type {
-        use self::Type::*;
-
-        if ty.starts_with("mapping") {
-            let mapping = &ty[7..];
-
-            if &mapping[..1] != "(" || &mapping[mapping.len() - 1..] != ")" {
-                return Type::Unknown(ty.into());
-            }
-
-            let mapping = &mapping[1..mapping.len() - 1];
-
-            let mut it = mapping.split("=>");
-
-            let from = match it.next() {
-                Some(from) => from.trim(),
-                None => return Type::Unknown(ty.into()),
-            };
-
-            let to = match it.next() {
-                Some(to) => to.trim(),
-                None => return Type::Unknown(ty.into()),
-            };
-
-            let from = Self::decode(from);
-            let to = Self::decode(to);
-
-            return Type::Mapping(Box::new(from), Box::new(to));
-        }
-
-        let mut it = ty.split(" ");
-
-        match it.next() {
-            Some("enum") => {
-                let name = match it.next() {
-                    Some(name) => name,
-                    _ => return Unknown(ty.into()),
-                };
-
-                return Enum(name.to_string());
-            }
-            Some("struct") => {
-                let name = match it.next() {
-                    Some(name) => name,
-                    _ => return Unknown(ty.into()),
-                };
-
-                let storage = match it.next() {
-                    Some("storage") => Storage::Storage,
-                    Some("memory") => Storage::Memory,
-                    Some("calldata") => Storage::CallData,
-                    _ => return Unknown(ty.into()),
-                };
-
-                let kind = match it.next() {
-                    Some("pointer") => Kind::Pointer,
-                    Some("ref") => Kind::Ref,
-                    _ => return Unknown(ty.into()),
-                };
-
-                return Struct(name.to_string(), storage, kind);
-            }
-            Some("function") => {
-                let mut it = ty.splitn(2, " ");
-
-                if it.next() != Some("function") {
-                    return Unknown(ty.into());
-                }
-
-                let params = match it.next() {
-                    Some(params) => params,
-                    _ => return Unknown(ty.into()),
-                };
-
-                return Function(params.to_string());
-            }
-            Some("bytes") => match it.next() {
-                Some("calldata") => Bytes(Storage::CallData),
-                Some("memory") => Bytes(Storage::Memory),
-                _ => return Unknown(ty.into()),
-            },
-            Some("bytes32") => Bytes32,
-            Some("uint256") => Uint256,
-            Some("bool") => Bool,
-            Some("address") => Address,
-            _ => return Unknown(ty.into()),
-        }
-    }
-
     /// Decode the value from the type, returning the decoded value and the amount of stack that
     /// was used to decode it.
     pub fn value(self, ctx: &mut Context) -> Result<Value, Error> {
@@ -545,9 +704,20 @@ impl Type {
                 Ok(Value::Address(address))
             }
             Mapping(key, value) => Ok(Value::Mapping(*key, *value)),
-            Enum(name) => {
+            Enum(name, enum_) => {
                 let value = ctx.pop()?;
-                Ok(Value::Enum(name, value))
+                let variant = enum_.as_ref().and_then(|enum_| {
+                    enum_
+                        .variants
+                        .get(value.as_usize())
+                        .map(|v| v.name.to_string())
+                });
+
+                Ok(Value::Enum {
+                    name,
+                    value,
+                    variant,
+                })
             }
             Struct(name, storage, kind) => Ok(Value::Struct(name, storage, kind)),
             Function(params) => Ok(Value::Function(params)),
@@ -568,7 +738,7 @@ impl fmt::Display for Type {
             Bool => write!(fmt, "bool"),
             Address => write!(fmt, "address"),
             Mapping(ref key, ref value) => write!(fmt, "mapping({} => {})", key, value),
-            Enum(ref name) => write!(fmt, "enum {}", name),
+            Enum(ref name, ..) => write!(fmt, "enum {}", name),
             Struct(ref name, ref storage, ref kind) => {
                 write!(fmt, "struct {} {} {}", name, storage, kind)
             }
@@ -593,7 +763,11 @@ pub enum Value {
     /// Only store the types of a mapping since we can't discover all values.
     Mapping(Type, Type),
     /// An enum value.
-    Enum(String, U256),
+    Enum {
+        name: String,
+        value: U256,
+        variant: Option<String>,
+    },
     /// A struct and its name.
     Struct(String, Storage, Kind),
     /// A function.
@@ -612,7 +786,18 @@ impl fmt::Display for Value {
             Bool(ref value) => write!(fmt, "bool({})", value),
             Address(ref value) => write!(fmt, "address({:?})", value),
             Mapping(ref key, ref value) => write!(fmt, "mapping({} => {})", key, value),
-            Enum(ref name, ref value) => write!(fmt, "enum {}({})", name, value),
+            Enum {
+                ref name,
+                ref value,
+                ref variant,
+                ..
+            } => {
+                if let Some(variant) = variant.as_ref() {
+                    write!(fmt, "enum {}.{}", name, variant)
+                } else {
+                    write!(fmt, "enum {}({})", name, value)
+                }
+            }
             Struct(ref name, ref storage, ref kind) => {
                 write!(fmt, "struct {} {} {}", name, storage, kind)
             }
@@ -699,30 +884,32 @@ impl<'a> fmt::Display for Hex<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Kind, Storage, Type};
+    use super::{Kind, Registry, Storage, Type};
 
     #[test]
     fn test_decode() {
-        assert_eq!(Type::Uint256, Type::decode("uint256"));
-        assert_eq!(Type::Address, Type::decode("address"));
+        let registry = Registry::default();
+
+        assert_eq!(Type::Uint256, registry.decode_type("uint256"));
+        assert_eq!(Type::Address, registry.decode_type("address"));
         assert_eq!(
             Type::Bytes(Storage::CallData),
-            Type::decode("bytes calldata")
+            registry.decode_type("bytes calldata")
         );
 
         assert_eq!(
             Type::Mapping(Box::new(Type::Address), Box::new(Type::Uint256)),
-            Type::decode("mapping(address => uint256)")
+            registry.decode_type("mapping(address => uint256)")
         );
 
         assert_eq!(
             Type::Struct("Foo".to_string(), Storage::Storage, Kind::Pointer),
-            Type::decode("struct Foo storage pointer")
+            registry.decode_type("struct Foo storage pointer")
         );
 
         assert_eq!(
             Type::Function("(uint256)".to_string()),
-            Type::decode("function (uint256)")
+            registry.decode_type("function (uint256)")
         );
     }
 }

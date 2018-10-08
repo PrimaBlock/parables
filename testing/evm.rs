@@ -26,8 +26,8 @@ use {abi, account, ast, call, crypto, journaldb, kvdb, kvdb_memorydb, linker, ma
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Outcome<T> {
     Ok(T),
-    Reverted { error_info: trace::ErrorInfo },
-    Errored { error_info: trace::ErrorInfo },
+    Reverted { errors: trace::Errors },
+    Errored { errors: trace::Errors },
     Status { status: u8 },
 }
 
@@ -114,29 +114,29 @@ impl<T> Call<T> {
         use self::Outcome::*;
 
         match self.outcome {
-            Reverted { ref error_info } => {
-                if !error_info.is_failed_with(location, stmt) {
+            Reverted { ref errors } => {
+                if !errors.is_failed_with(location, stmt) {
                     bail!(
-                        "Expected {} `{}`.\nBut call reverted: {}",
+                        "Expected {} `{}`.\nBut call reverted:\n{}",
                         location,
                         stmt,
-                        error_info
+                        errors
                     );
                 }
             }
-            Errored { ref error_info } => {
-                if !error_info.is_failed_with(location, stmt) {
+            Errored { ref errors } => {
+                if !errors.is_failed_with(location, stmt) {
                     bail!(
-                        "Expected {} `{}`.\nBut call errored: {}",
+                        "Expected {} `{}`.\nBut call errored:\n{}",
                         location,
                         stmt,
-                        error_info
+                        errors
                     );
                 }
             }
             Status { ref status } => {
                 bail!(
-                    "Expected {} `{}`.\nBut call returned status: {}",
+                    "Expected {} `{}`.\nBut call returned status:\n{}",
                     location,
                     stmt,
                     status
@@ -154,9 +154,9 @@ impl<T> Call<T> {
 
         match self.outcome {
             Ok(value) => Result::Ok(value),
-            Reverted { error_info } => bail!("call reverted: {}", error_info),
-            Errored { error_info } => bail!("call errored: {}", error_info),
-            Status { status } => bail!("call returned status: {}", status),
+            Reverted { errors } => bail!("Reverted at:\n{}", errors),
+            Errored { errors } => bail!("Errored at:\n{}", errors),
+            Status { status } => bail!("Call returned status at:\n{}", status),
         }
     }
 }
@@ -546,11 +546,11 @@ impl Evm {
 
             if reverted {
                 return Ok(Outcome::Reverted {
-                    error_info: trace::ErrorInfo::new_root(result.trace),
+                    errors: trace::Errors::new(result.trace),
                 });
             } else {
                 return Ok(Outcome::Errored {
-                    error_info: trace::ErrorInfo::new_root(result.trace),
+                    errors: trace::Errors::new(result.trace),
                 });
             }
         }
