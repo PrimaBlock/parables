@@ -13,23 +13,16 @@ parables-test-runner = {path = "../test-runner", optional = true}
 ethereum-types = "0.4"
 ethabi = { git = "https://github.com/primablock/ethabi.git", branch = "next" }
 
-# ethash = { git = "https://github.com/paritytech/parity.git" }
-# ethcore = { git = "https://github.com/paritytech/parity.git", features = ["test-helpers"] }
-# ethcore-transaction = { git = "https://github.com/paritytech/parity.git" }
-# evm = { git = "https://github.com/paritytech/parity.git" }
-# journaldb = { git = "https://github.com/paritytech/parity.git" }
-# vm = { git = "https://github.com/paritytech/parity.git" }
-
 ethash = { git = "https://github.com/paritytech/parity-ethereum.git" }
-ethcore = { git = "https://github.com/paritytech/parity-ethereum.git" }
+ethcore = { git = "https://github.com/paritytech/parity-ethereum.git", features = ["test-helpers"] }
 ethcore-transaction = { git = "https://github.com/paritytech/parity-ethereum.git" }
 evm = { git = "https://github.com/paritytech/parity-ethereum.git" }
 journaldb = { git = "https://github.com/paritytech/parity-ethereum.git" }
 vm = { git = "https://github.com/paritytech/parity-ethereum.git" }
 
-kvdb = { git = "https://github.com/paritytech/parity-common.git" }
-kvdb-memorydb = { git = "https://github.com/paritytech/parity-common.git" }
-parity-bytes = { git = "https://github.com/paritytech/parity-common.git" }
+kvdb = "0.1"
+kvdb-memorydb = "0.1"
+parity-bytes = "0.1"
 
 failure = "0.1"
 

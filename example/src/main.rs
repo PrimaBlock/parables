@@ -76,7 +76,7 @@ fn main() -> Result<()> {
             // add a value to the call, this value will be sent to the contract.
             contract
                 .value(wei::from_ether(1))
-                .set_value(out + 1.into())?
+                .set_value(out + U256::from(1))?
                 .ok()?;
 
             current += 1;
@@ -86,9 +86,7 @@ fn main() -> Result<()> {
 
         // non-owner is not allowed to set value.
         let result = contract.sender(not_owner).set_value(0)?;
-        assert!(
-            result.is_reverted_with("SimpleContract:setValue", "require(msg.sender == owner);")
-        );
+        result.assert_failed("SimpleContract:setValue", "require(msg.sender == owner);")?;
 
         Ok(())
     });
@@ -114,7 +112,7 @@ fn main() -> Result<()> {
             // add a value to the call, this value will be sent to the contract.
             contract
                 .value(wei::from_ether(1))
-                .set_value(out + 1.into())?
+                .set_value(out + U256::from(1))?
                 .ok()?;
 
             current += 1;

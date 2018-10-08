@@ -490,11 +490,7 @@ impl Evm {
         decode: impl FnOnce(&Evm, &SignedTransaction, Vec<u8>) -> Result<T, Error>,
     ) -> Result<Call<T>, Error> {
         // Verify transaction
-        tx.verify_basic(
-            true,
-            None,
-            self.env_info.number >= self.engine.params().eip86_transition,
-        ).map_err(|e| format_err!("verify failed: {}", e))?;
+        tx.verify_basic(true, None, false).map_err(|e| format_err!("verify failed: {}", e))?;
 
         let shared = Mutex::new(trace::Shared::new());
 

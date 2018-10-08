@@ -27,7 +27,7 @@ pub enum FrameInfo {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ErrorKind {
     Root,
-    Error(trace::TraceError),
+    Error(parity_vm::Error),
 }
 
 impl cmp::Eq for ErrorKind {}
@@ -37,7 +37,7 @@ impl ErrorKind {
     pub fn is_reverted(&self) -> bool {
         match *self {
             ErrorKind::Root => false,
-            ErrorKind::Error(ref e) => *e == trace::TraceError::Reverted,
+            ErrorKind::Error(ref e) => *e == parity_vm::Error::Reverted,
         }
     }
 }
@@ -445,8 +445,8 @@ impl<'a> trace::Tracer for Tracer<'a> {
     fn prepare_trace_call(
         &mut self,
         params: &parity_vm::ActionParams,
-        depth: usize,
-        is_builtin: bool,
+        _depth: usize,
+        _is_builtin: bool,
     ) {
         let mut shared = self.shared.lock().expect("lock poisoned");
 
@@ -540,14 +540,14 @@ impl<'a> trace::Tracer for Tracer<'a> {
                 let line_info = shared.line_info(self.linker, source, pc, function);
 
                 self.errors.push(ErrorInfo {
-                    kind: ErrorKind::Error(error),
+                    kind: ErrorKind::Error(error.clone()),
                     line_info,
                     subs,
                     variables,
                 })
             }
             FrameInfo::None => self.errors.push(ErrorInfo {
-                kind: ErrorKind::Error(error),
+                kind: ErrorKind::Error(error.clone()),
                 line_info: None,
                 subs,
                 variables,
@@ -687,22 +687,7 @@ impl<'a> trace::VMTracer for VmTracer<'a> {
     }
 
     fn prepare_subtrace(&mut self, _code: &[u8]) {}
-
-    fn done_subtrace(&mut self) {
-        let mut shared = self.shared.lock().expect("poisoned lock");
-
-        if let Err(e) = shared.decode_instruction(
-            self.pc,
-            &self.stack,
-            &self.memory,
-            &mut self.last_function,
-            &mut self.last,
-            &mut self.visited_statements,
-            true,
-        ) {
-            warn!("Failed to decode: {}", e);
-        }
-    }
+    fn done_subtrace(&mut self) {}
 
     fn drain(self) -> Option<Self::Output> {
         let visited_statements = self.visited_statements;
