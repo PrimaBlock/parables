@@ -147,6 +147,12 @@ impl From<Signature> for Vec<u8> {
     }
 }
 
+impl ::std::convert::AsRef<[u8]> for Signature {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
 /// Trait for things which can be digested.
 pub trait Digestable {
     /// Digest the given type.
@@ -180,5 +186,11 @@ impl Digestable for U256 {
 impl Digestable for H160 {
     fn digest(self, checksum: &mut Sha3) {
         checksum.input(&<[u8; 20]>::from(self));
+    }
+}
+
+impl<'a> Digestable for &'a Signature {
+    fn digest(self, checksum: &mut Sha3) {
+        checksum.input(self.as_ref());
     }
 }
