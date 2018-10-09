@@ -169,7 +169,7 @@ where
                 *current = update;
                 update
             } else {
-                panic!(
+                bail!(
                     "{}: adding {} to the account would overflow the balance",
                     address, value
                 );
@@ -197,7 +197,7 @@ where
                 *current = update;
                 update
             } else {
-                panic!(
+                bail!(
                     "{}: subtracting {} would set account to negative balance",
                     address, value
                 );
