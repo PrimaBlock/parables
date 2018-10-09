@@ -40,6 +40,11 @@ where
         }
     }
 
+    /// Create iterator over all entries.
+    pub fn entries<'a>(&'a self) -> impl Iterator<Item = &'a S::Entry> {
+        self.entries.values()
+    }
+
     /// Provide a readable name for an address.
     pub fn name(&mut self, address: Address, name: impl AsRef<str>) {
         self.names.insert(address, name.as_ref().to_string());
